@@ -34,54 +34,100 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
   }
 
   const template = templates.find((item) => item.id === journal.templateId);
+  const formattedDate = dayjs(journal.createdAt).format("YYYY년 MM월 DD일 HH:mm");
+  const firstAnswer = journal.answers[0]?.answer ?? "";
 
   return (
-    <section className="rounded-[28px] bg-white p-8 shadow-card">
-      <div className="flex flex-wrap items-start justify-between gap-5 border-b border-ink/10 pb-6">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-moss/10 px-3 py-1 text-xs font-semibold text-moss">
-              {journal.theme}
-            </span>
-            <span className="text-sm text-ink/45">
-              {dayjs(journal.createdAt).format("YYYY.MM.DD HH:mm")}
-            </span>
+    <section className="overflow-hidden rounded-[32px] bg-white shadow-card">
+      <div className="border-b border-ink/10 px-8 py-10 md:px-10 md:py-12">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div className="max-w-3xl">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="rounded-full bg-moss px-3 py-1 text-xs font-semibold text-white">
+                {journal.theme}
+              </span>
+              <span className="text-sm text-ink/50">{formattedDate}</span>
+            </div>
+            <h2 className="mt-5 text-4xl font-bold leading-tight md:text-5xl">
+              {journal.title}
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-ink/68">
+              {firstAnswer
+                ? `${firstAnswer.slice(0, 120)}${firstAnswer.length > 120 ? "..." : ""}`
+                : "템플릿 기반으로 작성된 기록입니다."}
+            </p>
           </div>
-          <h2 className="mt-4 text-3xl font-bold">{journal.title}</h2>
-          <p className="mt-2 text-sm text-ink/55">
-            {template?.name ?? "알 수 없는 템플릿"}
-          </p>
-        </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href={`/journals/${journal.id}/edit`}
-            className="rounded-full border border-ink/10 bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/20"
-          >
-            수정
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              removeJournal(journal.id);
-              router.push("/journals");
-            }}
-            className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-          >
-            삭제
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={`/journals/${journal.id}/edit`}
+              className="rounded-full border border-ink/10 bg-paper/85 px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/20"
+            >
+              수정
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                removeJournal(journal.id);
+                router.push("/journals");
+              }}
+              className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              삭제
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="mt-8 grid gap-8">
-        {journal.answers.map((item, index) => (
-          <article key={`${journal.id}-${index}`} className="grid gap-3">
-            <h3 className="text-lg font-semibold">{item.question}</h3>
-            <p className="whitespace-pre-wrap text-sm leading-7 text-ink/75">
-              {item.answer}
-            </p>
-          </article>
-        ))}
+      <div className="grid gap-10 px-8 py-8 md:grid-cols-[minmax(0,1fr)_280px] md:px-10 md:py-10">
+        <div className="grid gap-10 order-2 md:order-1">
+          {journal.answers.map((item, index) => (
+            <article
+              key={`${journal.id}-${index}`}
+              className="border-b border-ink/8 pb-8 last:border-b-0 last:pb-0"
+            >
+              <div className="flex items-baseline gap-4">
+                <span className="text-sm font-semibold tracking-[0.2em] text-moss/75">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <h3 className="text-2xl font-semibold leading-tight">
+                  {item.question}
+                </h3>
+              </div>
+              <p className="mt-5 whitespace-pre-wrap text-[15px] leading-8 text-ink/78 md:text-base">
+                {item.answer}
+              </p>
+            </article>
+          ))}
+        </div>
+
+        <aside className="order-1 h-fit rounded-[24px] bg-paper/85 p-5 md:order-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-moss">
+            Archive Note
+          </p>
+          <dl className="mt-5 grid gap-4 text-sm">
+            <div>
+              <dt className="text-ink/45">주제</dt>
+              <dd className="mt-1 font-semibold text-ink">{journal.theme}</dd>
+            </div>
+            <div>
+              <dt className="text-ink/45">템플릿</dt>
+              <dd className="mt-1 font-semibold text-ink">
+                {template?.name ?? "알 수 없는 템플릿"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-ink/45">질문 수</dt>
+              <dd className="mt-1 font-semibold text-ink">
+                {journal.answers.length}개
+              </dd>
+            </div>
+            <div>
+              <dt className="text-ink/45">작성 시각</dt>
+              <dd className="mt-1 font-semibold text-ink">{formattedDate}</dd>
+            </div>
+          </dl>
+        </aside>
       </div>
     </section>
   );
