@@ -7,8 +7,8 @@ import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { themes } from "@/constants/themes";
 import { cn } from "@/lib/utils";
-import { recordFormSchema, type RecordFormValues } from "@/schemas/record-schema";
-import { useRecordStore } from "@/stores/use-record-store";
+import { journalFormSchema, type JournalFormValues } from "@/schemas/journal-schema";
+import { useJournalStore } from "@/stores/use-journal-store";
 import { useTemplateStore } from "@/stores/use-template-store";
 
 function buildAnswerFields(questions: string[]) {
@@ -19,7 +19,7 @@ function buildAnswerFields(questions: string[]) {
 }
 
 function hasSameQuestions(
-  currentAnswers: RecordFormValues["answers"],
+  currentAnswers: JournalFormValues["answers"],
   nextQuestions: string[]
 ) {
   if (currentAnswers.length !== nextQuestions.length) {
@@ -31,27 +31,27 @@ function hasSameQuestions(
   );
 }
 
-type RecordFormProps = {
+type JournalFormProps = {
   mode?: "create" | "edit";
-  recordId?: string;
-  initialValues?: RecordFormValues;
+  journalId?: string;
+  initialValues?: JournalFormValues;
 };
 
-export function RecordForm({
+export function JournalForm({
   mode = "create",
-  recordId,
+  journalId,
   initialValues
-}: RecordFormProps) {
+}: JournalFormProps) {
   const router = useRouter();
   const templates = useTemplateStore((state) => state.templates);
-  const addRecord = useRecordStore((state) => state.addRecord);
-  const updateRecord = useRecordStore((state) => state.updateRecord);
+  const addJournal = useJournalStore((state) => state.addJournal);
+  const updateJournal = useJournalStore((state) => state.updateJournal);
 
   const initialTemplate = templates[0];
   const initialTheme = initialTemplate?.theme ?? "개발";
 
-  const form = useForm<RecordFormValues>({
-    resolver: zodResolver(recordFormSchema),
+  const form = useForm<JournalFormValues>({
+    resolver: zodResolver(journalFormSchema),
     defaultValues:
       initialValues ??
       {
@@ -133,16 +133,16 @@ export function RecordForm({
   }, [answers, form, selectedTemplate]);
 
   const onSubmit = form.handleSubmit((values) => {
-    const nextRecord =
-      mode === "edit" && recordId
-        ? updateRecord(recordId, values)
-        : addRecord(values);
+    const nextJournal =
+      mode === "edit" && journalId
+        ? updateJournal(journalId, values)
+        : addJournal(values);
 
-    if (!nextRecord) {
+    if (!nextJournal) {
       return;
     }
 
-    router.push(`/records/${nextRecord.id}`);
+    router.push(`/journals/${nextJournal.id}`);
   });
 
   return (
@@ -260,7 +260,7 @@ export function RecordForm({
 
       <div className="flex flex-wrap items-center justify-end gap-3">
         <Link
-          href="/records"
+          href="/journals"
           className="rounded-full border border-ink/10 px-4 py-3 text-sm font-semibold text-ink/70 transition hover:border-ink/20"
         >
           Cancel
@@ -270,7 +270,7 @@ export function RecordForm({
           disabled={answers.fields.length === 0}
           className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {mode === "edit" ? "Update record" : "Save record"}
+          {mode === "edit" ? "Update journal" : "Save journal"}
         </button>
       </div>
     </form>

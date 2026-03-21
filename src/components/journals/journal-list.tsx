@@ -5,45 +5,45 @@ import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { themes } from "@/constants/themes";
 import { cn } from "@/lib/utils";
-import { useRecordStore } from "@/stores/use-record-store";
+import { useJournalStore } from "@/stores/use-journal-store";
 import { useTemplateStore } from "@/stores/use-template-store";
 import type { Theme } from "@/types/domain";
 
 type ThemeFilter = Theme | "전체";
 type SortOption = "latest" | "oldest" | "title";
 
-export function RecordList() {
-  const records = useRecordStore((state) => state.records);
+export function JournalList() {
+  const journals = useJournalStore((state) => state.journals);
   const templates = useTemplateStore((state) => state.templates);
   const [selectedTheme, setSelectedTheme] = useState<ThemeFilter>("전체");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("latest");
 
-  const filteredRecords = useMemo(() => {
+  const filteredJournals = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
-    const nextRecords =
+    const nextJournals =
       selectedTheme === "전체"
-        ? records
-        : records.filter((record) => record.theme === selectedTheme);
+        ? journals
+        : journals.filter((journal) => journal.theme === selectedTheme);
 
-    const searchedRecords = normalizedSearch
-      ? nextRecords.filter((record) => {
-          const template = templates.find((item) => item.id === record.templateId);
+    const searchedJournals = normalizedSearch
+      ? nextJournals.filter((journal) => {
+          const template = templates.find((item) => item.id === journal.templateId);
           const content = [
-            record.title,
-            record.theme,
+            journal.title,
+            journal.theme,
             template?.name ?? "",
-            ...record.answers.map((item) => `${item.question} ${item.answer}`)
+            ...journal.answers.map((item) => `${item.question} ${item.answer}`)
           ]
             .join(" ")
             .toLowerCase();
 
           return content.includes(normalizedSearch);
         })
-      : nextRecords;
+      : nextJournals;
 
-    return [...searchedRecords].sort((a, b) => {
+    return [...searchedJournals].sort((a, b) => {
       if (sortBy === "oldest") {
         return dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf();
       }
@@ -54,7 +54,7 @@ export function RecordList() {
 
       return dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf();
     });
-  }, [records, search, selectedTheme, sortBy, templates]);
+  }, [journals, search, selectedTheme, sortBy, templates]);
 
   return (
     <section className="grid gap-6">
@@ -104,26 +104,26 @@ export function RecordList() {
       </div>
 
       <div className="grid gap-4">
-        {filteredRecords.map((record) => {
-          const template = templates.find((item) => item.id === record.templateId);
-          const preview = record.answers
+        {filteredJournals.map((journal) => {
+          const template = templates.find((item) => item.id === journal.templateId);
+          const preview = journal.answers
             .map((item) => item.answer)
             .join(" ")
             .slice(0, 120);
 
           return (
             <Link
-              key={record.id}
-              href={`/records/${record.id}`}
+              key={journal.id}
+              href={`/journals/${journal.id}`}
               className="rounded-[28px] bg-white p-6 shadow-card transition hover:-translate-y-0.5"
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-moss/10 px-3 py-1 text-xs font-semibold text-moss">
-                    {record.theme}
+                    {journal.theme}
                   </span>
                   <span className="text-xs text-ink/45">
-                    {dayjs(record.createdAt).format("YYYY.MM.DD")}
+                    {dayjs(journal.createdAt).format("YYYY.MM.DD")}
                   </span>
                 </div>
                 <span className="text-sm text-ink/55">
@@ -131,14 +131,14 @@ export function RecordList() {
                 </span>
               </div>
 
-              <h2 className="mt-4 text-xl font-semibold">{record.title}</h2>
+              <h2 className="mt-4 text-xl font-semibold">{journal.title}</h2>
               <p className="mt-3 text-sm leading-6 text-ink/65">{preview}...</p>
             </Link>
           );
         })}
       </div>
 
-      {filteredRecords.length === 0 ? (
+      {filteredJournals.length === 0 ? (
         <div className="rounded-[28px] border border-dashed border-ink/15 bg-white p-10 text-center shadow-card">
           <p className="text-lg font-semibold">
             {search ? "검색 결과가 없습니다." : "아직 기록이 없습니다."}

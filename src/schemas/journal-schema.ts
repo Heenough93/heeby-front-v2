@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { themeValues } from "@/types/domain";
 
-export const recordFormSchema = z.object({
+export const journalFormSchema = z.object({
   title: z
     .string()
     .trim()
@@ -25,4 +25,4 @@ export const recordFormSchema = z.object({
     .min(1, "최소 1개 이상의 질문이 필요합니다.")
 });
 
-export type RecordFormValues = z.infer<typeof recordFormSchema>;
+export type JournalFormValues = z.infer<typeof journalFormSchema>;

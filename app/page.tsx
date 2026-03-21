@@ -18,14 +18,14 @@ export default function HomePage() {
               <p className="max-w-2xl text-base leading-7 text-ink/75 md:text-lg">
                 Heeby helps you capture retrospectives and personal notes
                 through topic-based templates, then turns them into readable
-                journal-like documents.
+                journal-style documents.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/records/new"
+                  href="/journals/new"
                   className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
                 >
-                  Start a record
+                  Start a journal
                 </Link>
                 <Link
                   href="/templates"
@@ -41,7 +41,7 @@ export default function HomePage() {
                 Product principles
               </p>
               <ul className="space-y-3 text-sm leading-6 text-ink/80">
-                <li>New records should start fast.</li>
+                <li>New journals should start fast.</li>
                 <li>Forms should stay short and structured.</li>
                 <li>Saved entries should read like documents.</li>
               </ul>

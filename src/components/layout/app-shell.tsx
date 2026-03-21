@@ -10,9 +10,9 @@ type AppShellProps = {
 
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/records", label: "Records" },
+  { href: "/journals", label: "Journals" },
   { href: "/templates", label: "Templates" },
-  { href: "/records/new", label: "New Record" }
+  { href: "/journals/new", label: "New Journal" }
 ];
 
 export function AppShell({

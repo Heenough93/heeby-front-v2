@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
-import type { JournalRecord } from "@/types/domain";
+import type { Journal } from "@/types/domain";
 import { templates } from "@/mocks/templates";
 
-export const records: JournalRecord[] = [
+export const journals: Journal[] = [
   {
     id: nanoid(),
     title: "React Query 학습 메모",

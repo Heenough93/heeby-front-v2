@@ -11,17 +11,17 @@ export type Template = {
   updatedAt: string;
 };
 
-export type RecordAnswer = {
+export type JournalAnswer = {
   question: string;
   answer: string;
 };
 
-export type JournalRecord = {
+export type Journal = {
   id: string;
   title: string;
   theme: Theme;
   templateId: string;
-  answers: RecordAnswer[];
+  answers: JournalAnswer[];
   createdAt: string;
   updatedAt: string;
 };
