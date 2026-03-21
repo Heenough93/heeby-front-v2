@@ -1,0 +1,7 @@
+.idea
+.next
+node_modules
+.DS_Store
+coverage
+*.log
+docs-internal
