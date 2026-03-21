@@ -44,6 +44,10 @@ export function JournalForm({
 }: JournalFormProps) {
   const router = useRouter();
   const templates = useTemplateStore((state) => state.templates);
+  const recentTemplateIds = useTemplateStore((state) => state.recentTemplateIds);
+  const markTemplateAsRecent = useTemplateStore(
+    (state) => state.markTemplateAsRecent
+  );
   const addJournal = useJournalStore((state) => state.addJournal);
   const updateJournal = useJournalStore((state) => state.updateJournal);
 
@@ -82,10 +86,36 @@ export function JournalForm({
     [selectedTheme, templates]
   );
 
+  const recentTemplates = useMemo(
+    () =>
+      recentTemplateIds
+        .map((id) => templates.find((template) => template.id === id))
+        .filter((template): template is (typeof templates)[number] => Boolean(template)),
+    [recentTemplateIds, templates]
+  );
+
   const selectedTemplate = useMemo(
     () => templates.find((template) => template.id === selectedTemplateId),
     [selectedTemplateId, templates]
   );
+
+  const applyTemplate = (templateId: string) => {
+    const template = templates.find((item) => item.id === templateId);
+
+    if (!template) {
+      return;
+    }
+
+    form.setValue("theme", template.theme, {
+      shouldDirty: true,
+      shouldValidate: true
+    });
+    form.setValue("templateId", template.id, {
+      shouldDirty: true,
+      shouldValidate: true
+    });
+    answers.replace(buildAnswerFields(template.questions));
+  };
 
   useEffect(() => {
     if (!initialValues) {
@@ -142,6 +172,7 @@ export function JournalForm({
       return;
     }
 
+    markTemplateAsRecent(values.templateId);
     router.push(`/journals/${nextJournal.id}`);
   });
 
@@ -150,6 +181,36 @@ export function JournalForm({
       onSubmit={onSubmit}
       className="grid gap-6 rounded-[28px] bg-white p-6 shadow-card md:p-8"
     >
+      {mode === "create" && recentTemplates.length > 0 ? (
+        <section className="grid gap-3 rounded-[24px] border border-ink/10 bg-paper p-5">
+          <div>
+            <h2 className="text-lg font-semibold">최근 사용 템플릿</h2>
+            <p className="mt-1 text-sm text-ink/60">
+              최근에 쓴 템플릿으로 바로 시작할 수 있습니다.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            {recentTemplates.map((template) => (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() => applyTemplate(template.id)}
+                className={cn(
+                  "rounded-2xl border px-4 py-3 text-left transition",
+                  selectedTemplateId === template.id
+                    ? "border-coral bg-white"
+                    : "border-ink/10 bg-white hover:border-ink/25"
+                )}
+              >
+                <p className="text-sm font-semibold">{template.name}</p>
+                <p className="mt-1 text-xs text-ink/55">{template.theme}</p>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <div className="grid gap-6 md:grid-cols-2">
         <label className="grid gap-2">
           <span className="text-sm font-semibold text-ink/75">기록 제목</span>

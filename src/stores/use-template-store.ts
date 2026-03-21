@@ -10,9 +10,11 @@ import type { TemplateFormValues } from "@/schemas/template-schema";
 
 type TemplateStore = {
   templates: Template[];
+  recentTemplateIds: string[];
   addTemplate: (values: TemplateFormValues) => Template;
   updateTemplate: (id: string, values: TemplateFormValues) => Template | undefined;
   getTemplateById: (id: string) => Template | undefined;
+  markTemplateAsRecent: (id: string) => void;
   removeTemplate: (id: string) => void;
 };
 
@@ -20,6 +22,7 @@ export const useTemplateStore = create<TemplateStore>()(
   persist(
     (set, get) => ({
       templates: initialTemplates,
+      recentTemplateIds: initialTemplates.slice(0, 3).map((template) => template.id),
       addTemplate: (values) => {
         const now = dayjs().toISOString();
         const nextTemplate: Template = {
@@ -32,7 +35,11 @@ export const useTemplateStore = create<TemplateStore>()(
         };
 
         set((state) => ({
-          templates: [nextTemplate, ...state.templates]
+          templates: [nextTemplate, ...state.templates],
+          recentTemplateIds: [
+            nextTemplate.id,
+            ...state.recentTemplateIds.filter((id) => id !== nextTemplate.id)
+          ].slice(0, 4)
         }));
 
         return nextTemplate;
@@ -55,15 +62,34 @@ export const useTemplateStore = create<TemplateStore>()(
         set((state) => ({
           templates: state.templates.map((template) =>
             template.id === id ? nextTemplate : template
-          )
+          ),
+          recentTemplateIds: [
+            nextTemplate.id,
+            ...state.recentTemplateIds.filter((templateId) => templateId !== nextTemplate.id)
+          ].slice(0, 4)
         }));
 
         return nextTemplate;
       },
       getTemplateById: (id) => get().templates.find((template) => template.id === id),
+      markTemplateAsRecent: (id) => {
+        if (!get().templates.some((template) => template.id === id)) {
+          return;
+        }
+
+        set((state) => ({
+          recentTemplateIds: [
+            id,
+            ...state.recentTemplateIds.filter((templateId) => templateId !== id)
+          ].slice(0, 4)
+        }));
+      },
       removeTemplate: (id) => {
         set((state) => ({
-          templates: state.templates.filter((template) => template.id !== id)
+          templates: state.templates.filter((template) => template.id !== id),
+          recentTemplateIds: state.recentTemplateIds.filter(
+            (templateId) => templateId !== id
+          )
         }));
       }
     }),
