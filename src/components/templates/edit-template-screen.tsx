@@ -26,7 +26,7 @@ export function EditTemplateScreen({ templateId }: EditTemplateScreenProps) {
   if (!template) {
     return (
       <AppShell
-        title="Edit Template"
+        title="템플릿 수정"
         description="수정할 템플릿을 찾을 수 없습니다."
       >
         <section className="rounded-[28px] bg-white p-8 shadow-card">
@@ -44,7 +44,7 @@ export function EditTemplateScreen({ templateId }: EditTemplateScreenProps) {
 
   return (
     <AppShell
-      title="Edit Template"
+      title="템플릿 수정"
       description="기존 질문 구조를 수정해 템플릿을 다시 다듬습니다."
     >
       <TemplateForm

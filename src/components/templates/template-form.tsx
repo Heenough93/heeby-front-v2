@@ -133,7 +133,7 @@ export function TemplateForm({
             >
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-ink/70">
-                  Question {index + 1}
+                  질문 {index + 1}
                 </p>
                 <button
                   type="button"
@@ -141,7 +141,7 @@ export function TemplateForm({
                   disabled={questions.fields.length <= 3}
                   className="text-sm font-medium text-ink/45 transition disabled:cursor-not-allowed disabled:opacity-35"
                 >
-                  Remove
+                  삭제
                 </button>
               </div>
               <input
@@ -173,13 +173,13 @@ export function TemplateForm({
           href="/templates"
           className="rounded-full border border-ink/10 px-4 py-3 text-sm font-semibold text-ink/70 transition hover:border-ink/20"
         >
-          Cancel
+          취소
         </Link>
         <button
           type="submit"
           className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
         >
-          {mode === "edit" ? "Update template" : "Save template"}
+          {mode === "edit" ? "템플릿 수정" : "템플릿 저장"}
         </button>
       </div>
     </form>

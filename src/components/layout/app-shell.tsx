@@ -9,10 +9,10 @@ type AppShellProps = {
 };
 
 const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/journals", label: "Journals" },
-  { href: "/templates", label: "Templates" },
-  { href: "/journals/new", label: "New Journal" }
+  { href: "/", label: "홈" },
+  { href: "/journals", label: "기록" },
+  { href: "/templates", label: "템플릿" },
+  { href: "/journals/new", label: "새 기록" }
 ];
 
 export function AppShell({

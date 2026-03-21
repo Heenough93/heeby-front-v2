@@ -58,7 +58,7 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
             href={`/journals/${journal.id}/edit`}
             className="rounded-full border border-ink/10 bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/20"
           >
-            Edit journal
+            수정
           </Link>
           <button
             type="button"
@@ -68,7 +68,7 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
             }}
             className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
-            Delete journal
+            삭제
           </button>
         </div>
       </div>

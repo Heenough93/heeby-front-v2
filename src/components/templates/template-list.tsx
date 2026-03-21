@@ -126,14 +126,14 @@ export function TemplateList() {
                 href={`/templates/${template.id}/edit`}
                 className="text-sm font-semibold text-coral"
               >
-                Edit
+                수정
               </Link>
               <button
                 type="button"
                 onClick={() => removeTemplate(template.id)}
                 className="rounded-full border border-ink/10 px-3 py-2 text-sm font-medium text-ink/65 transition hover:border-ink/25"
               >
-                Delete
+                삭제
               </button>
             </div>
           </article>

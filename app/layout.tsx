@@ -4,7 +4,7 @@ import { AppProviders } from "@/providers/app-providers";
 
 export const metadata: Metadata = {
   title: "Heeby",
-  description: "Template-driven personal journaling app"
+  description: "템플릿 기반 개인 기록 앱"
 };
 
 export default function RootLayout({

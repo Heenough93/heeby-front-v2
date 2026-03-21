@@ -324,14 +324,14 @@ export function JournalForm({
           href="/journals"
           className="rounded-full border border-ink/10 px-4 py-3 text-sm font-semibold text-ink/70 transition hover:border-ink/20"
         >
-          Cancel
+          취소
         </Link>
         <button
           type="submit"
           disabled={answers.fields.length === 0}
           className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {mode === "edit" ? "Update journal" : "Save journal"}
+          {mode === "edit" ? "기록 수정" : "기록 저장"}
         </button>
       </div>
     </form>

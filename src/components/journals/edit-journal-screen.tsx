@@ -30,7 +30,7 @@ export function EditJournalScreen({ journalId }: EditJournalScreenProps) {
   if (!journal) {
     return (
       <AppShell
-        title="Edit Journal"
+        title="기록 수정"
         description="수정할 기록을 찾을 수 없습니다."
       >
         <section className="rounded-[28px] bg-white p-8 shadow-card">
@@ -48,7 +48,7 @@ export function EditJournalScreen({ journalId }: EditJournalScreenProps) {
 
   return (
     <AppShell
-      title="Edit Journal"
+      title="기록 수정"
       description="기록 제목, 템플릿 선택, 질문별 답변을 다시 수정할 수 있습니다."
     >
       <JournalForm
