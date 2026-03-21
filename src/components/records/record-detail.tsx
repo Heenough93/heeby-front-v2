@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import { useRecordStore } from "@/stores/use-record-store";
 import { useTemplateStore } from "@/stores/use-template-store";
@@ -10,7 +11,9 @@ type RecordDetailProps = {
 };
 
 export function RecordDetail({ recordId }: RecordDetailProps) {
+  const router = useRouter();
   const record = useRecordStore((state) => state.getRecordById(recordId));
+  const removeRecord = useRecordStore((state) => state.removeRecord);
   const templates = useTemplateStore((state) => state.templates);
 
   if (!record) {
@@ -50,12 +53,24 @@ export function RecordDetail({ recordId }: RecordDetailProps) {
           </p>
         </div>
 
-        <Link
-          href="/records/new"
-          className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-        >
-          New record
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={`/records/${record.id}/edit`}
+            className="rounded-full border border-ink/10 bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/20"
+          >
+            Edit
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              removeRecord(record.id);
+              router.push("/records");
+            }}
+            className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            Delete
+          </button>
+        </div>
       </div>
 
       <div className="mt-8 grid gap-8">

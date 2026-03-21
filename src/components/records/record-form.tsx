@@ -18,22 +18,35 @@ function buildAnswerFields(questions: string[]) {
   }));
 }
 
-export function RecordForm() {
+type RecordFormProps = {
+  mode?: "create" | "edit";
+  recordId?: string;
+  initialValues?: RecordFormValues;
+};
+
+export function RecordForm({
+  mode = "create",
+  recordId,
+  initialValues
+}: RecordFormProps) {
   const router = useRouter();
   const templates = useTemplateStore((state) => state.templates);
   const addRecord = useRecordStore((state) => state.addRecord);
+  const updateRecord = useRecordStore((state) => state.updateRecord);
 
   const initialTemplate = templates[0];
   const initialTheme = initialTemplate?.theme ?? "개발";
 
   const form = useForm<RecordFormValues>({
     resolver: zodResolver(recordFormSchema),
-    defaultValues: {
-      title: "",
-      theme: initialTheme,
-      templateId: initialTemplate?.id ?? "",
-      answers: initialTemplate ? buildAnswerFields(initialTemplate.questions) : []
-    }
+    defaultValues:
+      initialValues ??
+      {
+        title: "",
+        theme: initialTheme,
+        templateId: initialTemplate?.id ?? "",
+        answers: initialTemplate ? buildAnswerFields(initialTemplate.questions) : []
+      }
   });
 
   const answers = useFieldArray({
@@ -60,6 +73,20 @@ export function RecordForm() {
     () => templates.find((template) => template.id === selectedTemplateId),
     [selectedTemplateId, templates]
   );
+
+  useEffect(() => {
+    form.reset(
+      initialValues ??
+        {
+          title: "",
+          theme: initialTheme,
+          templateId: initialTemplate?.id ?? "",
+          answers: initialTemplate
+            ? buildAnswerFields(initialTemplate.questions)
+            : []
+        }
+    );
+  }, [form, initialTemplate, initialTheme, initialValues]);
 
   useEffect(() => {
     if (!filteredTemplates.length) {
@@ -91,7 +118,15 @@ export function RecordForm() {
   }, [answers, selectedTemplate]);
 
   const onSubmit = form.handleSubmit((values) => {
-    const nextRecord = addRecord(values);
+    const nextRecord =
+      mode === "edit" && recordId
+        ? updateRecord(recordId, values)
+        : addRecord(values);
+
+    if (!nextRecord) {
+      return;
+    }
+
     router.push(`/records/${nextRecord.id}`);
   });
 
@@ -220,7 +255,7 @@ export function RecordForm() {
           disabled={answers.fields.length === 0}
           className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Save record
+          {mode === "edit" ? "Update record" : "Save record"}
         </button>
       </div>
     </form>

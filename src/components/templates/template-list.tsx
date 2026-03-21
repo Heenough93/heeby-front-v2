@@ -73,10 +73,10 @@ export function TemplateList() {
 
             <div className="mt-6 flex items-center justify-between gap-3">
               <Link
-                href="/templates/new"
+                href={`/templates/${template.id}/edit`}
                 className="text-sm font-semibold text-coral"
               >
-                Create another
+                Edit
               </Link>
               <button
                 type="button"

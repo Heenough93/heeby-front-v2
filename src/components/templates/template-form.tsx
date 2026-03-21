@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,13 +19,24 @@ const defaultValues: TemplateFormValues = {
   questions: [{ value: "" }, { value: "" }, { value: "" }]
 };
 
-export function TemplateForm() {
+type TemplateFormProps = {
+  mode?: "create" | "edit";
+  templateId?: string;
+  initialValues?: TemplateFormValues;
+};
+
+export function TemplateForm({
+  mode = "create",
+  templateId,
+  initialValues
+}: TemplateFormProps) {
   const router = useRouter();
   const addTemplate = useTemplateStore((state) => state.addTemplate);
+  const updateTemplate = useTemplateStore((state) => state.updateTemplate);
 
   const form = useForm<TemplateFormValues>({
     resolver: zodResolver(templateFormSchema),
-    defaultValues
+    defaultValues: initialValues ?? defaultValues
   });
 
   const questions = useFieldArray({
@@ -32,8 +44,16 @@ export function TemplateForm() {
     name: "questions"
   });
 
+  useEffect(() => {
+    form.reset(initialValues ?? defaultValues);
+  }, [form, initialValues]);
+
   const onSubmit = form.handleSubmit((values) => {
-    addTemplate(values);
+    if (mode === "edit" && templateId) {
+      updateTemplate(templateId, values);
+    } else {
+      addTemplate(values);
+    }
     router.push("/templates");
   });
 
@@ -159,7 +179,7 @@ export function TemplateForm() {
           type="submit"
           className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
         >
-          Save template
+          {mode === "edit" ? "Update template" : "Save template"}
         </button>
       </div>
     </form>
