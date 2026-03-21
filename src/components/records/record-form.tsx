@@ -18,6 +18,19 @@ function buildAnswerFields(questions: string[]) {
   }));
 }
 
+function hasSameQuestions(
+  currentAnswers: RecordFormValues["answers"],
+  nextQuestions: string[]
+) {
+  if (currentAnswers.length !== nextQuestions.length) {
+    return false;
+  }
+
+  return currentAnswers.every(
+    (answer, index) => answer.question === nextQuestions[index]
+  );
+}
+
 type RecordFormProps = {
   mode?: "create" | "edit";
   recordId?: string;
@@ -75,18 +88,12 @@ export function RecordForm({
   );
 
   useEffect(() => {
-    form.reset(
-      initialValues ??
-        {
-          title: "",
-          theme: initialTheme,
-          templateId: initialTemplate?.id ?? "",
-          answers: initialTemplate
-            ? buildAnswerFields(initialTemplate.questions)
-            : []
-        }
-    );
-  }, [form, initialTemplate, initialTheme, initialValues]);
+    if (!initialValues) {
+      return;
+    }
+
+    form.reset(initialValues);
+  }, [form, initialValues]);
 
   useEffect(() => {
     if (!filteredTemplates.length) {
@@ -105,7 +112,11 @@ export function RecordForm({
         shouldDirty: true,
         shouldValidate: true
       });
-      answers.replace(buildAnswerFields(fallbackTemplate.questions));
+      if (
+        !hasSameQuestions(form.getValues("answers"), fallbackTemplate.questions)
+      ) {
+        answers.replace(buildAnswerFields(fallbackTemplate.questions));
+      }
     }
   }, [answers, filteredTemplates, form, selectedTemplateId]);
 
@@ -114,8 +125,12 @@ export function RecordForm({
       return;
     }
 
+    if (hasSameQuestions(form.getValues("answers"), selectedTemplate.questions)) {
+      return;
+    }
+
     answers.replace(buildAnswerFields(selectedTemplate.questions));
-  }, [answers, selectedTemplate]);
+  }, [answers, form, selectedTemplate]);
 
   const onSubmit = form.handleSubmit((values) => {
     const nextRecord =
