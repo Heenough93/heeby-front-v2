@@ -5,7 +5,12 @@ import { SiteChrome } from "@/components/layout/site-chrome";
 
 export const metadata: Metadata = {
   title: "Heeby",
-  description: "템플릿 기반 개인 기록 앱"
+  description: "템플릿 기반 개인 기록 앱",
+  icons: {
+    icon: "/images/me.png",
+    shortcut: "/images/me.png",
+    apple: "/images/me.png"
+  }
 };
 
 export default function RootLayout({

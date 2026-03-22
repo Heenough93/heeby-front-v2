@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import meImage from "@/../docs-internal/me.png";
 
 type SiteChromeProps = {
   children: React.ReactNode;
@@ -26,8 +25,10 @@ export function SiteChrome({ children }: SiteChromeProps) {
               aria-label="홈으로 이동"
             >
               <Image
-                src={meImage}
+                src="/images/me.png"
                 alt="홈"
+                width={56}
+                height={56}
                 className="h-full w-full object-cover"
               />
             </Link>
