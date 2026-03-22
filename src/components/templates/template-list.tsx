@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
+import { AlertDialog } from "@/components/feedback/alert-dialog";
 import { useTemplateStore } from "@/stores/use-template-store";
 import { useToastStore } from "@/stores/use-toast-store";
 import { themes } from "@/constants/themes";
@@ -19,6 +20,9 @@ export function TemplateList() {
   const [selectedTheme, setSelectedTheme] = useState<ThemeFilter>("전체");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("latest");
+  const [pendingDeleteTemplateId, setPendingDeleteTemplateId] = useState<
+    string | null
+  >(null);
 
   const filteredTemplates = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -49,6 +53,10 @@ export function TemplateList() {
       return dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf();
     });
   }, [search, selectedTheme, sortBy, templates]);
+
+  const pendingDeleteTemplate = templates.find(
+    (template) => template.id === pendingDeleteTemplateId
+  );
 
   return (
     <section className="grid gap-6">
@@ -132,13 +140,7 @@ export function TemplateList() {
               </Link>
               <button
                 type="button"
-                onClick={() => {
-                  removeTemplate(template.id);
-                  showToast({
-                    title: "템플릿이 삭제되었습니다.",
-                    variant: "success"
-                  });
-                }}
+                onClick={() => setPendingDeleteTemplateId(template.id)}
                 className="rounded-full border border-line/10 bg-surface px-3 py-2 text-sm font-medium text-ink/65 transition hover:border-coral/40 hover:bg-soft"
               >
                 삭제
@@ -160,6 +162,27 @@ export function TemplateList() {
           </p>
         </div>
       ) : null}
+
+      <AlertDialog
+        open={Boolean(pendingDeleteTemplate)}
+        title="이 템플릿을 삭제할까요?"
+        description="삭제하면 이 브라우저에 저장된 템플릿 목록에서 제거됩니다."
+        confirmLabel="템플릿 삭제"
+        variant="danger"
+        onClose={() => setPendingDeleteTemplateId(null)}
+        onConfirm={() => {
+          if (!pendingDeleteTemplate) {
+            return;
+          }
+
+          removeTemplate(pendingDeleteTemplate.id);
+          showToast({
+            title: "템플릿이 삭제되었습니다.",
+            variant: "success"
+          });
+          setPendingDeleteTemplateId(null);
+        }}
+      />
     </section>
   );
 }

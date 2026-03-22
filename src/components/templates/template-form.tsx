@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertDialog } from "@/components/feedback/alert-dialog";
 import { themes } from "@/constants/themes";
 import {
   templateFormSchema,
@@ -35,6 +36,7 @@ export function TemplateForm({
   const addTemplate = useTemplateStore((state) => state.addTemplate);
   const updateTemplate = useTemplateStore((state) => state.updateTemplate);
   const showToast = useToastStore((state) => state.showToast);
+  const [pendingValues, setPendingValues] = useState<TemplateFormValues | null>(null);
 
   const form = useForm<TemplateFormValues>({
     resolver: zodResolver(templateFormSchema),
@@ -50,7 +52,7 @@ export function TemplateForm({
     form.reset(initialValues ?? defaultValues);
   }, [form, initialValues]);
 
-  const onSubmit = form.handleSubmit((values) => {
+  const submitTemplate = (values: TemplateFormValues) => {
     if (mode === "edit" && templateId) {
       updateTemplate(templateId, values);
       showToast({
@@ -65,6 +67,10 @@ export function TemplateForm({
       });
     }
     router.push("/templates");
+  };
+
+  const onSubmit = form.handleSubmit((values) => {
+    setPendingValues(values);
   });
 
   const canAddQuestion = questions.fields.length < 7;
@@ -192,6 +198,26 @@ export function TemplateForm({
           {mode === "edit" ? "템플릿 수정" : "템플릿 저장"}
         </button>
       </div>
+
+      <AlertDialog
+        open={Boolean(pendingValues)}
+        title={mode === "edit" ? "이 템플릿을 수정할까요?" : "이 템플릿을 저장할까요?"}
+        description={
+          mode === "edit"
+            ? "질문 구조와 주제 설정이 현재 값으로 업데이트됩니다."
+            : "입력한 질문 구조로 새 템플릿이 생성됩니다."
+        }
+        confirmLabel={mode === "edit" ? "템플릿 수정" : "템플릿 저장"}
+        onClose={() => setPendingValues(null)}
+        onConfirm={() => {
+          if (!pendingValues) {
+            return;
+          }
+
+          submitTemplate(pendingValues);
+          setPendingValues(null);
+        }}
+      />
     </form>
   );
 }

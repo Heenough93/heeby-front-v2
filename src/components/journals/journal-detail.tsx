@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import dayjs from "dayjs";
+import { AlertDialog } from "@/components/feedback/alert-dialog";
 import { useJournalStore } from "@/stores/use-journal-store";
 import { useTemplateStore } from "@/stores/use-template-store";
 import { useToastStore } from "@/stores/use-toast-store";
@@ -17,6 +19,7 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
   const removeJournal = useJournalStore((state) => state.removeJournal);
   const templates = useTemplateStore((state) => state.templates);
   const showToast = useToastStore((state) => state.showToast);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   if (!journal) {
     return (
@@ -69,14 +72,7 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
             </Link>
             <button
               type="button"
-              onClick={() => {
-                removeJournal(journal.id);
-                showToast({
-                  title: "기록이 삭제되었습니다.",
-                  variant: "success"
-                });
-                router.push("/journals");
-              }}
+              onClick={() => setIsDeleteDialogOpen(true)}
               className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
             >
               삭제
@@ -135,6 +131,24 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
           </dl>
         </aside>
       </div>
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        title="이 기록을 삭제할까요?"
+        description="삭제 후에는 이 브라우저에서 다시 복구할 수 없습니다."
+        confirmLabel="기록 삭제"
+        variant="danger"
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={() => {
+          removeJournal(journal.id);
+          showToast({
+            title: "기록이 삭제되었습니다.",
+            variant: "success"
+          });
+          setIsDeleteDialogOpen(false);
+          router.push("/journals");
+        }}
+      />
     </section>
   );
 }

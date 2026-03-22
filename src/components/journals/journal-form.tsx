@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertDialog } from "@/components/feedback/alert-dialog";
 import { themes } from "@/constants/themes";
 import { cn } from "@/lib/utils";
 import { journalFormSchema, type JournalFormValues } from "@/schemas/journal-schema";
@@ -52,6 +53,7 @@ export function JournalForm({
   const addJournal = useJournalStore((state) => state.addJournal);
   const updateJournal = useJournalStore((state) => state.updateJournal);
   const showToast = useToastStore((state) => state.showToast);
+  const [pendingValues, setPendingValues] = useState<JournalFormValues | null>(null);
 
   const initialTemplate = templates[0];
   const initialTheme = initialTemplate?.theme ?? "개발";
@@ -164,7 +166,7 @@ export function JournalForm({
     answers.replace(buildAnswerFields(selectedTemplate.questions));
   }, [answers, form, selectedTemplate]);
 
-  const onSubmit = form.handleSubmit((values) => {
+  const submitJournal = (values: JournalFormValues) => {
     const nextJournal =
       mode === "edit" && journalId
         ? updateJournal(journalId, values)
@@ -180,6 +182,10 @@ export function JournalForm({
       variant: "success"
     });
     router.push(`/journals/${nextJournal.id}`);
+  };
+
+  const onSubmit = form.handleSubmit((values) => {
+    setPendingValues(values);
   });
 
   return (
@@ -340,6 +346,26 @@ export function JournalForm({
           {mode === "edit" ? "기록 수정" : "기록 저장"}
         </button>
       </div>
+
+      <AlertDialog
+        open={Boolean(pendingValues)}
+        title={mode === "edit" ? "이 기록을 수정할까요?" : "이 기록을 저장할까요?"}
+        description={
+          mode === "edit"
+            ? "현재 입력한 제목과 답변으로 기록이 업데이트됩니다."
+            : "현재 입력한 답변으로 새 기록이 저장됩니다."
+        }
+        confirmLabel={mode === "edit" ? "기록 수정" : "기록 저장"}
+        onClose={() => setPendingValues(null)}
+        onConfirm={() => {
+          if (!pendingValues) {
+            return;
+          }
+
+          submitJournal(pendingValues);
+          setPendingValues(null);
+        }}
+      />
     </form>
   );
 }

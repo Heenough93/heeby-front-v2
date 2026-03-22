@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AlertDialog } from "@/components/feedback/alert-dialog";
 import {
   useFeatureFlagStore,
   type FeatureFlagKey
@@ -36,6 +37,11 @@ export function AdminSettingsPanel() {
   const resetFlags = useFeatureFlagStore((state) => state.resetFlags);
   const showToast = useToastStore((state) => state.showToast);
   const [lastAction, setLastAction] = useState("");
+  const [pendingAction, setPendingAction] = useState<
+    "reset-journals" | "reset-templates" | "reset-all" | null
+  >(null);
+  const [pendingFlagKey, setPendingFlagKey] = useState<FeatureFlagKey | null>(null);
+  const [isResetFlagsDialogOpen, setIsResetFlagsDialogOpen] = useState(false);
 
   return (
     <section className="rounded-[30px] border border-line/10 bg-surface p-6 shadow-card md:p-7">
@@ -62,14 +68,7 @@ export function AdminSettingsPanel() {
       <div className="mt-6 grid gap-3 md:grid-cols-3">
         <button
           type="button"
-          onClick={() => {
-            resetJournals();
-            setLastAction("기록 데이터를 초기 mock 상태로 되돌렸습니다.");
-            showToast({
-              title: "기록 데이터를 초기화했습니다.",
-              variant: "success"
-            });
-          }}
+          onClick={() => setPendingAction("reset-journals")}
           className="rounded-[22px] border border-line/10 bg-paper px-4 py-4 text-left transition hover:border-coral/35 hover:bg-soft"
         >
           <p className="text-sm font-semibold">기록 초기화</p>
@@ -80,14 +79,7 @@ export function AdminSettingsPanel() {
 
         <button
           type="button"
-          onClick={() => {
-            resetTemplates();
-            setLastAction("템플릿 데이터를 초기 mock 상태로 되돌렸습니다.");
-            showToast({
-              title: "템플릿 데이터를 초기화했습니다.",
-              variant: "success"
-            });
-          }}
+          onClick={() => setPendingAction("reset-templates")}
           className="rounded-[22px] border border-line/10 bg-paper px-4 py-4 text-left transition hover:border-coral/35 hover:bg-soft"
         >
           <p className="text-sm font-semibold">템플릿 초기화</p>
@@ -98,15 +90,7 @@ export function AdminSettingsPanel() {
 
         <button
           type="button"
-          onClick={() => {
-            resetTemplates();
-            resetJournals();
-            setLastAction("기록과 템플릿 데이터를 모두 초기 mock 상태로 되돌렸습니다.");
-            showToast({
-              title: "모든 로컬 데이터를 초기화했습니다.",
-              variant: "success"
-            });
-          }}
+          onClick={() => setPendingAction("reset-all")}
           className="rounded-[22px] border border-coral/20 bg-coral/10 px-4 py-4 text-left transition hover:border-coral/35 hover:bg-coral/15"
         >
           <p className="text-sm font-semibold text-coral">전체 초기화</p>
@@ -126,14 +110,7 @@ export function AdminSettingsPanel() {
           </div>
           <button
             type="button"
-            onClick={() => {
-              resetFlags();
-              setLastAction("실험 기능 토글을 기본값으로 되돌렸습니다.");
-              showToast({
-                title: "실험 기능 토글을 기본값으로 되돌렸습니다.",
-                variant: "success"
-              });
-            }}
+            onClick={() => setIsResetFlagsDialogOpen(true)}
             className="rounded-full border border-line/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
           >
             기본값 복원
@@ -145,8 +122,7 @@ export function AdminSettingsPanel() {
             <button
               key={item.key}
               type="button"
-              onClick={() => toggleFlag(item.key)}
-              
+              onClick={() => setPendingFlagKey(item.key)}
               className="flex items-start justify-between gap-4 rounded-[22px] border border-line/10 bg-surface px-4 py-4 text-left transition hover:border-coral/35 hover:bg-soft"
             >
               <div>
@@ -179,6 +155,111 @@ export function AdminSettingsPanel() {
           <p className="mt-3 text-sm font-medium text-coral">{lastAction}</p>
         ) : null}
       </div>
+
+      <AlertDialog
+        open={pendingAction === "reset-journals"}
+        title="기록 데이터를 초기화할까요?"
+        description="이 브라우저에 저장된 기록이 mock 기본값으로 되돌아갑니다."
+        confirmLabel="기록 초기화"
+        variant="danger"
+        onClose={() => setPendingAction(null)}
+        onConfirm={() => {
+          resetJournals();
+          setLastAction("기록 데이터를 초기 mock 상태로 되돌렸습니다.");
+          showToast({
+            title: "기록 데이터를 초기화했습니다.",
+            variant: "success"
+          });
+          setPendingAction(null);
+        }}
+      />
+
+      <AlertDialog
+        open={pendingAction === "reset-templates"}
+        title="템플릿 데이터를 초기화할까요?"
+        description="템플릿과 최근 사용 템플릿 정보가 mock 기본값으로 되돌아갑니다."
+        confirmLabel="템플릿 초기화"
+        variant="danger"
+        onClose={() => setPendingAction(null)}
+        onConfirm={() => {
+          resetTemplates();
+          setLastAction("템플릿 데이터를 초기 mock 상태로 되돌렸습니다.");
+          showToast({
+            title: "템플릿 데이터를 초기화했습니다.",
+            variant: "success"
+          });
+          setPendingAction(null);
+        }}
+      />
+
+      <AlertDialog
+        open={pendingAction === "reset-all"}
+        title="모든 로컬 데이터를 초기화할까요?"
+        description="기록과 템플릿 데이터를 모두 mock 기본값으로 되돌립니다."
+        confirmLabel="전체 초기화"
+        variant="danger"
+        onClose={() => setPendingAction(null)}
+        onConfirm={() => {
+          resetTemplates();
+          resetJournals();
+          setLastAction("기록과 템플릿 데이터를 모두 초기 mock 상태로 되돌렸습니다.");
+          showToast({
+            title: "모든 로컬 데이터를 초기화했습니다.",
+            variant: "success"
+          });
+          setPendingAction(null);
+        }}
+      />
+
+      <AlertDialog
+        open={Boolean(pendingFlagKey)}
+        title="실험 기능 토글을 변경할까요?"
+        description={
+          pendingFlagKey
+            ? `${featureFlagItems.find((item) => item.key === pendingFlagKey)?.label} 설정을 ${
+                flags[pendingFlagKey] ? "숨김" : "표시"
+              } 상태로 변경합니다.`
+            : ""
+        }
+        confirmLabel="변경 적용"
+        onClose={() => setPendingFlagKey(null)}
+        onConfirm={() => {
+          if (!pendingFlagKey) {
+            return;
+          }
+
+          const nextLabel = featureFlagItems.find(
+            (item) => item.key === pendingFlagKey
+          )?.label;
+          const nextState = flags[pendingFlagKey] ? "OFF" : "ON";
+
+          toggleFlag(pendingFlagKey);
+          setLastAction(`${nextLabel} 설정을 ${nextState}로 변경했습니다.`);
+          showToast({
+            title: `${nextLabel} 설정을 ${nextState}로 변경했습니다.`,
+            variant: "success"
+          });
+          setPendingFlagKey(null);
+        }}
+      />
+
+      <AlertDialog
+        open={isResetFlagsDialogOpen}
+        title="실험 기능 토글을 기본값으로 복원할까요?"
+        description="여행 위젯과 주식 위젯 노출 설정이 기본 상태로 되돌아갑니다."
+        confirmLabel="기본값 복원"
+        variant="danger"
+        onClose={() => setIsResetFlagsDialogOpen(false)}
+        onConfirm={() => {
+          resetFlags();
+          setLastAction("실험 기능 토글을 기본값으로 되돌렸습니다.");
+          showToast({
+            title: "실험 기능 토글을 기본값으로 되돌렸습니다.",
+            variant: "success"
+          });
+          setIsResetFlagsDialogOpen(false);
+        }}
+      />
     </section>
   );
 }
