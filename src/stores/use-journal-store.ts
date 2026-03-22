@@ -14,6 +14,7 @@ type JournalStore = {
   updateJournal: (id: string, values: JournalFormValues) => Journal | undefined;
   getJournalById: (id: string) => Journal | undefined;
   removeJournal: (id: string) => void;
+  resetJournals: () => void;
 };
 
 export const useJournalStore = create<JournalStore>()(
@@ -73,6 +74,11 @@ export const useJournalStore = create<JournalStore>()(
         set((state) => ({
           journals: state.journals.filter((journal) => journal.id !== id)
         }));
+      },
+      resetJournals: () => {
+        set({
+          journals: initialJournals
+        });
       }
     }),
     {

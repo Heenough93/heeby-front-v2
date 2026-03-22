@@ -16,6 +16,7 @@ type TemplateStore = {
   getTemplateById: (id: string) => Template | undefined;
   markTemplateAsRecent: (id: string) => void;
   removeTemplate: (id: string) => void;
+  resetTemplates: () => void;
 };
 
 export const useTemplateStore = create<TemplateStore>()(
@@ -91,6 +92,12 @@ export const useTemplateStore = create<TemplateStore>()(
             (templateId) => templateId !== id
           )
         }));
+      },
+      resetTemplates: () => {
+        set({
+          templates: initialTemplates,
+          recentTemplateIds: initialTemplates.slice(0, 3).map((template) => template.id)
+        });
       }
     }),
     {

@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import dayjs from "dayjs";
+import { AdminSettingsPanel } from "@/components/admin/admin-settings-panel";
 import { useAccessStore } from "@/stores/use-access-store";
+import { useFeatureFlagStore } from "@/stores/use-feature-flag-store";
 import { useJournalStore } from "@/stores/use-journal-store";
 import { useTemplateStore } from "@/stores/use-template-store";
 
@@ -44,6 +46,7 @@ function findJournalForExactDate(
 export function HomeDashboard() {
   const accessMode = useAccessStore((state) => state.accessMode);
   const loginAsMember = useAccessStore((state) => state.loginAsMember);
+  const flags = useFeatureFlagStore((state) => state.flags);
   const journals = useJournalStore((state) => state.journals);
   const templates = useTemplateStore((state) => state.templates);
   const recentTemplateIds = useTemplateStore((state) => state.recentTemplateIds);
@@ -339,40 +342,35 @@ export function HomeDashboard() {
             </div>
           </section>
 
-          <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
-            <div className="rounded-[30px] border border-dashed border-line/20 bg-surface p-6 shadow-card">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-                Travel Widget
-              </p>
-              <h3 className="mt-2 text-xl font-bold">여행 모듈 자리</h3>
-              <p className="mt-3 text-sm leading-6 text-ink/62">
-                지도 기반 방문지 정리와 최근 장소 미리보기를 붙일 예정입니다.
-              </p>
-            </div>
+          {flags.showTravelWidget || flags.showStockWidget ? (
+            <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
+              {flags.showTravelWidget ? (
+                <div className="rounded-[30px] border border-dashed border-line/20 bg-surface p-6 shadow-card">
+                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
+                    Travel Widget
+                  </p>
+                  <h3 className="mt-2 text-xl font-bold">여행 모듈 자리</h3>
+                  <p className="mt-3 text-sm leading-6 text-ink/62">
+                    지도 기반 방문지 정리와 최근 장소 미리보기를 붙일 예정입니다.
+                  </p>
+                </div>
+              ) : null}
 
-            <div className="rounded-[30px] border border-dashed border-line/20 bg-surface p-6 shadow-card">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-                Stock Widget
-              </p>
-              <h3 className="mt-2 text-xl font-bold">주식 모듈 자리</h3>
-              <p className="mt-3 text-sm leading-6 text-ink/62">
-                계좌 변화, 시장 요약, 섹터 메모를 위젯형으로 연결할 예정입니다.
-              </p>
-            </div>
-          </section>
-
-          {accessMode === "admin" ? (
-            <section className="rounded-[30px] border border-line/10 bg-surface p-6 shadow-card md:p-7">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-                Admin Layer
-              </p>
-              <h2 className="mt-2 text-2xl font-bold">어드민 전용 자리</h2>
-              <div className="mt-5 grid gap-3 text-sm leading-6 text-ink/64">
-                <p>실험 기능 토글, 데이터 점검, 내부 메모 같은 운영성 도구를 이 영역에 붙일 수 있습니다.</p>
-                <p>현재는 노출 정책과 레이아웃 구조만 먼저 반영한 상태입니다.</p>
-              </div>
+              {flags.showStockWidget ? (
+                <div className="rounded-[30px] border border-dashed border-line/20 bg-surface p-6 shadow-card">
+                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
+                    Stock Widget
+                  </p>
+                  <h3 className="mt-2 text-xl font-bold">주식 모듈 자리</h3>
+                  <p className="mt-3 text-sm leading-6 text-ink/62">
+                    계좌 변화, 시장 요약, 섹터 메모를 위젯형으로 연결할 예정입니다.
+                  </p>
+                </div>
+              ) : null}
             </section>
           ) : null}
+
+          {accessMode === "admin" ? <AdminSettingsPanel /> : null}
         </div>
       </section>
     </div>
