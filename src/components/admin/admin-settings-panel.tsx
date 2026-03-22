@@ -7,6 +7,7 @@ import {
 } from "@/stores/use-feature-flag-store";
 import { useJournalStore } from "@/stores/use-journal-store";
 import { useTemplateStore } from "@/stores/use-template-store";
+import { useToastStore } from "@/stores/use-toast-store";
 
 const featureFlagItems: Array<{
   key: FeatureFlagKey;
@@ -33,6 +34,7 @@ export function AdminSettingsPanel() {
   const flags = useFeatureFlagStore((state) => state.flags);
   const toggleFlag = useFeatureFlagStore((state) => state.toggleFlag);
   const resetFlags = useFeatureFlagStore((state) => state.resetFlags);
+  const showToast = useToastStore((state) => state.showToast);
   const [lastAction, setLastAction] = useState("");
 
   return (
@@ -63,6 +65,10 @@ export function AdminSettingsPanel() {
           onClick={() => {
             resetJournals();
             setLastAction("기록 데이터를 초기 mock 상태로 되돌렸습니다.");
+            showToast({
+              title: "기록 데이터를 초기화했습니다.",
+              variant: "success"
+            });
           }}
           className="rounded-[22px] border border-line/10 bg-paper px-4 py-4 text-left transition hover:border-coral/35 hover:bg-soft"
         >
@@ -77,6 +83,10 @@ export function AdminSettingsPanel() {
           onClick={() => {
             resetTemplates();
             setLastAction("템플릿 데이터를 초기 mock 상태로 되돌렸습니다.");
+            showToast({
+              title: "템플릿 데이터를 초기화했습니다.",
+              variant: "success"
+            });
           }}
           className="rounded-[22px] border border-line/10 bg-paper px-4 py-4 text-left transition hover:border-coral/35 hover:bg-soft"
         >
@@ -92,6 +102,10 @@ export function AdminSettingsPanel() {
             resetTemplates();
             resetJournals();
             setLastAction("기록과 템플릿 데이터를 모두 초기 mock 상태로 되돌렸습니다.");
+            showToast({
+              title: "모든 로컬 데이터를 초기화했습니다.",
+              variant: "success"
+            });
           }}
           className="rounded-[22px] border border-coral/20 bg-coral/10 px-4 py-4 text-left transition hover:border-coral/35 hover:bg-coral/15"
         >
@@ -115,6 +129,10 @@ export function AdminSettingsPanel() {
             onClick={() => {
               resetFlags();
               setLastAction("실험 기능 토글을 기본값으로 되돌렸습니다.");
+              showToast({
+                title: "실험 기능 토글을 기본값으로 되돌렸습니다.",
+                variant: "success"
+              });
             }}
             className="rounded-full border border-line/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
           >
@@ -128,6 +146,7 @@ export function AdminSettingsPanel() {
               key={item.key}
               type="button"
               onClick={() => toggleFlag(item.key)}
+              
               className="flex items-start justify-between gap-4 rounded-[22px] border border-line/10 bg-surface px-4 py-4 text-left transition hover:border-coral/35 hover:bg-soft"
             >
               <div>

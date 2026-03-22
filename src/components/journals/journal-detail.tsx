@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import { useJournalStore } from "@/stores/use-journal-store";
 import { useTemplateStore } from "@/stores/use-template-store";
+import { useToastStore } from "@/stores/use-toast-store";
 
 type JournalDetailProps = {
   journalId: string;
@@ -15,6 +16,7 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
   const journal = useJournalStore((state) => state.getJournalById(journalId));
   const removeJournal = useJournalStore((state) => state.removeJournal);
   const templates = useTemplateStore((state) => state.templates);
+  const showToast = useToastStore((state) => state.showToast);
 
   if (!journal) {
     return (
@@ -69,6 +71,10 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
               type="button"
               onClick={() => {
                 removeJournal(journal.id);
+                showToast({
+                  title: "기록이 삭제되었습니다.",
+                  variant: "success"
+                });
                 router.push("/journals");
               }}
               className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"

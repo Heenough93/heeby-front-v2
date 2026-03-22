@@ -11,6 +11,7 @@ import {
   type TemplateFormValues
 } from "@/schemas/template-schema";
 import { useTemplateStore } from "@/stores/use-template-store";
+import { useToastStore } from "@/stores/use-toast-store";
 import { cn } from "@/lib/utils";
 
 const defaultValues: TemplateFormValues = {
@@ -33,6 +34,7 @@ export function TemplateForm({
   const router = useRouter();
   const addTemplate = useTemplateStore((state) => state.addTemplate);
   const updateTemplate = useTemplateStore((state) => state.updateTemplate);
+  const showToast = useToastStore((state) => state.showToast);
 
   const form = useForm<TemplateFormValues>({
     resolver: zodResolver(templateFormSchema),
@@ -51,8 +53,16 @@ export function TemplateForm({
   const onSubmit = form.handleSubmit((values) => {
     if (mode === "edit" && templateId) {
       updateTemplate(templateId, values);
+      showToast({
+        title: "템플릿이 수정되었습니다.",
+        variant: "success"
+      });
     } else {
       addTemplate(values);
+      showToast({
+        title: "템플릿이 저장되었습니다.",
+        variant: "success"
+      });
     }
     router.push("/templates");
   });

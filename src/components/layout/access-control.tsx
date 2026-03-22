@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAccessStore } from "@/stores/use-access-store";
+import { useToastStore } from "@/stores/use-toast-store";
 
 export function AccessControl() {
   const accessMode = useAccessStore((state) => state.accessMode);
@@ -9,6 +10,7 @@ export function AccessControl() {
   const logout = useAccessStore((state) => state.logout);
   const unlockAdmin = useAccessStore((state) => state.unlockAdmin);
   const exitAdmin = useAccessStore((state) => state.exitAdmin);
+  const showToast = useToastStore((state) => state.showToast);
   const [password, setPassword] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState("");
@@ -17,7 +19,13 @@ export function AccessControl() {
     return (
       <button
         type="button"
-        onClick={loginAsMember}
+        onClick={() => {
+          loginAsMember();
+          showToast({
+            title: "일반 모드로 로그인했습니다.",
+            variant: "success"
+          });
+        }}
         className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
       >
         로그인
@@ -47,7 +55,13 @@ export function AccessControl() {
       ) : (
         <button
           type="button"
-          onClick={exitAdmin}
+          onClick={() => {
+            exitAdmin();
+            showToast({
+              title: "어드민 모드를 종료했습니다.",
+              variant: "info"
+            });
+          }}
           className="rounded-full border border-line/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
         >
           어드민 종료
@@ -56,7 +70,13 @@ export function AccessControl() {
 
       <button
         type="button"
-        onClick={logout}
+        onClick={() => {
+          logout();
+          showToast({
+            title: "로그아웃했습니다.",
+            variant: "info"
+          });
+        }}
         className="rounded-full border border-line/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
       >
         로그아웃
@@ -78,12 +98,20 @@ export function AccessControl() {
 
               if (!isValid) {
                 setError("암호가 맞지 않습니다.");
+                showToast({
+                  title: "어드민 암호가 올바르지 않습니다.",
+                  variant: "error"
+                });
                 return;
               }
 
               setPassword("");
               setError("");
               setIsOpen(false);
+              showToast({
+                title: "어드민 모드가 활성화되었습니다.",
+                variant: "success"
+              });
             }}
           >
             <input

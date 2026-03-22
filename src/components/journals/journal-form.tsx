@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { journalFormSchema, type JournalFormValues } from "@/schemas/journal-schema";
 import { useJournalStore } from "@/stores/use-journal-store";
 import { useTemplateStore } from "@/stores/use-template-store";
+import { useToastStore } from "@/stores/use-toast-store";
 
 function buildAnswerFields(questions: string[]) {
   return questions.map((question) => ({
@@ -50,6 +51,7 @@ export function JournalForm({
   );
   const addJournal = useJournalStore((state) => state.addJournal);
   const updateJournal = useJournalStore((state) => state.updateJournal);
+  const showToast = useToastStore((state) => state.showToast);
 
   const initialTemplate = templates[0];
   const initialTheme = initialTemplate?.theme ?? "개발";
@@ -173,6 +175,10 @@ export function JournalForm({
     }
 
     markTemplateAsRecent(values.templateId);
+    showToast({
+      title: mode === "edit" ? "기록이 수정되었습니다." : "기록이 저장되었습니다.",
+      variant: "success"
+    });
     router.push(`/journals/${nextJournal.id}`);
   });
 

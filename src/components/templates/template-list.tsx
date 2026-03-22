@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useTemplateStore } from "@/stores/use-template-store";
+import { useToastStore } from "@/stores/use-toast-store";
 import { themes } from "@/constants/themes";
 import type { Theme } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ type SortOption = "latest" | "oldest" | "name";
 export function TemplateList() {
   const templates = useTemplateStore((state) => state.templates);
   const removeTemplate = useTemplateStore((state) => state.removeTemplate);
+  const showToast = useToastStore((state) => state.showToast);
   const [selectedTheme, setSelectedTheme] = useState<ThemeFilter>("전체");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("latest");
@@ -130,7 +132,13 @@ export function TemplateList() {
               </Link>
               <button
                 type="button"
-                onClick={() => removeTemplate(template.id)}
+                onClick={() => {
+                  removeTemplate(template.id);
+                  showToast({
+                    title: "템플릿이 삭제되었습니다.",
+                    variant: "success"
+                  });
+                }}
                 className="rounded-full border border-line/10 bg-surface px-3 py-2 text-sm font-medium text-ink/65 transition hover:border-coral/40 hover:bg-soft"
               >
                 삭제
