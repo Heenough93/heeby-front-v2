@@ -4,6 +4,28 @@
 
 :root {
   color-scheme: light;
+  --color-ink: 15 23 42;
+  --color-paper: 248 250 252;
+  --color-surface: 255 255 255;
+  --color-soft: 241 245 249;
+  --color-coral: 59 130 246;
+  --color-moss: 100 116 139;
+  --color-sand: 219 234 254;
+  --color-line: 226 232 240;
+  --shadow-card: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-ink: 241 245 249;
+  --color-paper: 15 23 42;
+  --color-surface: 30 41 59;
+  --color-soft: 21 32 55;
+  --color-coral: 59 130 246;
+  --color-moss: 148 163 184;
+  --color-sand: 30 64 175;
+  --color-line: 51 65 85;
+  --shadow-card: 0 24px 48px rgba(0, 0, 0, 0.35);
 }
 
 * {
@@ -17,14 +39,30 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: #f7f4ea;
-  color: #1f2937;
+  background:
+    radial-gradient(circle at top, rgba(var(--color-coral), 0.12), transparent 30%),
+    rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
   font-family:
-    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia,
-    serif;
+    ui-rounded, "SF Pro Rounded", "Noto Sans KR", "Apple SD Gothic Neo",
+    "Malgun Gothic", "Segoe UI", sans-serif;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(var(--color-coral), 0.28);
 }

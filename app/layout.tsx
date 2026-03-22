@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppProviders } from "@/providers/app-providers";
+import { SiteChrome } from "@/components/layout/site-chrome";
 
 export const metadata: Metadata = {
   title: "Heeby",
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <SiteChrome>{children}</SiteChrome>
+        </AppProviders>
       </body>
     </html>
   );

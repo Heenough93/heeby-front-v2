@@ -8,14 +8,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#1f2937",
-        paper: "#f7f4ea",
-        coral: "#ef8354",
-        moss: "#6b8f71",
-        sand: "#dbc7a0"
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        paper: "rgb(var(--color-paper) / <alpha-value>)",
+        surface: "rgb(var(--color-surface) / <alpha-value>)",
+        soft: "rgb(var(--color-soft) / <alpha-value>)",
+        coral: "rgb(var(--color-coral) / <alpha-value>)",
+        moss: "rgb(var(--color-moss) / <alpha-value>)",
+        sand: "rgb(var(--color-sand) / <alpha-value>)",
+        line: "rgb(var(--color-line) / <alpha-value>)"
       },
       boxShadow: {
-        card: "0 18px 40px rgba(31, 41, 55, 0.08)"
+        card: "var(--shadow-card)"
       }
     }
   },

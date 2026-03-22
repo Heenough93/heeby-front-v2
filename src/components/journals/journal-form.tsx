@@ -179,10 +179,10 @@ export function JournalForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="grid gap-6 rounded-[28px] bg-white p-6 shadow-card md:p-8"
+      className="grid gap-6 rounded-[28px] border border-line/10 bg-surface p-6 shadow-card md:p-8"
     >
       {mode === "create" && recentTemplates.length > 0 ? (
-        <section className="grid gap-3 rounded-[24px] border border-ink/10 bg-paper p-5">
+        <section className="grid gap-3 rounded-[24px] border border-line/10 bg-paper p-5">
           <div>
             <h2 className="text-lg font-semibold">최근 사용 템플릿</h2>
             <p className="mt-1 text-sm text-ink/60">
@@ -199,8 +199,8 @@ export function JournalForm({
                 className={cn(
                   "rounded-2xl border px-4 py-3 text-left transition",
                   selectedTemplateId === template.id
-                    ? "border-coral bg-white"
-                    : "border-ink/10 bg-white hover:border-ink/25"
+                    ? "border-coral bg-surface"
+                    : "border-line/10 bg-surface hover:border-coral/40 hover:bg-soft"
                 )}
               >
                 <p className="text-sm font-semibold">{template.name}</p>
@@ -218,8 +218,8 @@ export function JournalForm({
             {...form.register("title")}
             placeholder="예: React Query 정리"
             className={cn(
-              "h-12 rounded-2xl border border-ink/10 bg-paper px-4 text-sm outline-none transition",
-              "focus:border-coral focus:bg-white"
+              "h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition",
+              "focus:border-coral focus:bg-surface"
             )}
           />
           {form.formState.errors.title ? (
@@ -234,8 +234,8 @@ export function JournalForm({
           <select
             {...form.register("theme")}
             className={cn(
-              "h-12 rounded-2xl border border-ink/10 bg-paper px-4 text-sm outline-none transition",
-              "focus:border-coral focus:bg-white"
+              "h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition",
+              "focus:border-coral focus:bg-surface"
             )}
           >
             {themes.map((theme) => (
@@ -253,8 +253,8 @@ export function JournalForm({
           {...form.register("templateId")}
           disabled={filteredTemplates.length === 0}
           className={cn(
-            "h-12 rounded-2xl border border-ink/10 bg-paper px-4 text-sm outline-none transition",
-            "focus:border-coral focus:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+            "h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition",
+            "focus:border-coral focus:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
           )}
         >
           {filteredTemplates.length === 0 ? (
@@ -282,7 +282,7 @@ export function JournalForm({
         </div>
 
         {answers.fields.length === 0 ? (
-          <div className="rounded-[24px] border border-dashed border-ink/15 bg-paper p-6 text-sm text-ink/60">
+          <div className="rounded-[24px] border border-dashed border-line/15 bg-paper p-6 text-sm text-ink/60">
             먼저 선택한 주제에 맞는 템플릿을 만들어야 합니다.
             <Link href="/templates/new" className="ml-2 font-semibold text-coral">
               템플릿 만들기
@@ -293,7 +293,7 @@ export function JournalForm({
             {answers.fields.map((field, index) => (
               <div
                 key={field.id}
-                className="rounded-[24px] border border-ink/10 bg-paper p-5"
+                className="rounded-[24px] border border-line/10 bg-paper p-5"
               >
                 <p className="mb-3 text-sm font-semibold text-ink/75">
                   {field.question}
@@ -304,7 +304,7 @@ export function JournalForm({
                   rows={5}
                   placeholder="답변을 입력해주세요."
                   className={cn(
-                    "w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-sm outline-none transition",
+                    "w-full rounded-2xl border border-line/10 bg-surface px-4 py-3 text-sm outline-none transition",
                     "focus:border-coral"
                   )}
                 />
@@ -322,7 +322,7 @@ export function JournalForm({
       <div className="flex flex-wrap items-center justify-end gap-3">
         <Link
           href="/journals"
-          className="rounded-full border border-ink/10 px-4 py-3 text-sm font-semibold text-ink/70 transition hover:border-ink/20"
+          className="rounded-full border border-line/10 bg-surface px-4 py-3 text-sm font-semibold text-ink/70 transition hover:border-coral/40 hover:bg-soft"
         >
           취소
         </Link>

@@ -16,7 +16,7 @@ export default function JournalDetailPage({ params }: JournalDetailPageProps) {
       actions={
         <Link
           href="/journals"
-          className="inline-flex rounded-full border border-ink/10 bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/20"
+          className="inline-flex rounded-full border border-line/10 bg-surface px-5 py-3 text-sm font-semibold text-ink transition hover:border-coral/40 hover:bg-soft"
         >
           기록 목록으로
         </Link>

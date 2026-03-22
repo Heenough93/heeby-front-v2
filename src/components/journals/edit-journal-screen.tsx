@@ -33,11 +33,11 @@ export function EditJournalScreen({ journalId }: EditJournalScreenProps) {
         title="기록 수정"
         description="수정할 기록을 찾을 수 없습니다."
       >
-        <section className="rounded-[28px] bg-white p-8 shadow-card">
+        <section className="rounded-[28px] border border-line/10 bg-surface p-8 shadow-card">
           <p className="text-lg font-semibold">기록을 찾을 수 없습니다.</p>
           <Link
             href="/journals"
-            className="mt-5 inline-flex rounded-full bg-ink px-4 py-3 text-sm font-semibold text-white"
+            className="mt-5 inline-flex rounded-full bg-coral px-4 py-3 text-sm font-semibold text-white"
           >
             기록 목록으로
           </Link>

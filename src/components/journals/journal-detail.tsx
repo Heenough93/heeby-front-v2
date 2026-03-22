@@ -18,14 +18,14 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
 
   if (!journal) {
     return (
-      <section className="rounded-[28px] bg-white p-8 shadow-card">
+      <section className="rounded-[28px] border border-line/10 bg-surface p-8 shadow-card">
         <p className="text-lg font-semibold">기록을 찾을 수 없습니다.</p>
         <p className="mt-2 text-sm text-ink/60">
           삭제되었거나 잘못된 경로일 수 있습니다.
         </p>
         <Link
           href="/journals"
-          className="mt-5 inline-flex rounded-full bg-ink px-4 py-3 text-sm font-semibold text-white"
+          className="mt-5 inline-flex rounded-full bg-coral px-4 py-3 text-sm font-semibold text-white"
         >
           기록 목록으로
         </Link>
@@ -38,12 +38,12 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
   const firstAnswer = journal.answers[0]?.answer ?? "";
 
   return (
-    <section className="overflow-hidden rounded-[32px] bg-white shadow-card">
-      <div className="border-b border-ink/10 px-8 py-10 md:px-10 md:py-12">
+    <section className="overflow-hidden rounded-[32px] border border-line/10 bg-surface shadow-card">
+      <div className="border-b border-line/10 bg-gradient-to-r from-soft/80 via-paper to-surface px-8 py-10 md:px-10 md:py-12">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-moss px-3 py-1 text-xs font-semibold text-white">
+              <span className="rounded-full bg-coral px-3 py-1 text-xs font-semibold text-white">
                 {journal.theme}
               </span>
               <span className="text-sm text-ink/50">{formattedDate}</span>
@@ -61,7 +61,7 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
           <div className="flex flex-wrap gap-3">
             <Link
               href={`/journals/${journal.id}/edit`}
-              className="rounded-full border border-ink/10 bg-paper/85 px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/20"
+              className="rounded-full border border-line/10 bg-surface/85 px-5 py-3 text-sm font-semibold text-ink transition hover:border-coral/40 hover:bg-soft"
             >
               수정
             </Link>
@@ -84,10 +84,10 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
           {journal.answers.map((item, index) => (
             <article
               key={`${journal.id}-${index}`}
-              className="border-b border-ink/8 pb-8 last:border-b-0 last:pb-0"
+              className="border-b border-line/8 pb-8 last:border-b-0 last:pb-0"
             >
               <div className="flex items-baseline gap-4">
-                <span className="text-sm font-semibold tracking-[0.2em] text-moss/75">
+                <span className="text-sm font-semibold tracking-[0.2em] text-coral/75">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <h3 className="text-2xl font-semibold leading-tight">
@@ -101,8 +101,8 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
           ))}
         </div>
 
-        <aside className="order-1 h-fit rounded-[24px] bg-paper/85 p-5 md:order-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-moss">
+        <aside className="order-1 h-fit rounded-[24px] border border-line/10 bg-paper/85 p-5 md:order-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-coral">
             Archive Note
           </p>
           <dl className="mt-5 grid gap-4 text-sm">

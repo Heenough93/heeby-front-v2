@@ -62,7 +62,7 @@ export function TemplateForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="grid gap-6 rounded-[28px] bg-white p-6 shadow-card md:p-8"
+      className="grid gap-6 rounded-[28px] border border-line/10 bg-surface p-6 shadow-card md:p-8"
     >
       <div className="grid gap-6 md:grid-cols-2">
         <label className="grid gap-2">
@@ -73,8 +73,8 @@ export function TemplateForm({
             {...form.register("name")}
             placeholder="예: 개발 회고 기본형"
             className={cn(
-              "h-12 rounded-2xl border border-ink/10 bg-paper px-4 text-sm outline-none transition",
-              "focus:border-coral focus:bg-white"
+              "h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition",
+              "focus:border-coral focus:bg-surface"
             )}
           />
           {form.formState.errors.name ? (
@@ -89,8 +89,8 @@ export function TemplateForm({
           <select
             {...form.register("theme")}
             className={cn(
-              "h-12 rounded-2xl border border-ink/10 bg-paper px-4 text-sm outline-none transition",
-              "focus:border-coral focus:bg-white"
+              "h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition",
+              "focus:border-coral focus:bg-surface"
             )}
           >
             {themes.map((theme) => (
@@ -119,7 +119,7 @@ export function TemplateForm({
             type="button"
             onClick={() => questions.append({ value: "" })}
             disabled={!canAddQuestion}
-            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-35"
+            className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-35"
           >
             + 질문 추가
           </button>
@@ -129,7 +129,7 @@ export function TemplateForm({
           {questions.fields.map((field, index) => (
             <div
               key={field.id}
-              className="rounded-[24px] border border-ink/10 bg-paper p-4"
+              className="rounded-[24px] border border-line/10 bg-paper p-4"
             >
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-ink/70">
@@ -148,7 +148,7 @@ export function TemplateForm({
                 {...form.register(`questions.${index}.value`)}
                 placeholder="질문을 입력해주세요."
                 className={cn(
-                  "h-12 w-full rounded-2xl border border-ink/10 bg-white px-4 text-sm outline-none transition",
+                  "h-12 w-full rounded-2xl border border-line/10 bg-surface px-4 text-sm outline-none transition",
                   "focus:border-coral"
                 )}
               />
@@ -171,7 +171,7 @@ export function TemplateForm({
       <div className="flex flex-wrap items-center justify-end gap-3">
         <Link
           href="/templates"
-          className="rounded-full border border-ink/10 px-4 py-3 text-sm font-semibold text-ink/70 transition hover:border-ink/20"
+          className="rounded-full border border-line/10 bg-surface px-4 py-3 text-sm font-semibold text-ink/70 transition hover:border-coral/40 hover:bg-soft"
         >
           취소
         </Link>

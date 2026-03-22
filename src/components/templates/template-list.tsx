@@ -50,7 +50,7 @@ export function TemplateList() {
 
   return (
     <section className="grid gap-6">
-      <div className="rounded-[28px] bg-white p-6 shadow-card">
+      <div className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
         <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-ink/75">검색</span>
@@ -58,7 +58,7 @@ export function TemplateList() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="템플릿 이름, 주제, 질문 내용으로 검색"
-              className="h-12 rounded-2xl border border-ink/10 bg-paper px-4 text-sm outline-none transition focus:border-coral focus:bg-white"
+              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral focus:bg-surface"
             />
           </label>
 
@@ -67,7 +67,7 @@ export function TemplateList() {
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value as SortOption)}
-              className="h-12 rounded-2xl border border-ink/10 bg-paper px-4 text-sm outline-none transition focus:border-coral focus:bg-white"
+              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral focus:bg-surface"
             >
               <option value="latest">최근 수정순</option>
               <option value="oldest">오래된순</option>
@@ -85,8 +85,8 @@ export function TemplateList() {
               className={cn(
                 "rounded-full px-4 py-2 text-sm font-medium transition",
                 selectedTheme === theme
-                  ? "bg-ink text-white"
-                  : "bg-paper text-ink/75 hover:bg-sand/60"
+                  ? "bg-coral text-white"
+                  : "bg-paper text-ink/75 hover:bg-soft"
               )}
             >
               {theme}
@@ -99,11 +99,11 @@ export function TemplateList() {
         {filteredTemplates.map((template) => (
           <article
             key={template.id}
-            className="flex flex-col justify-between rounded-[28px] bg-white p-6 shadow-card"
+            className="flex flex-col justify-between rounded-[28px] border border-line/10 bg-surface p-6 shadow-card"
           >
             <div>
               <div className="mb-4 flex items-center justify-between gap-3">
-                <span className="rounded-full bg-moss/10 px-3 py-1 text-xs font-semibold text-moss">
+                <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
                   {template.theme}
                 </span>
                 <span className="text-xs text-ink/45">
@@ -131,7 +131,7 @@ export function TemplateList() {
               <button
                 type="button"
                 onClick={() => removeTemplate(template.id)}
-                className="rounded-full border border-ink/10 px-3 py-2 text-sm font-medium text-ink/65 transition hover:border-ink/25"
+                className="rounded-full border border-line/10 bg-surface px-3 py-2 text-sm font-medium text-ink/65 transition hover:border-coral/40 hover:bg-soft"
               >
                 삭제
               </button>
@@ -141,7 +141,7 @@ export function TemplateList() {
       </div>
 
       {filteredTemplates.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-ink/15 bg-white p-10 text-center shadow-card">
+        <div className="rounded-[28px] border border-dashed border-line/15 bg-surface p-10 text-center shadow-card">
           <p className="text-lg font-semibold">
             {search ? "검색 결과가 없습니다." : "아직 템플릿이 없습니다."}
           </p>

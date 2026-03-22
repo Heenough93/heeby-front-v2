@@ -29,11 +29,11 @@ export function EditTemplateScreen({ templateId }: EditTemplateScreenProps) {
         title="템플릿 수정"
         description="수정할 템플릿을 찾을 수 없습니다."
       >
-        <section className="rounded-[28px] bg-white p-8 shadow-card">
+        <section className="rounded-[28px] border border-line/10 bg-surface p-8 shadow-card">
           <p className="text-lg font-semibold">템플릿을 찾을 수 없습니다.</p>
           <Link
             href="/templates"
-            className="mt-5 inline-flex rounded-full bg-ink px-4 py-3 text-sm font-semibold text-white"
+            className="mt-5 inline-flex rounded-full bg-coral px-4 py-3 text-sm font-semibold text-white"
           >
             템플릿 목록으로
           </Link>
