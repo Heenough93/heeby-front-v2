@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { AccessControl } from "@/components/layout/access-control";
+import { AnnouncementHost } from "@/components/feedback/announcement-host";
 import { ToastViewport } from "@/components/feedback/toast-viewport";
 import { GuestAccessNotice } from "@/components/layout/guest-access-notice";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -203,6 +204,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
         </div>
       </footer>
 
+      <AnnouncementHost />
       <ToastViewport />
     </div>
   );
