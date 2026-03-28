@@ -16,7 +16,8 @@ function toFormValues(
   return {
     title: journal.title,
     theme: journal.theme,
-    templateId: journal.templateId,
+    journalTemplateId: journal.journalTemplateId,
+    visibility: journal.visibility,
     answers: journal.answers.map((item) => ({
       question: item.question,
       answer: item.answer

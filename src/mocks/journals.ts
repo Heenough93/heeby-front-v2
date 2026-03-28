@@ -1,13 +1,14 @@
 import { nanoid } from "nanoid";
 import type { Journal } from "@/types/domain";
-import { templates } from "@/mocks/templates";
+import { journalTemplates } from "@/mocks/journal-templates";
 
 export const journals: Journal[] = [
   {
     id: nanoid(),
     title: "React Query 학습 메모",
     theme: "개발",
-    templateId: templates[0].id,
+    journalTemplateId: journalTemplates[0].id,
+    visibility: "private",
     answers: [
       { question: "오늘 한 작업", answer: "queryClient와 provider 구조 정리" },
       { question: "막힌 문제", answer: "캐시 경계와 staleTime 이해 부족" },
@@ -21,7 +22,8 @@ export const journals: Journal[] = [
     id: nanoid(),
     title: "무한 스크롤 버그 복기",
     theme: "개발",
-    templateId: templates[1].id,
+    journalTemplateId: journalTemplates[1].id,
+    visibility: "private",
     answers: [
       { question: "발생 증상", answer: "스크롤 하단에서 같은 요청이 반복 호출되었다." },
       { question: "원인 추정", answer: "observer disconnect 타이밍이 늦어서 중복 감지가 실패했다." },
@@ -35,7 +37,8 @@ export const journals: Journal[] = [
     id: nanoid(),
     title: "타입 가드 정리",
     theme: "개발",
-    templateId: templates[2].id,
+    journalTemplateId: journalTemplates[2].id,
+    visibility: "public",
     answers: [
       { question: "무엇을 학습했는지", answer: "TypeScript 사용자 정의 타입 가드와 narrowing 패턴을 정리했다." },
       { question: "핵심 개념", answer: "predicate 반환형과 discriminated union의 차이를 비교했다." },
@@ -49,7 +52,8 @@ export const journals: Journal[] = [
     id: nanoid(),
     title: "주간 업무 회고",
     theme: "업무",
-    templateId: templates[3].id,
+    journalTemplateId: journalTemplates[3].id,
+    visibility: "private",
     answers: [
       { question: "오늘 한 일", answer: "신규 기능 스펙 문서를 정리하고 일정 리스크를 공유했다." },
       { question: "잘된 점", answer: "기획과 개발 간 용어 불일치를 초반에 정리했다." },
@@ -63,7 +67,8 @@ export const journals: Journal[] = [
     id: nanoid(),
     title: "프로젝트 킥오프 메모",
     theme: "업무",
-    templateId: templates[4].id,
+    journalTemplateId: journalTemplates[4].id,
+    visibility: "private",
     answers: [
       { question: "회의 주제", answer: "Q2 프로젝트 킥오프 및 역할 분담" },
       { question: "핵심 논의", answer: "MVP 범위 축소와 일정 우선순위 재조정이 중심이었다." },
@@ -77,7 +82,8 @@ export const journals: Journal[] = [
     id: nanoid(),
     title: "도쿄 2일차 기록",
     theme: "여행",
-    templateId: templates[5].id,
+    journalTemplateId: journalTemplates[5].id,
+    visibility: "public",
     answers: [
       { question: "어디를 갔는지", answer: "시부야, 메이지신궁, 다이칸야마를 돌아다녔다." },
       { question: "좋았던 장소", answer: "다이칸야마의 작은 서점과 골목 분위기가 특히 좋았다." },
@@ -91,7 +97,8 @@ export const journals: Journal[] = [
     id: nanoid(),
     title: "연남동 카페 메모",
     theme: "여행",
-    templateId: templates[6].id,
+    journalTemplateId: journalTemplates[6].id,
+    visibility: "public",
     answers: [
       { question: "방문한 곳", answer: "연남동 골목에 있는 작은 로스터리 카페" },
       { question: "분위기", answer: "낮은 조도와 원목 인테리어라 차분하게 머물기 좋았다." },
@@ -105,7 +112,8 @@ export const journals: Journal[] = [
     id: nanoid(),
     title: "반도체 섹터 관찰 노트",
     theme: "주식",
-    templateId: templates[7].id,
+    journalTemplateId: journalTemplates[7].id,
+    visibility: "private",
     answers: [
       { question: "본 종목/섹터", answer: "반도체 장비주와 메모리 관련주 흐름을 체크했다." },
       { question: "왜 관심이 갔는지", answer: "실적 시즌을 앞두고 거래량이 늘고 있어서다." },
@@ -119,7 +127,8 @@ export const journals: Journal[] = [
     id: nanoid(),
     title: "손절 복기",
     theme: "주식",
-    templateId: templates[8].id,
+    journalTemplateId: journalTemplates[8].id,
+    visibility: "private",
     answers: [
       { question: "진입 근거", answer: "단기 반등 구간이라고 판단하고 분할 진입했다." },
       { question: "실행 결과", answer: "손절 기준을 늦게 적용해 손실 폭이 커졌다." },
@@ -133,7 +142,8 @@ export const journals: Journal[] = [
     id: nanoid(),
     title: "하체 운동 기록",
     theme: "운동",
-    templateId: templates[9].id,
+    journalTemplateId: journalTemplates[9].id,
+    visibility: "private",
     answers: [
       { question: "운동 종류", answer: "스쿼트, 레그프레스, 런지 위주로 진행했다." },
       { question: "강도와 느낌", answer: "중량은 유지했고 마지막 세트에서 피로감이 컸다." },
@@ -147,7 +157,8 @@ export const journals: Journal[] = [
     id: nanoid(),
     title: "한강 10km 러닝 로그",
     theme: "운동",
-    templateId: templates[10].id,
+    journalTemplateId: journalTemplates[10].id,
+    visibility: "public",
     answers: [
       { question: "코스", answer: "여의도 한강공원 왕복 코스" },
       { question: "거리와 페이스", answer: "10km, 평균 5분 42초 페이스" },

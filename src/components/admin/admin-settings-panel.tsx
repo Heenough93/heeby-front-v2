@@ -11,8 +11,8 @@ import {
   useFeatureFlagStore,
   type FeatureFlagKey
 } from "@/stores/use-feature-flag-store";
+import { useJournalTemplateStore } from "@/stores/use-journal-template-store";
 import { useJournalStore } from "@/stores/use-journal-store";
-import { useTemplateStore } from "@/stores/use-template-store";
 import { useToastStore } from "@/stores/use-toast-store";
 
 const featureFlagItems: Array<{
@@ -44,7 +44,9 @@ const createEmptyAnnouncementDraft = (): AnnouncementDraft => ({
 
 export function AdminSettingsPanel() {
   const journals = useJournalStore((state) => state.journals);
-  const templates = useTemplateStore((state) => state.templates);
+  const journalTemplates = useJournalTemplateStore(
+    (state) => state.journalTemplates
+  );
   const announcements = useAnnouncementStore((state) => state.announcements);
   const upsertAnnouncement = useAnnouncementStore(
     (state) => state.upsertAnnouncement
@@ -54,7 +56,9 @@ export function AdminSettingsPanel() {
     (state) => state.resetAnnouncements
   );
   const resetJournals = useJournalStore((state) => state.resetJournals);
-  const resetTemplates = useTemplateStore((state) => state.resetTemplates);
+  const resetJournalTemplates = useJournalTemplateStore(
+    (state) => state.resetJournalTemplates
+  );
   const flags = useFeatureFlagStore((state) => state.flags);
   const toggleFlag = useFeatureFlagStore((state) => state.toggleFlag);
   const resetFlags = useFeatureFlagStore((state) => state.resetFlags);
@@ -173,7 +177,7 @@ export function AdminSettingsPanel() {
         </div>
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 템플릿 수</p>
-          <p className="mt-2 text-2xl font-bold">{templates.length}</p>
+          <p className="mt-2 text-2xl font-bold">{journalTemplates.length}</p>
         </div>
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 상태</p>
@@ -513,7 +517,7 @@ export function AdminSettingsPanel() {
         variant="danger"
         onClose={() => setPendingAction(null)}
         onConfirm={() => {
-          resetTemplates();
+          resetJournalTemplates();
           setLastAction("템플릿 데이터를 초기 mock 상태로 되돌렸습니다.");
           showToast({
             title: "템플릿 데이터를 초기화했습니다.",
@@ -531,7 +535,7 @@ export function AdminSettingsPanel() {
         variant="danger"
         onClose={() => setPendingAction(null)}
         onConfirm={() => {
-          resetTemplates();
+          resetJournalTemplates();
           resetJournals();
           setLastAction("기록과 템플릿 데이터를 모두 초기 mock 상태로 되돌렸습니다.");
           showToast({

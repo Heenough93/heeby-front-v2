@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { themeValues } from "@/types/domain";
+import { contentVisibilityValues, themeValues } from "@/types/domain";
 
 export const journalFormSchema = z.object({
   title: z
@@ -10,7 +10,10 @@ export const journalFormSchema = z.object({
   theme: z.enum(themeValues, {
     errorMap: () => ({ message: "주제를 선택해주세요." })
   }),
-  templateId: z.string().trim().min(1, "템플릿을 선택해주세요."),
+  journalTemplateId: z.string().trim().min(1, "템플릿을 선택해주세요."),
+  visibility: z.enum(contentVisibilityValues, {
+    errorMap: () => ({ message: "공개 범위를 선택해주세요." })
+  }),
   answers: z
     .array(
       z.object({

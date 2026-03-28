@@ -1,4 +1,4 @@
-import { EditTemplateScreen } from "@/components/templates/edit-template-screen";
+import { EditJournalTemplateScreen } from "@/components/journal-templates/edit-journal-template-screen";
 
 type EditTemplatePageProps = {
   params: {
@@ -7,5 +7,5 @@ type EditTemplatePageProps = {
 };
 
 export default function EditTemplatePage({ params }: EditTemplatePageProps) {
-  return <EditTemplateScreen templateId={params.id} />;
+  return <EditJournalTemplateScreen journalTemplateId={params.id} />;
 }

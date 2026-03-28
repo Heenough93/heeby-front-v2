@@ -5,12 +5,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  canAccessFeature,
+  canAccessPath
+} from "@/lib/access-policy";
 import { AccessControl } from "@/components/layout/access-control";
 import { AnnouncementHost } from "@/components/feedback/announcement-host";
 import { ToastViewport } from "@/components/feedback/toast-viewport";
-import { GuestAccessNotice } from "@/components/layout/guest-access-notice";
+import { AccessGateNotice } from "@/components/layout/access-gate-notice";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { useAccessStore, type AccessMode } from "@/stores/use-access-store";
+import {
+  getAccessMode,
+  useAccessStore,
+  type AccessMode
+} from "@/stores/use-access-store";
 
 type SiteChromeProps = {
   children: React.ReactNode;
@@ -21,37 +29,36 @@ const navItems = [
     href: "/",
     label: "홈",
     description: "오늘 상태와 빠른 실행",
-    access: ["guest", "member", "admin"]
+    feature: "home"
   },
   {
     href: "/journals",
     label: "기록",
-    description: "저장한 기록 다시 보기",
-    access: ["member", "admin"]
+    description: "공개 기록과 내 기록 보기",
+    feature: "journalArchive"
   },
   {
     href: "/templates",
     label: "템플릿",
     description: "질문 구조 관리",
-    access: ["member", "admin"]
+    feature: "journalTemplateAdmin"
   },
   {
     href: "/journals/new",
     label: "새 기록",
     description: "템플릿으로 바로 시작",
-    access: ["member", "admin"]
+    feature: "journalEditor"
   }
-];
+] as const;
 
 export function SiteChrome({ children }: SiteChromeProps) {
   const pathname = usePathname();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const accessMode = useAccessStore((state) => state.accessMode);
+  const accessMode = useAccessStore(getAccessMode);
   const visibleNavItems = navItems.filter((item) =>
-    item.access.includes(accessMode)
+    canAccessFeature(accessMode, item.feature)
   );
-  const canAccessCurrentPage =
-    pathname === "/" || accessMode === "member" || accessMode === "admin";
+  const canAccessCurrentPage = canAccessPath(accessMode, pathname);
 
   useEffect(() => {
     setIsMobileNavOpen(false);
@@ -182,7 +189,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
         </aside>
 
         <main className="min-w-0 flex-1">
-          {canAccessCurrentPage ? children : <GuestAccessNotice />}
+          {canAccessCurrentPage ? children : <AccessGateNotice />}
         </main>
       </div>
 
@@ -305,12 +312,12 @@ function getAccessModeLabel(accessMode: AccessMode) {
 
 function getAccessModeDescription(accessMode: AccessMode) {
   if (accessMode === "guest") {
-    return "서비스 소개와 홈 구조만 열고, 기록 및 템플릿 화면은 가립니다.";
+    return "공개 기록만 열고, 비공개 기록 작성과 템플릿 관리는 막습니다.";
   }
 
   if (accessMode === "admin") {
     return "일반 사용 흐름에 더해 운영성 기능과 실험용 화면을 추가로 노출합니다.";
   }
 
-  return "기록, 템플릿, 홈 대시보드 등 기본 개인 사용 흐름을 모두 엽니다.";
+  return "기록 작성과 비공개 기록 관리를 열고, 템플릿 관리는 어드민 권한에서만 엽니다.";
 }

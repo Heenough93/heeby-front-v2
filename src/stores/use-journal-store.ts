@@ -27,7 +27,8 @@ export const useJournalStore = create<JournalStore>()(
           id: nanoid(),
           title: values.title.trim(),
           theme: values.theme,
-          templateId: values.templateId,
+          journalTemplateId: values.journalTemplateId,
+          visibility: values.visibility,
           answers: values.answers.map((item) => ({
             question: item.question.trim(),
             answer: item.answer.trim()
@@ -53,7 +54,8 @@ export const useJournalStore = create<JournalStore>()(
           ...currentJournal,
           title: values.title.trim(),
           theme: values.theme,
-          templateId: values.templateId,
+          journalTemplateId: values.journalTemplateId,
+          visibility: values.visibility,
           answers: values.answers.map((item) => ({
             question: item.question.trim(),
             answer: item.answer.trim()
@@ -83,6 +85,22 @@ export const useJournalStore = create<JournalStore>()(
     }),
     {
       name: "heeby-journal-store",
+      version: 2,
+      migrate: (persistedState) => {
+        const state = persistedState as Partial<JournalStore> | undefined;
+
+        if (!state?.journals) {
+          return persistedState as JournalStore;
+        }
+
+        return {
+          ...state,
+          journals: state.journals.map((journal) => ({
+            ...journal,
+            visibility: journal.visibility ?? "private"
+          }))
+        } satisfies Partial<JournalStore>;
+      },
       storage: createJSONStorage(() => localStorage)
     }
   )

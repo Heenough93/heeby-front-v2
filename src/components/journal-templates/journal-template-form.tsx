@@ -8,38 +8,45 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertDialog } from "@/components/feedback/alert-dialog";
 import { themes } from "@/constants/themes";
 import {
-  templateFormSchema,
-  type TemplateFormValues
-} from "@/schemas/template-schema";
-import { useTemplateStore } from "@/stores/use-template-store";
+  journalTemplateFormSchema,
+  type JournalTemplateFormValues
+} from "@/schemas/journal-template-schema";
+import { useJournalTemplateStore } from "@/stores/use-journal-template-store";
 import { useToastStore } from "@/stores/use-toast-store";
 import { cn } from "@/lib/utils";
 
-const defaultValues: TemplateFormValues = {
+const defaultValues: JournalTemplateFormValues = {
   name: "",
   theme: "개발",
+  visibility: "private",
   questions: [{ value: "" }, { value: "" }, { value: "" }]
 };
 
-type TemplateFormProps = {
+type JournalTemplateFormProps = {
   mode?: "create" | "edit";
-  templateId?: string;
-  initialValues?: TemplateFormValues;
+  journalTemplateId?: string;
+  initialValues?: JournalTemplateFormValues;
 };
 
-export function TemplateForm({
+export function JournalTemplateForm({
   mode = "create",
-  templateId,
+  journalTemplateId,
   initialValues
-}: TemplateFormProps) {
+}: JournalTemplateFormProps) {
   const router = useRouter();
-  const addTemplate = useTemplateStore((state) => state.addTemplate);
-  const updateTemplate = useTemplateStore((state) => state.updateTemplate);
+  const addJournalTemplate = useJournalTemplateStore(
+    (state) => state.addJournalTemplate
+  );
+  const updateJournalTemplate = useJournalTemplateStore(
+    (state) => state.updateJournalTemplate
+  );
   const showToast = useToastStore((state) => state.showToast);
-  const [pendingValues, setPendingValues] = useState<TemplateFormValues | null>(null);
+  const [pendingValues, setPendingValues] = useState<JournalTemplateFormValues | null>(
+    null
+  );
 
-  const form = useForm<TemplateFormValues>({
-    resolver: zodResolver(templateFormSchema),
+  const form = useForm<JournalTemplateFormValues>({
+    resolver: zodResolver(journalTemplateFormSchema),
     defaultValues: initialValues ?? defaultValues
   });
 
@@ -52,15 +59,15 @@ export function TemplateForm({
     form.reset(initialValues ?? defaultValues);
   }, [form, initialValues]);
 
-  const submitTemplate = (values: TemplateFormValues) => {
-    if (mode === "edit" && templateId) {
-      updateTemplate(templateId, values);
+  const submitJournalTemplate = (values: JournalTemplateFormValues) => {
+    if (mode === "edit" && journalTemplateId) {
+      updateJournalTemplate(journalTemplateId, values);
       showToast({
         title: "템플릿이 수정되었습니다.",
         variant: "success"
       });
     } else {
-      addTemplate(values);
+      addJournalTemplate(values);
       showToast({
         title: "템플릿이 저장되었습니다.",
         variant: "success"
@@ -122,6 +129,28 @@ export function TemplateForm({
           ) : null}
         </label>
       </div>
+
+      <label className="grid gap-2">
+        <span className="text-sm font-semibold text-ink/75">공개 범위</span>
+        <select
+          {...form.register("visibility")}
+          className={cn(
+            "h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition",
+            "focus:border-coral focus:bg-surface"
+          )}
+        >
+          <option value="private">비공개</option>
+          <option value="public">공개</option>
+        </select>
+        <p className="text-sm text-ink/60">
+          템플릿 공개 여부는 이후 공개용 템플릿 화면을 붙일 때 그대로 사용할 수 있습니다.
+        </p>
+        {form.formState.errors.visibility ? (
+          <span className="text-sm text-red-600">
+            {form.formState.errors.visibility.message}
+          </span>
+        ) : null}
+      </label>
 
       <section className="grid gap-4">
         <div className="flex items-center justify-between gap-3">
@@ -214,7 +243,7 @@ export function TemplateForm({
             return;
           }
 
-          submitTemplate(pendingValues);
+          submitJournalTemplate(pendingValues);
           setPendingValues(null);
         }}
       />

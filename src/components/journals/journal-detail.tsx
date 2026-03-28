@@ -2,11 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import React from "react";
 import { useState } from "react";
 import dayjs from "dayjs";
 import { AlertDialog } from "@/components/feedback/alert-dialog";
+import {
+  canEditJournal,
+  canReadContent,
+  getVisibilityLabel
+} from "@/lib/access-policy";
+import { useJournalTemplateStore } from "@/stores/use-journal-template-store";
+import { getAccessMode, useAccessStore } from "@/stores/use-access-store";
 import { useJournalStore } from "@/stores/use-journal-store";
-import { useTemplateStore } from "@/stores/use-template-store";
 import { useToastStore } from "@/stores/use-toast-store";
 
 type JournalDetailProps = {
@@ -15,18 +22,21 @@ type JournalDetailProps = {
 
 export function JournalDetail({ journalId }: JournalDetailProps) {
   const router = useRouter();
+  const accessMode = useAccessStore(getAccessMode);
   const journal = useJournalStore((state) => state.getJournalById(journalId));
   const removeJournal = useJournalStore((state) => state.removeJournal);
-  const templates = useTemplateStore((state) => state.templates);
+  const journalTemplates = useJournalTemplateStore(
+    (state) => state.journalTemplates
+  );
   const showToast = useToastStore((state) => state.showToast);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  if (!journal) {
+  if (!journal || !canReadContent(accessMode, journal.visibility)) {
     return (
       <section className="rounded-[28px] border border-line/10 bg-surface p-8 shadow-card">
         <p className="text-lg font-semibold">기록을 찾을 수 없습니다.</p>
         <p className="mt-2 text-sm text-ink/60">
-          삭제되었거나 잘못된 경로일 수 있습니다.
+          삭제되었거나 현재 접근할 수 없는 기록일 수 있습니다.
         </p>
         <Link
           href="/journals"
@@ -38,9 +48,12 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
     );
   }
 
-  const template = templates.find((item) => item.id === journal.templateId);
+  const journalTemplate = journalTemplates.find(
+    (item) => item.id === journal.journalTemplateId
+  );
   const formattedDate = dayjs(journal.createdAt).format("YYYY년 MM월 DD일 HH:mm");
   const firstAnswer = journal.answers[0]?.answer ?? "";
+  const canEdit = canEditJournal(accessMode);
 
   return (
     <section className="overflow-hidden rounded-[32px] border border-line/10 bg-surface shadow-card">
@@ -50,6 +63,9 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
             <div className="flex flex-wrap items-center gap-3">
               <span className="rounded-full bg-coral px-3 py-1 text-xs font-semibold text-white">
                 {journal.theme}
+              </span>
+              <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink/70">
+                {getVisibilityLabel(journal.visibility)}
               </span>
               <span className="text-sm text-ink/50">{formattedDate}</span>
             </div>
@@ -63,21 +79,23 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={`/journals/${journal.id}/edit`}
-              className="rounded-full border border-line/10 bg-surface/85 px-5 py-3 text-sm font-semibold text-ink transition hover:border-coral/40 hover:bg-soft"
-            >
-              수정
-            </Link>
-            <button
-              type="button"
-              onClick={() => setIsDeleteDialogOpen(true)}
-              className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-            >
-              삭제
-            </button>
-          </div>
+          {canEdit ? (
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={`/journals/${journal.id}/edit`}
+                className="rounded-full border border-line/10 bg-surface/85 px-5 py-3 text-sm font-semibold text-ink transition hover:border-coral/40 hover:bg-soft"
+              >
+                수정
+              </Link>
+              <button
+                type="button"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                삭제
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -115,7 +133,7 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
             <div>
               <dt className="text-ink/45">템플릿</dt>
               <dd className="mt-1 font-semibold text-ink">
-                {template?.name ?? "알 수 없는 템플릿"}
+                {journalTemplate?.name ?? "알 수 없는 템플릿"}
               </dd>
             </div>
             <div>

@@ -1,12 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { useAccessStore } from "@/stores/use-access-store";
+import { getAccessMode, useAccessStore } from "@/stores/use-access-store";
 import { useToastStore } from "@/stores/use-toast-store";
 
 export function AccessControl() {
-  const accessMode = useAccessStore((state) => state.accessMode);
-  const loginAsMember = useAccessStore((state) => state.loginAsMember);
+  const accessMode = useAccessStore(getAccessMode);
   const logout = useAccessStore((state) => state.logout);
   const unlockAdmin = useAccessStore((state) => state.unlockAdmin);
   const exitAdmin = useAccessStore((state) => state.exitAdmin);
@@ -17,19 +17,12 @@ export function AccessControl() {
 
   if (accessMode === "guest") {
     return (
-      <button
-        type="button"
-        onClick={() => {
-          loginAsMember();
-          showToast({
-            title: "일반 모드로 로그인했습니다.",
-            variant: "success"
-          });
-        }}
+      <Link
+        href="/login"
         className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
       >
         로그인
-      </button>
+      </Link>
     );
   }
 
@@ -86,7 +79,7 @@ export function AccessControl() {
         <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-72 rounded-[24px] border border-line/10 bg-surface p-4 shadow-card">
           <p className="text-sm font-semibold">추가 암호 입력</p>
           <p className="mt-2 text-sm leading-6 text-ink/62">
-            일반 로그인 상태에서 추가 암호를 입력하면 어드민 모드로 전환됩니다.
+            로그인한 상태에서 추가 암호를 입력하면 어드민 권한을 사용할 수 있습니다.
           </p>
 
           <form

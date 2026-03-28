@@ -11,22 +11,38 @@ function getAdminAccessPassword() {
   return process.env.NEXT_PUBLIC_ADMIN_ACCESS_PASSWORD?.trim() ?? "";
 }
 
-type AccessStore = {
-  accessMode: AccessMode;
+export type AccessStore = {
+  isAuthenticated: boolean;
+  isAdminUnlocked: boolean;
   loginAsMember: () => void;
   logout: () => void;
   unlockAdmin: (password: string) => boolean;
   exitAdmin: () => void;
 };
 
+export function getAccessMode(
+  state: Pick<AccessStore, "isAuthenticated" | "isAdminUnlocked">
+): AccessMode {
+  if (!state.isAuthenticated) {
+    return "guest";
+  }
+
+  if (state.isAdminUnlocked) {
+    return "admin";
+  }
+
+  return "member";
+}
+
 export const useAccessStore = create<AccessStore>()(
   persist(
     (set, get) => ({
-      accessMode: "guest",
-      loginAsMember: () => set({ accessMode: "member" }),
-      logout: () => set({ accessMode: "guest" }),
+      isAuthenticated: false,
+      isAdminUnlocked: false,
+      loginAsMember: () => set({ isAuthenticated: true, isAdminUnlocked: false }),
+      logout: () => set({ isAuthenticated: false, isAdminUnlocked: false }),
       unlockAdmin: (password) => {
-        if (get().accessMode === "guest") {
+        if (!get().isAuthenticated) {
           return false;
         }
 
@@ -40,19 +56,34 @@ export const useAccessStore = create<AccessStore>()(
           return false;
         }
 
-        set({ accessMode: "admin" });
+        set({ isAdminUnlocked: true });
         return true;
       },
       exitAdmin: () => {
-        if (get().accessMode !== "admin") {
+        if (!get().isAdminUnlocked) {
           return;
         }
 
-        set({ accessMode: "member" });
+        set({ isAdminUnlocked: false });
       }
     }),
     {
       name: "heeby-access-store",
+      version: 1,
+      migrate: (persistedState) => {
+        const legacyState = persistedState as
+          | { accessMode?: AccessMode }
+          | undefined;
+
+        if (!legacyState?.accessMode) {
+          return persistedState as AccessStore;
+        }
+
+        return {
+          isAuthenticated: legacyState.accessMode !== "guest",
+          isAdminUnlocked: legacyState.accessMode === "admin"
+        } satisfies Pick<AccessStore, "isAuthenticated" | "isAdminUnlocked">;
+      },
       storage: createJSONStorage(() => localStorage)
     }
   )

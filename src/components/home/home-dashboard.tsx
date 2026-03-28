@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useMemo } from "react";
 import dayjs from "dayjs";
 import { AdminSettingsPanel } from "@/components/admin/admin-settings-panel";
-import { useAccessStore } from "@/stores/use-access-store";
+import { canManageJournalTemplate } from "@/lib/access-policy";
+import { getAccessMode, useAccessStore } from "@/stores/use-access-store";
 import { useFeatureFlagStore } from "@/stores/use-feature-flag-store";
+import { useJournalTemplateStore } from "@/stores/use-journal-template-store";
 import { useJournalStore } from "@/stores/use-journal-store";
-import { useTemplateStore } from "@/stores/use-template-store";
 
 function getActivityCopy(count: number) {
   if (count === 0) {
@@ -44,12 +45,15 @@ function findJournalForExactDate(
 }
 
 export function HomeDashboard() {
-  const accessMode = useAccessStore((state) => state.accessMode);
-  const loginAsMember = useAccessStore((state) => state.loginAsMember);
+  const accessMode = useAccessStore(getAccessMode);
   const flags = useFeatureFlagStore((state) => state.flags);
   const journals = useJournalStore((state) => state.journals);
-  const templates = useTemplateStore((state) => state.templates);
-  const recentTemplateIds = useTemplateStore((state) => state.recentTemplateIds);
+  const journalTemplates = useJournalTemplateStore(
+    (state) => state.journalTemplates
+  );
+  const recentJournalTemplateIds = useJournalTemplateStore(
+    (state) => state.recentJournalTemplateIds
+  );
 
   const today = dayjs();
   const todayJournals = useMemo(
@@ -84,13 +88,18 @@ export function HomeDashboard() {
     return recentJournals[seed];
   }, [recentJournals, today]);
 
-  const recentTemplates = useMemo(
+  const recentJournalTemplates = useMemo(
     () =>
-      recentTemplateIds
-        .map((id) => templates.find((template) => template.id === id))
-        .filter((template): template is (typeof templates)[number] => Boolean(template))
+      recentJournalTemplateIds
+        .map((id) =>
+          journalTemplates.find((journalTemplate) => journalTemplate.id === id)
+        )
+        .filter(
+          (journalTemplate): journalTemplate is (typeof journalTemplates)[number] =>
+            Boolean(journalTemplate)
+        )
         .slice(0, 4),
-    [recentTemplateIds, templates]
+    [journalTemplates, recentJournalTemplateIds]
   );
 
   const mostUsedTheme = useMemo(() => {
@@ -113,19 +122,17 @@ export function HomeDashboard() {
             템플릿으로 시작하고, 생활 기능을 하나의 허브에 모으는 개인 앱
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-ink/72 md:text-lg">
-            게스트 모드에서는 앱의 방향과 구조만 먼저 보여줍니다. 로그인 후에는
-            기록, 템플릿, 그리고 앞으로 붙을 여행과 주식 기능까지 한곳에서 다룰
-            수 있습니다.
+            방문자는 공개된 기록을 볼 수 있고, 로그인 후에는 기록 작성과 비공개
+            기록 관리까지 한곳에서 할 수 있습니다.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={loginAsMember}
+            <Link
+              href="/login"
               className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
             >
-              일반 로그인 체험
-            </button>
+              로그인
+            </Link>
             <p className="self-center text-sm text-ink/60">
               어드민 모드는 로그인 후 헤더에서 추가 암호로 잠금 해제합니다.
             </p>
@@ -184,13 +191,20 @@ export function HomeDashboard() {
                   템플릿을 고르고 바로 시작
                 </p>
               </Link>
-              <Link
-                href="/templates/new"
-                className="rounded-[24px] border border-line/10 bg-surface px-5 py-5 transition hover:border-coral/35 hover:bg-soft"
-              >
-                <p className="text-sm font-semibold">템플릿 만들기</p>
-                <p className="mt-2 text-sm text-ink/62">새 질문 구조 추가</p>
-              </Link>
+              {canManageJournalTemplate(accessMode) ? (
+                <Link
+                  href="/templates/new"
+                  className="rounded-[24px] border border-line/10 bg-surface px-5 py-5 transition hover:border-coral/35 hover:bg-soft"
+                >
+                  <p className="text-sm font-semibold">템플릿 만들기</p>
+                  <p className="mt-2 text-sm text-ink/62">새 질문 구조 추가</p>
+                </Link>
+              ) : (
+                <div className="rounded-[24px] border border-line/10 bg-surface px-5 py-5">
+                  <p className="text-sm font-semibold">템플릿 관리</p>
+                  <p className="mt-2 text-sm text-ink/62">어드민 권한에서 관리</p>
+                </div>
+              )}
               <div className="rounded-[24px] border border-line/10 bg-surface px-5 py-5">
                 <p className="text-sm font-semibold">여행 추가</p>
                 <p className="mt-2 text-sm text-ink/62">곧 연결될 위젯 진입점</p>
@@ -212,7 +226,9 @@ export function HomeDashboard() {
                 </div>
                 <div>
                   <dt className="text-ink/55">템플릿 수</dt>
-                  <dd className="mt-1 text-2xl font-bold">{templates.length}</dd>
+                  <dd className="mt-1 text-2xl font-bold">
+                    {journalTemplates.length}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-ink/55">가장 많이 쓴 주제</dt>
@@ -313,31 +329,36 @@ export function HomeDashboard() {
                 </p>
                 <h2 className="mt-2 text-2xl font-bold">최근 템플릿</h2>
               </div>
-              <Link
-                href="/templates"
-                className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
-              >
-                전체 보기
-              </Link>
+              {canManageJournalTemplate(accessMode) ? (
+                <Link
+                  href="/templates"
+                  className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+                >
+                  전체 보기
+                </Link>
+              ) : (
+                <span className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold text-ink/55">
+                  어드민 전용
+                </span>
+              )}
             </div>
 
             <div className="mt-6 grid gap-3">
-              {recentTemplates.map((template) => (
-                <Link
-                  key={template.id}
-                  href="/journals/new"
-                  className="rounded-[24px] border border-line/10 bg-paper p-4 transition hover:border-coral/35 hover:bg-soft"
+              {recentJournalTemplates.map((journalTemplate) => (
+                <div
+                  key={journalTemplate.id}
+                  className="rounded-[24px] border border-line/10 bg-paper p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold">{template.name}</p>
+                    <p className="font-semibold">{journalTemplate.name}</p>
                     <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
-                      {template.theme}
+                      {journalTemplate.theme}
                     </span>
                   </div>
                   <p className="mt-2 text-sm text-ink/60">
-                    질문 {template.questions.length}개
+                    질문 {journalTemplate.questions.length}개
                   </p>
-                </Link>
+                </div>
               ))}
             </div>
           </section>

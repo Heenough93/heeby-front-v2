@@ -4,17 +4,22 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { themes } from "@/constants/themes";
+import { canReadContent, getVisibilityLabel } from "@/lib/access-policy";
 import { cn } from "@/lib/utils";
+import { useJournalTemplateStore } from "@/stores/use-journal-template-store";
+import { getAccessMode, useAccessStore } from "@/stores/use-access-store";
 import { useJournalStore } from "@/stores/use-journal-store";
-import { useTemplateStore } from "@/stores/use-template-store";
 import type { Theme } from "@/types/domain";
 
 type ThemeFilter = Theme | "전체";
 type SortOption = "latest" | "oldest" | "title";
 
 export function JournalList() {
+  const accessMode = useAccessStore(getAccessMode);
   const journals = useJournalStore((state) => state.journals);
-  const templates = useTemplateStore((state) => state.templates);
+  const journalTemplates = useJournalTemplateStore(
+    (state) => state.journalTemplates
+  );
   const [selectedTheme, setSelectedTheme] = useState<ThemeFilter>("전체");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("latest");
@@ -22,18 +27,24 @@ export function JournalList() {
   const filteredJournals = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
+    const readableJournals = journals.filter((journal) =>
+      canReadContent(accessMode, journal.visibility)
+    );
+
     const nextJournals =
       selectedTheme === "전체"
-        ? journals
-        : journals.filter((journal) => journal.theme === selectedTheme);
+        ? readableJournals
+        : readableJournals.filter((journal) => journal.theme === selectedTheme);
 
     const searchedJournals = normalizedSearch
       ? nextJournals.filter((journal) => {
-          const template = templates.find((item) => item.id === journal.templateId);
+          const journalTemplate = journalTemplates.find(
+            (item) => item.id === journal.journalTemplateId
+          );
           const content = [
             journal.title,
             journal.theme,
-            template?.name ?? "",
+            journalTemplate?.name ?? "",
             ...journal.answers.map((item) => `${item.question} ${item.answer}`)
           ]
             .join(" ")
@@ -54,10 +65,16 @@ export function JournalList() {
 
       return dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf();
     });
-  }, [journals, search, selectedTheme, sortBy, templates]);
+  }, [accessMode, journalTemplates, journals, search, selectedTheme, sortBy]);
 
   return (
     <section className="grid gap-6">
+      {accessMode === "guest" ? (
+        <div className="rounded-[24px] border border-line/10 bg-paper p-5 text-sm leading-6 text-ink/62">
+          공개로 설정한 기록만 보입니다. 공개 기록은 상세에서 전체 내용을 그대로 볼 수 있습니다.
+        </div>
+      ) : null}
+
       <div className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
         <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
           <label className="grid gap-2">
@@ -105,7 +122,9 @@ export function JournalList() {
 
       <div className="grid gap-4">
         {filteredJournals.map((journal) => {
-          const template = templates.find((item) => item.id === journal.templateId);
+          const journalTemplate = journalTemplates.find(
+            (item) => item.id === journal.journalTemplateId
+          );
           const preview = journal.answers
             .map((item) => item.answer)
             .join(" ")
@@ -122,12 +141,15 @@ export function JournalList() {
                   <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
                     {journal.theme}
                   </span>
+                  <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink/68">
+                    {getVisibilityLabel(journal.visibility)}
+                  </span>
                   <span className="text-xs text-ink/45">
                     {dayjs(journal.createdAt).format("YYYY.MM.DD")}
                   </span>
                 </div>
                 <span className="text-sm text-ink/55">
-                  {template?.name ?? "알 수 없는 템플릿"}
+                  {journalTemplate?.name ?? "알 수 없는 템플릿"}
                 </span>
               </div>
 

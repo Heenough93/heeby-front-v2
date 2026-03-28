@@ -9,8 +9,8 @@ import { AlertDialog } from "@/components/feedback/alert-dialog";
 import { themes } from "@/constants/themes";
 import { cn } from "@/lib/utils";
 import { journalFormSchema, type JournalFormValues } from "@/schemas/journal-schema";
+import { useJournalTemplateStore } from "@/stores/use-journal-template-store";
 import { useJournalStore } from "@/stores/use-journal-store";
-import { useTemplateStore } from "@/stores/use-template-store";
 import { useToastStore } from "@/stores/use-toast-store";
 
 function buildAnswerFields(questions: string[]) {
@@ -45,18 +45,22 @@ export function JournalForm({
   initialValues
 }: JournalFormProps) {
   const router = useRouter();
-  const templates = useTemplateStore((state) => state.templates);
-  const recentTemplateIds = useTemplateStore((state) => state.recentTemplateIds);
-  const markTemplateAsRecent = useTemplateStore(
-    (state) => state.markTemplateAsRecent
+  const journalTemplates = useJournalTemplateStore(
+    (state) => state.journalTemplates
+  );
+  const recentJournalTemplateIds = useJournalTemplateStore(
+    (state) => state.recentJournalTemplateIds
+  );
+  const markJournalTemplateAsRecent = useJournalTemplateStore(
+    (state) => state.markJournalTemplateAsRecent
   );
   const addJournal = useJournalStore((state) => state.addJournal);
   const updateJournal = useJournalStore((state) => state.updateJournal);
   const showToast = useToastStore((state) => state.showToast);
   const [pendingValues, setPendingValues] = useState<JournalFormValues | null>(null);
 
-  const initialTemplate = templates[0];
-  const initialTheme = initialTemplate?.theme ?? "개발";
+  const initialJournalTemplate = journalTemplates[0];
+  const initialTheme = initialJournalTemplate?.theme ?? "개발";
 
   const form = useForm<JournalFormValues>({
     resolver: zodResolver(journalFormSchema),
@@ -65,8 +69,11 @@ export function JournalForm({
       {
         title: "",
         theme: initialTheme,
-        templateId: initialTemplate?.id ?? "",
-        answers: initialTemplate ? buildAnswerFields(initialTemplate.questions) : []
+        journalTemplateId: initialJournalTemplate?.id ?? "",
+        visibility: "private",
+        answers: initialJournalTemplate
+          ? buildAnswerFields(initialJournalTemplate.questions)
+          : []
       }
   });
 
@@ -80,45 +87,58 @@ export function JournalForm({
     name: "theme"
   });
 
-  const selectedTemplateId = useWatch({
+  const selectedJournalTemplateId = useWatch({
     control: form.control,
-    name: "templateId"
+    name: "journalTemplateId"
   });
 
-  const filteredTemplates = useMemo(
-    () => templates.filter((template) => template.theme === selectedTheme),
-    [selectedTheme, templates]
-  );
-
-  const recentTemplates = useMemo(
+  const filteredJournalTemplates = useMemo(
     () =>
-      recentTemplateIds
-        .map((id) => templates.find((template) => template.id === id))
-        .filter((template): template is (typeof templates)[number] => Boolean(template)),
-    [recentTemplateIds, templates]
+      journalTemplates.filter(
+        (journalTemplate) => journalTemplate.theme === selectedTheme
+      ),
+    [journalTemplates, selectedTheme]
   );
 
-  const selectedTemplate = useMemo(
-    () => templates.find((template) => template.id === selectedTemplateId),
-    [selectedTemplateId, templates]
+  const recentJournalTemplates = useMemo(
+    () =>
+      recentJournalTemplateIds
+        .map((id) =>
+          journalTemplates.find((journalTemplate) => journalTemplate.id === id)
+        )
+        .filter(
+          (journalTemplate): journalTemplate is (typeof journalTemplates)[number] =>
+            Boolean(journalTemplate)
+        ),
+    [journalTemplates, recentJournalTemplateIds]
   );
 
-  const applyTemplate = (templateId: string) => {
-    const template = templates.find((item) => item.id === templateId);
+  const selectedJournalTemplate = useMemo(
+    () =>
+      journalTemplates.find(
+        (journalTemplate) => journalTemplate.id === selectedJournalTemplateId
+      ),
+    [journalTemplates, selectedJournalTemplateId]
+  );
 
-    if (!template) {
+  const applyJournalTemplate = (journalTemplateId: string) => {
+    const journalTemplate = journalTemplates.find(
+      (item) => item.id === journalTemplateId
+    );
+
+    if (!journalTemplate) {
       return;
     }
 
-    form.setValue("theme", template.theme, {
+    form.setValue("theme", journalTemplate.theme, {
       shouldDirty: true,
       shouldValidate: true
     });
-    form.setValue("templateId", template.id, {
+    form.setValue("journalTemplateId", journalTemplate.id, {
       shouldDirty: true,
       shouldValidate: true
     });
-    answers.replace(buildAnswerFields(template.questions));
+    answers.replace(buildAnswerFields(journalTemplate.questions));
   };
 
   useEffect(() => {
@@ -130,41 +150,46 @@ export function JournalForm({
   }, [form, initialValues]);
 
   useEffect(() => {
-    if (!filteredTemplates.length) {
-      form.setValue("templateId", "");
+    if (!filteredJournalTemplates.length) {
+      form.setValue("journalTemplateId", "");
       answers.replace([]);
       return;
     }
 
-    const existsInTheme = filteredTemplates.some(
-      (template) => template.id === selectedTemplateId
+    const existsInTheme = filteredJournalTemplates.some(
+      (journalTemplate) => journalTemplate.id === selectedJournalTemplateId
     );
 
     if (!existsInTheme) {
-      const fallbackTemplate = filteredTemplates[0];
-      form.setValue("templateId", fallbackTemplate.id, {
+      const fallbackJournalTemplate = filteredJournalTemplates[0];
+      form.setValue("journalTemplateId", fallbackJournalTemplate.id, {
         shouldDirty: true,
         shouldValidate: true
       });
       if (
-        !hasSameQuestions(form.getValues("answers"), fallbackTemplate.questions)
+        !hasSameQuestions(
+          form.getValues("answers"),
+          fallbackJournalTemplate.questions
+        )
       ) {
-        answers.replace(buildAnswerFields(fallbackTemplate.questions));
+        answers.replace(buildAnswerFields(fallbackJournalTemplate.questions));
       }
     }
-  }, [answers, filteredTemplates, form, selectedTemplateId]);
+  }, [answers, filteredJournalTemplates, form, selectedJournalTemplateId]);
 
   useEffect(() => {
-    if (!selectedTemplate) {
+    if (!selectedJournalTemplate) {
       return;
     }
 
-    if (hasSameQuestions(form.getValues("answers"), selectedTemplate.questions)) {
+    if (
+      hasSameQuestions(form.getValues("answers"), selectedJournalTemplate.questions)
+    ) {
       return;
     }
 
-    answers.replace(buildAnswerFields(selectedTemplate.questions));
-  }, [answers, form, selectedTemplate]);
+    answers.replace(buildAnswerFields(selectedJournalTemplate.questions));
+  }, [answers, form, selectedJournalTemplate]);
 
   const submitJournal = (values: JournalFormValues) => {
     const nextJournal =
@@ -176,7 +201,7 @@ export function JournalForm({
       return;
     }
 
-    markTemplateAsRecent(values.templateId);
+    markJournalTemplateAsRecent(values.journalTemplateId);
     showToast({
       title: mode === "edit" ? "기록이 수정되었습니다." : "기록이 저장되었습니다.",
       variant: "success"
@@ -193,7 +218,7 @@ export function JournalForm({
       onSubmit={onSubmit}
       className="grid gap-6 rounded-[28px] border border-line/10 bg-surface p-6 shadow-card md:p-8"
     >
-      {mode === "create" && recentTemplates.length > 0 ? (
+      {mode === "create" && recentJournalTemplates.length > 0 ? (
         <section className="grid gap-3 rounded-[24px] border border-line/10 bg-paper p-5">
           <div>
             <h2 className="text-lg font-semibold">최근 사용 템플릿</h2>
@@ -203,20 +228,20 @@ export function JournalForm({
           </div>
 
           <div className="flex flex-wrap gap-3">
-            {recentTemplates.map((template) => (
+            {recentJournalTemplates.map((journalTemplate) => (
               <button
-                key={template.id}
+                key={journalTemplate.id}
                 type="button"
-                onClick={() => applyTemplate(template.id)}
+                onClick={() => applyJournalTemplate(journalTemplate.id)}
                 className={cn(
                   "rounded-2xl border px-4 py-3 text-left transition",
-                  selectedTemplateId === template.id
+                  selectedJournalTemplateId === journalTemplate.id
                     ? "border-coral bg-surface"
                     : "border-line/10 bg-surface hover:border-coral/40 hover:bg-soft"
                 )}
               >
-                <p className="text-sm font-semibold">{template.name}</p>
-                <p className="mt-1 text-xs text-ink/55">{template.theme}</p>
+                <p className="text-sm font-semibold">{journalTemplate.name}</p>
+                <p className="mt-1 text-xs text-ink/55">{journalTemplate.theme}</p>
               </button>
             ))}
           </div>
@@ -260,27 +285,49 @@ export function JournalForm({
       </div>
 
       <label className="grid gap-2">
+        <span className="text-sm font-semibold text-ink/75">공개 범위</span>
+        <select
+          {...form.register("visibility")}
+          className={cn(
+            "h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition",
+            "focus:border-coral focus:bg-surface"
+          )}
+        >
+          <option value="private">비공개</option>
+          <option value="public">공개</option>
+        </select>
+        <p className="text-sm text-ink/60">
+          공개 기록은 로그인하지 않은 방문자에게 전체 내용이 그대로 보입니다.
+        </p>
+        {form.formState.errors.visibility ? (
+          <span className="text-sm text-red-600">
+            {form.formState.errors.visibility.message}
+          </span>
+        ) : null}
+      </label>
+
+      <label className="grid gap-2">
         <span className="text-sm font-semibold text-ink/75">템플릿</span>
         <select
-          {...form.register("templateId")}
-          disabled={filteredTemplates.length === 0}
+          {...form.register("journalTemplateId")}
+          disabled={filteredJournalTemplates.length === 0}
           className={cn(
             "h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition",
             "focus:border-coral focus:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
           )}
         >
-          {filteredTemplates.length === 0 ? (
+          {filteredJournalTemplates.length === 0 ? (
             <option value="">선택 가능한 템플릿이 없습니다.</option>
           ) : null}
-          {filteredTemplates.map((template) => (
-            <option key={template.id} value={template.id}>
-              {template.name}
+          {filteredJournalTemplates.map((journalTemplate) => (
+            <option key={journalTemplate.id} value={journalTemplate.id}>
+              {journalTemplate.name}
             </option>
           ))}
         </select>
-        {form.formState.errors.templateId ? (
+        {form.formState.errors.journalTemplateId ? (
           <span className="text-sm text-red-600">
-            {form.formState.errors.templateId.message}
+            {form.formState.errors.journalTemplateId.message}
           </span>
         ) : null}
       </label>

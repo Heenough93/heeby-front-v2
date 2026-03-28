@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { AlertDialog } from "@/components/feedback/alert-dialog";
-import { useTemplateStore } from "@/stores/use-template-store";
+import { getVisibilityLabel } from "@/lib/access-policy";
+import { useJournalTemplateStore } from "@/stores/use-journal-template-store";
 import { useToastStore } from "@/stores/use-toast-store";
 import { themes } from "@/constants/themes";
 import type { Theme } from "@/types/domain";
@@ -13,35 +14,44 @@ import { cn } from "@/lib/utils";
 type ThemeFilter = Theme | "전체";
 type SortOption = "latest" | "oldest" | "name";
 
-export function TemplateList() {
-  const templates = useTemplateStore((state) => state.templates);
-  const removeTemplate = useTemplateStore((state) => state.removeTemplate);
+export function JournalTemplateList() {
+  const journalTemplates = useJournalTemplateStore(
+    (state) => state.journalTemplates
+  );
+  const removeJournalTemplate = useJournalTemplateStore(
+    (state) => state.removeJournalTemplate
+  );
   const showToast = useToastStore((state) => state.showToast);
   const [selectedTheme, setSelectedTheme] = useState<ThemeFilter>("전체");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("latest");
-  const [pendingDeleteTemplateId, setPendingDeleteTemplateId] = useState<
-    string | null
-  >(null);
+  const [pendingDeleteJournalTemplateId, setPendingDeleteJournalTemplateId] =
+    useState<string | null>(null);
 
-  const filteredTemplates = useMemo(() => {
+  const filteredJournalTemplates = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
-    const nextTemplates =
+    const nextJournalTemplates =
       selectedTheme === "전체"
-        ? templates
-        : templates.filter((template) => template.theme === selectedTheme);
+        ? journalTemplates
+        : journalTemplates.filter(
+            (journalTemplate) => journalTemplate.theme === selectedTheme
+          );
 
-    const searchedTemplates = normalizedSearch
-      ? nextTemplates.filter((template) =>
-          [template.name, template.theme, ...template.questions]
+    const searchedJournalTemplates = normalizedSearch
+      ? nextJournalTemplates.filter((journalTemplate) =>
+          [
+            journalTemplate.name,
+            journalTemplate.theme,
+            ...journalTemplate.questions
+          ]
             .join(" ")
             .toLowerCase()
             .includes(normalizedSearch)
         )
-      : nextTemplates;
+      : nextJournalTemplates;
 
-    return [...searchedTemplates].sort((a, b) => {
+    return [...searchedJournalTemplates].sort((a, b) => {
       if (sortBy === "oldest") {
         return dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf();
       }
@@ -52,10 +62,10 @@ export function TemplateList() {
 
       return dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf();
     });
-  }, [search, selectedTheme, sortBy, templates]);
+  }, [journalTemplates, search, selectedTheme, sortBy]);
 
-  const pendingDeleteTemplate = templates.find(
-    (template) => template.id === pendingDeleteTemplateId
+  const pendingDeleteJournalTemplate = journalTemplates.find(
+    (journalTemplate) => journalTemplate.id === pendingDeleteJournalTemplateId
   );
 
   return (
@@ -106,41 +116,48 @@ export function TemplateList() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {filteredTemplates.map((template) => (
+        {filteredJournalTemplates.map((journalTemplate) => (
           <article
-            key={template.id}
+            key={journalTemplate.id}
             className="flex flex-col justify-between rounded-[28px] border border-line/10 bg-surface p-6 shadow-card"
           >
             <div>
               <div className="mb-4 flex items-center justify-between gap-3">
-                <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
-                  {template.theme}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
+                    {journalTemplate.theme}
+                  </span>
+                  <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink/70">
+                    {getVisibilityLabel(journalTemplate.visibility)}
+                  </span>
+                </div>
                 <span className="text-xs text-ink/45">
-                  {dayjs(template.updatedAt).format("YYYY.MM.DD")}
+                  {dayjs(journalTemplate.updatedAt).format("YYYY.MM.DD")}
                 </span>
               </div>
-              <h2 className="text-xl font-semibold">{template.name}</h2>
+              <h2 className="text-xl font-semibold">{journalTemplate.name}</h2>
               <p className="mt-2 text-sm text-ink/60">
-                질문 {template.questions.length}개
+                질문 {journalTemplate.questions.length}개
               </p>
               <ul className="mt-5 space-y-2 text-sm leading-6 text-ink/75">
-                {template.questions.map((question, index) => (
-                  <li key={`${template.id}-${index}`}>{question}</li>
+                {journalTemplate.questions.map((question, index) => (
+                  <li key={`${journalTemplate.id}-${index}`}>{question}</li>
                 ))}
               </ul>
             </div>
 
             <div className="mt-6 flex items-center justify-between gap-3">
               <Link
-                href={`/templates/${template.id}/edit`}
+                href={`/templates/${journalTemplate.id}/edit`}
                 className="text-sm font-semibold text-coral"
               >
                 수정
               </Link>
               <button
                 type="button"
-                onClick={() => setPendingDeleteTemplateId(template.id)}
+                onClick={() =>
+                  setPendingDeleteJournalTemplateId(journalTemplate.id)
+                }
                 className="rounded-full border border-line/10 bg-surface px-3 py-2 text-sm font-medium text-ink/65 transition hover:border-coral/40 hover:bg-soft"
               >
                 삭제
@@ -150,7 +167,7 @@ export function TemplateList() {
         ))}
       </div>
 
-      {filteredTemplates.length === 0 ? (
+      {filteredJournalTemplates.length === 0 ? (
         <div className="rounded-[28px] border border-dashed border-line/15 bg-surface p-10 text-center shadow-card">
           <p className="text-lg font-semibold">
             {search ? "검색 결과가 없습니다." : "아직 템플릿이 없습니다."}
@@ -164,23 +181,23 @@ export function TemplateList() {
       ) : null}
 
       <AlertDialog
-        open={Boolean(pendingDeleteTemplate)}
+        open={Boolean(pendingDeleteJournalTemplate)}
         title="이 템플릿을 삭제할까요?"
         description="삭제하면 이 브라우저에 저장된 템플릿 목록에서 제거됩니다."
         confirmLabel="템플릿 삭제"
         variant="danger"
-        onClose={() => setPendingDeleteTemplateId(null)}
+        onClose={() => setPendingDeleteJournalTemplateId(null)}
         onConfirm={() => {
-          if (!pendingDeleteTemplate) {
+          if (!pendingDeleteJournalTemplate) {
             return;
           }
 
-          removeTemplate(pendingDeleteTemplate.id);
+          removeJournalTemplate(pendingDeleteJournalTemplate.id);
           showToast({
             title: "템플릿이 삭제되었습니다.",
             variant: "success"
           });
-          setPendingDeleteTemplateId(null);
+          setPendingDeleteJournalTemplateId(null);
         }}
       />
     </section>
