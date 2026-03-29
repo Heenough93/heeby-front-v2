@@ -11,6 +11,8 @@ import {
 } from "@/features/access/store/access-store";
 import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
 import { useJournalStore } from "@/features/journals/store/journal-store";
+import { TravelWidget } from "@/features/travel/components/travel-widget";
+import { useTravelStore } from "@/features/travel/store/travel-store";
 import { useFeatureFlagStore } from "@/stores/app/use-feature-flag-store";
 
 function getActivityCopy(count: number) {
@@ -52,6 +54,7 @@ export function HomeDashboard() {
   const flags = useFeatureFlagStore((state) => state.flags);
   const journals = useJournalStore((state) => state.journals);
   const journalTemplates = useJournalTemplateStore((state) => state.journalTemplates);
+  const travelVisits = useTravelStore((state) => state.visits);
   const getRecentJournalTemplates = useJournalTemplateStore(
     (state) => state.getRecentJournalTemplates
   );
@@ -197,10 +200,15 @@ export function HomeDashboard() {
                   <p className="mt-2 text-sm text-ink/62">어드민 권한에서 관리</p>
                 </div>
               )}
-              <div className="rounded-[24px] border border-line/10 bg-surface px-5 py-5">
-                <p className="text-sm font-semibold">여행 추가</p>
-                <p className="mt-2 text-sm text-ink/62">곧 연결될 위젯 진입점</p>
-              </div>
+              <Link
+                href="/travel"
+                className="rounded-[24px] border border-line/10 bg-surface px-5 py-5 transition hover:border-coral/35 hover:bg-soft"
+              >
+                <p className="text-sm font-semibold">여행 지도</p>
+                <p className="mt-2 text-sm text-ink/62">
+                  방문 도시와 이동 경로 보기
+                </p>
+              </Link>
               <div className="rounded-[24px] border border-line/10 bg-surface px-5 py-5">
                 <p className="text-sm font-semibold">주식 기록</p>
                 <p className="mt-2 text-sm text-ink/62">곧 연결될 요약 모듈</p>
@@ -358,15 +366,7 @@ export function HomeDashboard() {
           {flags.showTravelWidget || flags.showStockWidget ? (
             <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
               {flags.showTravelWidget ? (
-                <div className="rounded-[30px] border border-dashed border-line/20 bg-surface p-6 shadow-card">
-                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-                    Travel Widget
-                  </p>
-                  <h3 className="mt-2 text-xl font-bold">여행 모듈 자리</h3>
-                  <p className="mt-3 text-sm leading-6 text-ink/62">
-                    지도 기반 방문지 정리와 최근 장소 미리보기를 붙일 예정입니다.
-                  </p>
-                </div>
+                <TravelWidget visits={travelVisits} />
               ) : null}
 
               {flags.showStockWidget ? (

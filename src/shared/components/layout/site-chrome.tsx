@@ -32,6 +32,12 @@ const navItems = [
     feature: "home"
   },
   {
+    href: "/travel",
+    label: "여행",
+    description: "세계지도와 방문 순서",
+    feature: "travelTracker"
+  },
+  {
     href: "/journals",
     label: "기록",
     description: "공개 기록과 내 기록 보기",

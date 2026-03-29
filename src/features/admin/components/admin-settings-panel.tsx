@@ -13,6 +13,7 @@ import {
 } from "@/stores/app/use-feature-flag-store";
 import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
 import { useJournalStore } from "@/features/journals/store/journal-store";
+import { useTravelStore } from "@/features/travel/store/travel-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 
 const featureFlagItems: Array<{
@@ -23,7 +24,7 @@ const featureFlagItems: Array<{
   {
     key: "showTravelWidget",
     label: "여행 위젯 표시",
-    description: "홈에서 여행 placeholder 또는 추후 여행 위젯을 노출합니다."
+    description: "홈에서 세계지도 기반 여행 위젯을 노출합니다."
   },
   {
     key: "showStockWidget",
@@ -47,6 +48,7 @@ export function AdminSettingsPanel() {
   const journalTemplates = useJournalTemplateStore(
     (state) => state.journalTemplates
   );
+  const travelVisits = useTravelStore((state) => state.visits);
   const announcements = useAnnouncementStore((state) => state.announcements);
   const upsertAnnouncement = useAnnouncementStore(
     (state) => state.upsertAnnouncement
@@ -59,6 +61,7 @@ export function AdminSettingsPanel() {
   const resetJournalTemplates = useJournalTemplateStore(
     (state) => state.resetJournalTemplates
   );
+  const resetTravelVisits = useTravelStore((state) => state.resetVisits);
   const flags = useFeatureFlagStore((state) => state.flags);
   const toggleFlag = useFeatureFlagStore((state) => state.toggleFlag);
   const resetFlags = useFeatureFlagStore((state) => state.resetFlags);
@@ -170,7 +173,7 @@ export function AdminSettingsPanel() {
       </p>
       <h2 className="mt-2 text-2xl font-bold">운영 설정 패널</h2>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-3">
+      <div className="mt-5 grid gap-4 md:grid-cols-4">
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 기록 수</p>
           <p className="mt-2 text-2xl font-bold">{journals.length}</p>
@@ -178,6 +181,10 @@ export function AdminSettingsPanel() {
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 템플릿 수</p>
           <p className="mt-2 text-2xl font-bold">{journalTemplates.length}</p>
+        </div>
+        <div className="rounded-[24px] border border-line/10 bg-paper p-4">
+          <p className="text-sm text-ink/55">현재 여행 방문지 수</p>
+          <p className="mt-2 text-2xl font-bold">{travelVisits.length}</p>
         </div>
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 상태</p>
@@ -530,14 +537,17 @@ export function AdminSettingsPanel() {
       <AlertDialog
         open={pendingAction === "reset-all"}
         title="모든 로컬 데이터를 초기화할까요?"
-        description="기록과 템플릿 데이터를 모두 mock 기본값으로 되돌립니다."
+        description="기록, 템플릿, 여행 방문지 데이터를 모두 mock 기본값으로 되돌립니다."
         confirmLabel="전체 초기화"
         variant="danger"
         onClose={() => setPendingAction(null)}
         onConfirm={() => {
           resetJournalTemplates();
           resetJournals();
-          setLastAction("기록과 템플릿 데이터를 모두 초기 mock 상태로 되돌렸습니다.");
+          resetTravelVisits();
+          setLastAction(
+            "기록, 템플릿, 여행 방문지 데이터를 모두 초기 mock 상태로 되돌렸습니다."
+          );
           showToast({
             title: "모든 로컬 데이터를 초기화했습니다.",
             variant: "success"
