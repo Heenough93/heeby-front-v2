@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 import {
   getAccessMode,
   useAccessStore
@@ -10,9 +10,12 @@ import {
 import { cn } from "@/lib/utils";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 
-export function LoginForm() {
+type LoginFormProps = {
+  nextPath: string;
+};
+
+export function LoginForm({ nextPath }: LoginFormProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const loginAsMember = useAccessStore((state) => state.loginAsMember);
   const accessMode = useAccessStore(getAccessMode);
   const showToast = useToastStore((state) => state.showToast);
@@ -20,16 +23,6 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isPending, setIsPending] = useState(false);
-
-  const nextPath = useMemo(() => {
-    const next = searchParams.get("next");
-
-    if (!next || !next.startsWith("/")) {
-      return "/";
-    }
-
-    return next;
-  }, [searchParams]);
 
   useEffect(() => {
     if (accessMode === "guest") {
