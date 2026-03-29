@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 
 type TravelVisitFormProps = {
   onSubmit: (values: TravelVisitFormValues) => void;
+  className?: string;
+  showHeader?: boolean;
 };
 
 const defaultValues: TravelVisitFormValues = {
@@ -19,7 +21,11 @@ const defaultValues: TravelVisitFormValues = {
   note: ""
 };
 
-export function TravelVisitForm({ onSubmit }: TravelVisitFormProps) {
+export function TravelVisitForm({
+  onSubmit,
+  className,
+  showHeader = true
+}: TravelVisitFormProps) {
   const form = useForm<TravelVisitFormValues>({
     resolver: zodResolver(travelVisitFormSchema),
     defaultValues
@@ -33,17 +39,22 @@ export function TravelVisitForm({ onSubmit }: TravelVisitFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid gap-5 rounded-[28px] border border-line/10 bg-surface p-6 shadow-card"
+      className={cn(
+        "grid gap-5 rounded-[28px] border border-line/10 bg-surface p-6 shadow-card",
+        className
+      )}
     >
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-          Add Visit
-        </p>
-        <h2 className="mt-2 text-2xl font-bold">방문지 추가</h2>
-        <p className="mt-3 text-sm leading-6 text-ink/62">
-          도시, 날짜, 좌표를 넣으면 지도와 연결선에 바로 반영됩니다.
-        </p>
-      </div>
+      {showHeader ? (
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
+            Add Visit
+          </p>
+          <h2 className="mt-2 text-2xl font-bold">방문지 추가</h2>
+          <p className="mt-3 text-sm leading-6 text-ink/62">
+            도시, 날짜, 좌표를 넣으면 지도와 연결선에 바로 반영됩니다.
+          </p>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="도시" error={form.formState.errors.city?.message}>

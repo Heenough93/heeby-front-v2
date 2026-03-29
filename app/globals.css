@@ -70,12 +70,40 @@ textarea {
 }
 
 .leaflet-container {
+  position: relative;
+  z-index: 0;
   background:
     radial-gradient(circle at top, rgba(var(--color-coral), 0.18), transparent 35%),
     rgb(var(--color-soft));
   font-family:
     ui-rounded, "SF Pro Rounded", "Noto Sans KR", "Apple SD Gothic Neo",
     "Malgun Gothic", "Segoe UI", sans-serif;
+}
+
+.travel-map-frame {
+  isolation: isolate;
+}
+
+.leaflet-pane {
+  z-index: 200;
+}
+
+.leaflet-overlay-pane {
+  z-index: 300;
+}
+
+.leaflet-marker-pane {
+  z-index: 400;
+}
+
+.leaflet-tooltip-pane,
+.leaflet-popup-pane {
+  z-index: 500;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 600;
 }
 
 .leaflet-popup-content-wrapper,

@@ -33,7 +33,7 @@ export function WorldTravelMap({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[28px] border border-line/10 shadow-card",
+        "travel-map-frame relative isolate z-0 overflow-hidden rounded-[28px] border border-line/10 shadow-card",
         className
       )}
     >
