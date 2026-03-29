@@ -1,6 +1,6 @@
-import { AppShell } from "@/components/layout/app-shell";
-import { JournalPageActions } from "@/components/journals/journal-page-actions";
-import { JournalList } from "@/components/journals/journal-list";
+import { AppShell } from "@/shared/components/layout/app-shell";
+import { JournalPageActions } from "@/features/journals/components/journal-page-actions";
+import { JournalList } from "@/features/journals/components/journal-list";
 
 export default function JournalsPage() {
   return (

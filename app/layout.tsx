@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppProviders } from "@/providers/app-providers";
-import { SiteChrome } from "@/components/layout/site-chrome";
+import { SiteChrome } from "@/shared/components/layout/site-chrome";
 
 export const metadata: Metadata = {
   title: "Heeby",

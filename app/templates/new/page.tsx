@@ -1,5 +1,5 @@
-import { AppShell } from "@/components/layout/app-shell";
-import { JournalTemplateForm } from "@/components/journal-templates/journal-template-form";
+import { AppShell } from "@/shared/components/layout/app-shell";
+import { JournalTemplateForm } from "@/features/journal-templates/components/journal-template-form";
 
 export default function NewTemplatePage() {
   return (

@@ -1,5 +1,5 @@
-import { AppShell } from "@/components/layout/app-shell";
-import { JournalForm } from "@/components/journals/journal-form";
+import { AppShell } from "@/shared/components/layout/app-shell";
+import { JournalForm } from "@/features/journals/components/journal-form";
 
 export default function NewJournalPage() {
   return (

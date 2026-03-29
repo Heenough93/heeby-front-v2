@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { AppShell } from "@/components/layout/app-shell";
-import { JournalDetail } from "@/components/journals/journal-detail";
+import { AppShell } from "@/shared/components/layout/app-shell";
+import { JournalDetail } from "@/features/journals/components/journal-detail";
 
 type JournalDetailPageProps = {
   params: {

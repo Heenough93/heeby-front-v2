@@ -1,10 +1,10 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { JournalDetail } from "@/components/journals/journal-detail";
-import { useAccessStore } from "@/stores/use-access-store";
-import { useJournalStore } from "@/stores/use-journal-store";
-import { useJournalTemplateStore } from "@/stores/use-journal-template-store";
+import { JournalDetail } from "@/features/journals/components/journal-detail";
+import { useAccessStore } from "@/features/access/store/access-store";
+import { useJournalStore } from "@/features/journals/store/journal-store";
+import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({

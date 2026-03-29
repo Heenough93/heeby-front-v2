@@ -1,4 +1,4 @@
-import { EditJournalTemplateScreen } from "@/components/journal-templates/edit-journal-template-screen";
+import { EditJournalTemplateScreen } from "@/features/journal-templates/components/edit-journal-template-screen";
 
 type EditTemplatePageProps = {
   params: {

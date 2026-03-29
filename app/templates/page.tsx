@@ -1,6 +1,6 @@
-import { AppShell } from "@/components/layout/app-shell";
-import { JournalTemplatePageActions } from "@/components/journal-templates/journal-template-page-actions";
-import { JournalTemplateList } from "@/components/journal-templates/journal-template-list";
+import { AppShell } from "@/shared/components/layout/app-shell";
+import { JournalTemplatePageActions } from "@/features/journal-templates/components/journal-template-page-actions";
+import { JournalTemplateList } from "@/features/journal-templates/components/journal-template-list";
 
 export default function TemplatesPage() {
   return (
