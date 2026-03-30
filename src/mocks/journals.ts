@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import type { Journal } from "@/types/domain";
+import type { Journal } from "@/features/journals/lib/journal-types";
 import { journalTemplates } from "@/mocks/journal-templates";
 
 export const journals: Journal[] = [

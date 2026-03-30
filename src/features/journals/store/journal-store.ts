@@ -6,9 +6,9 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { canReadContent } from "@/features/access/lib/access-policy";
 import type { AccessMode } from "@/features/access/store/access-store";
+import type { Journal } from "@/features/journals/lib/journal-types";
 import { journals as initialJournals } from "@/mocks/journals";
 import type { JournalFormValues } from "@/schemas/journal-schema";
-import type { Journal } from "@/types/domain";
 
 export type JournalStore = {
   journals: Journal[];

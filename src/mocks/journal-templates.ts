@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import type { JournalTemplate } from "@/types/domain";
+import type { JournalTemplate } from "@/features/journal-templates/lib/journal-template-types";
 
 const timestamps = {
   t1: "2026-03-14T09:00:00.000Z",

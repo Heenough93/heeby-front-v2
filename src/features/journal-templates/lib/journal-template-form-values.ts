@@ -1,5 +1,5 @@
 import type { JournalTemplateFormValues } from "@/schemas/journal-template-schema";
-import type { JournalTemplate } from "@/types/domain";
+import type { JournalTemplate } from "@/features/journal-templates/lib/journal-template-types";
 
 export function toJournalTemplateFormValues(
   journalTemplate: JournalTemplate
