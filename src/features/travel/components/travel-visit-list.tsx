@@ -5,10 +5,15 @@ import type { TravelVisit } from "@/features/travel/lib/travel-types";
 
 type TravelVisitListProps = {
   visits: TravelVisit[];
+  onEdit: (visit: TravelVisit) => void;
   onRemove: (id: string) => void;
 };
 
-export function TravelVisitList({ visits, onRemove }: TravelVisitListProps) {
+export function TravelVisitList({
+  visits,
+  onEdit,
+  onRemove
+}: TravelVisitListProps) {
   const sortedVisits = sortTravelVisits(visits);
 
   return (
@@ -54,13 +59,22 @@ export function TravelVisitList({ visits, onRemove }: TravelVisitListProps) {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => onRemove(visit.id)}
-                className="shrink-0 rounded-full border border-line/10 bg-surface px-3 py-2 text-xs font-semibold text-ink/65 transition hover:border-coral/35 hover:bg-soft"
-              >
-                삭제
-              </button>
+              <div className="flex shrink-0 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onEdit(visit)}
+                  className="rounded-full border border-line/10 bg-surface px-3 py-2 text-xs font-semibold text-ink/65 transition hover:border-coral/35 hover:bg-soft"
+                >
+                  수정
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onRemove(visit.id)}
+                  className="rounded-full border border-line/10 bg-surface px-3 py-2 text-xs font-semibold text-ink/65 transition hover:border-coral/35 hover:bg-soft"
+                >
+                  삭제
+                </button>
+              </div>
             </div>
           </article>
         ))}

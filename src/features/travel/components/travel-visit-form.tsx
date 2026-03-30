@@ -1,39 +1,48 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { travelVisitFormSchema, type TravelVisitFormValues } from "@/features/travel/lib/travel-visit-schema";
+import {
+  defaultTravelVisitFormValues,
+  getTravelVisitFormValues
+} from "@/features/travel/lib/travel-form-values";
+import type { TravelVisitFormValues } from "@/features/travel/lib/travel-visit-schema";
+import { travelVisitFormSchema } from "@/features/travel/lib/travel-visit-schema";
+import type { TravelVisit } from "@/features/travel/lib/travel-types";
 import { cn } from "@/lib/utils";
 
 type TravelVisitFormProps = {
   onSubmit: (values: TravelVisitFormValues) => void;
+  visit?: TravelVisit;
   className?: string;
   showHeader?: boolean;
-};
-
-const defaultValues: TravelVisitFormValues = {
-  city: "",
-  country: "",
-  latitude: 37.5665,
-  longitude: 126.978,
-  startedAt: "",
-  endedAt: "",
-  note: ""
+  submitLabel?: string;
 };
 
 export function TravelVisitForm({
   onSubmit,
+  visit,
   className,
-  showHeader = true
+  showHeader = true,
+  submitLabel = "방문지 추가"
 }: TravelVisitFormProps) {
   const form = useForm<TravelVisitFormValues>({
     resolver: zodResolver(travelVisitFormSchema),
-    defaultValues
+    defaultValues: visit
+      ? getTravelVisitFormValues(visit)
+      : defaultTravelVisitFormValues
   });
+
+  useEffect(() => {
+    form.reset(
+      visit ? getTravelVisitFormValues(visit) : defaultTravelVisitFormValues
+    );
+  }, [form, visit]);
 
   const handleSubmit = form.handleSubmit((values) => {
     onSubmit(values);
-    form.reset(defaultValues);
+    form.reset(visit ? getTravelVisitFormValues(visit) : defaultTravelVisitFormValues);
   });
 
   return (
@@ -47,11 +56,13 @@ export function TravelVisitForm({
       {showHeader ? (
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-            Add Visit
+            {visit ? "Edit Visit" : "Add Visit"}
           </p>
-          <h2 className="mt-2 text-2xl font-bold">방문지 추가</h2>
+          <h2 className="mt-2 text-2xl font-bold">
+            {visit ? "방문지 수정" : "방문지 추가"}
+          </h2>
           <p className="mt-3 text-sm leading-6 text-ink/62">
-            도시, 날짜, 좌표를 넣으면 지도와 연결선에 바로 반영됩니다.
+            도시, 날짜, 좌표를 정리하면 지도와 방문 순서에 바로 반영됩니다.
           </p>
         </div>
       ) : null}
@@ -115,7 +126,7 @@ export function TravelVisitForm({
           type="submit"
           className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
         >
-          방문지 추가
+          {submitLabel}
         </button>
       </div>
     </form>

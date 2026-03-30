@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { TravelVisitFormValues } from "@/features/travel/lib/travel-visit-schema";
+import type { TravelVisit } from "@/features/travel/lib/travel-types";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 import { WorldTravelMap } from "@/features/travel/components/world-travel-map";
 import { TravelVisitForm } from "@/features/travel/components/travel-visit-form";
@@ -11,9 +13,11 @@ import { useTravelStore } from "@/features/travel/store/travel-store";
 export function TravelPage() {
   const visits = useTravelStore((state) => state.visits);
   const addVisit = useTravelStore((state) => state.addVisit);
+  const updateVisit = useTravelStore((state) => state.updateVisit);
   const removeVisit = useTravelStore((state) => state.removeVisit);
   const showToast = useToastStore((state) => state.showToast);
   const [isVisitFormOpen, setIsVisitFormOpen] = useState(false);
+  const [editingVisit, setEditingVisit] = useState<TravelVisit | undefined>();
   const sortedVisits = useMemo(() => sortTravelVisits(visits), [visits]);
 
   useEffect(() => {
@@ -27,6 +31,40 @@ export function TravelPage() {
       document.body.style.overflow = "";
     };
   }, [isVisitFormOpen]);
+
+  const handleCloseVisitForm = () => {
+    setIsVisitFormOpen(false);
+    setEditingVisit(undefined);
+  };
+
+  const handleSubmitVisit = (values: TravelVisitFormValues) => {
+    if (editingVisit) {
+      const nextVisit = updateVisit(editingVisit.id, values);
+
+      if (!nextVisit) {
+        showToast({
+          title: "수정할 방문지를 찾을 수 없습니다.",
+          variant: "error"
+        });
+        handleCloseVisitForm();
+        return;
+      }
+
+      showToast({
+        title: `${nextVisit.city} 방문지가 수정되었습니다.`,
+        variant: "success"
+      });
+      handleCloseVisitForm();
+      return;
+    }
+
+    const nextVisit = addVisit(values);
+    showToast({
+      title: `${nextVisit.city} 방문지가 추가되었습니다.`,
+      variant: "success"
+    });
+    handleCloseVisitForm();
+  };
 
   return (
     <div className="grid gap-6">
@@ -51,7 +89,10 @@ export function TravelPage() {
             </div>
             <button
               type="button"
-              onClick={() => setIsVisitFormOpen(true)}
+              onClick={() => {
+                setEditingVisit(undefined);
+                setIsVisitFormOpen(true);
+              }}
               className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
             >
               방문지 추가
@@ -66,6 +107,10 @@ export function TravelPage() {
 
       <TravelVisitList
         visits={sortedVisits}
+        onEdit={(visit) => {
+          setEditingVisit(visit);
+          setIsVisitFormOpen(true);
+        }}
         onRemove={(id) => {
           removeVisit(id);
           showToast({
@@ -79,39 +124,36 @@ export function TravelPage() {
         <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 py-8">
           <button
             type="button"
-            onClick={() => setIsVisitFormOpen(false)}
+            onClick={handleCloseVisitForm}
             className="absolute inset-0 bg-ink/45"
             aria-label="방문지 추가 모달 닫기"
           />
 
           <div className="relative z-10 w-full max-w-2xl">
             <TravelVisitForm
+              visit={editingVisit}
               showHeader={false}
+              submitLabel={editingVisit ? "변경 저장" : "방문지 추가"}
               className="border-0 px-6 pb-6 pt-32 md:px-7 md:pb-7 md:pt-36"
-              onSubmit={(values) => {
-                const nextVisit = addVisit(values);
-                showToast({
-                  title: `${nextVisit.city} 방문지가 추가되었습니다.`,
-                  variant: "success"
-                });
-                setIsVisitFormOpen(false);
-              }}
+              onSubmit={handleSubmitVisit}
             />
 
             <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-6 py-6 md:px-7">
               <div className="pointer-events-auto">
                 <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-                  Add Visit
+                  {editingVisit ? "Edit Visit" : "Add Visit"}
                 </p>
-                <h2 className="mt-2 text-2xl font-bold">방문지 추가</h2>
+                <h2 className="mt-2 text-2xl font-bold">
+                  {editingVisit ? "방문지 수정" : "방문지 추가"}
+                </h2>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-ink/62">
-                  도시, 날짜, 좌표를 넣으면 지도와 연결선에 바로 반영됩니다.
+                  도시, 날짜, 좌표를 정리하면 지도와 방문 순서에 바로 반영됩니다.
                 </p>
               </div>
 
               <button
                 type="button"
-                onClick={() => setIsVisitFormOpen(false)}
+                onClick={handleCloseVisitForm}
                 className="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-line/10 bg-paper text-lg transition hover:border-coral/35 hover:bg-soft"
                 aria-label="모달 닫기"
               >

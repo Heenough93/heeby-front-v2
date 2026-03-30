@@ -11,13 +11,17 @@ import type { TravelVisit } from "@/features/travel/lib/travel-types";
 type TravelStore = {
   visits: TravelVisit[];
   addVisit: (values: TravelVisitFormValues) => TravelVisit;
+  updateVisit: (
+    id: string,
+    values: TravelVisitFormValues
+  ) => TravelVisit | undefined;
   removeVisit: (id: string) => void;
   resetVisits: () => void;
 };
 
 export const useTravelStore = create<TravelStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       visits: initialTravelVisits,
       addVisit: (values) => {
         const now = dayjs().toISOString();
@@ -36,6 +40,31 @@ export const useTravelStore = create<TravelStore>()(
 
         set((state) => ({
           visits: [...state.visits, nextVisit]
+        }));
+
+        return nextVisit;
+      },
+      updateVisit: (id, values) => {
+        const currentVisit = get().visits.find((visit) => visit.id === id);
+
+        if (!currentVisit) {
+          return undefined;
+        }
+
+        const nextVisit: TravelVisit = {
+          ...currentVisit,
+          city: values.city.trim(),
+          country: values.country.trim(),
+          latitude: values.latitude,
+          longitude: values.longitude,
+          startedAt: values.startedAt,
+          endedAt: values.endedAt?.trim() || undefined,
+          note: values.note?.trim() || undefined,
+          updatedAt: dayjs().toISOString()
+        };
+
+        set((state) => ({
+          visits: state.visits.map((visit) => (visit.id === id ? nextVisit : visit))
         }));
 
         return nextVisit;
