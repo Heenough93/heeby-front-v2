@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+const coordinateField = (
+  fieldName: "위도" | "경도",
+  min: number,
+  max: number
+) =>
+  z.coerce
+    .number({
+      invalid_type_error: `${fieldName}에 유효한 숫자를 입력해주세요.`
+    })
+    .min(min, `${fieldName}는 ${min} 이상이어야 합니다.`)
+    .max(max, `${fieldName}는 ${max} 이하여야 합니다.`)
+    .refine((value) => Number.isFinite(value), {
+      message: `${fieldName}에 유효한 숫자를 입력해주세요.`
+    });
+
 export const travelVisitFormSchema = z
   .object({
     city: z
@@ -12,14 +27,8 @@ export const travelVisitFormSchema = z
       .trim()
       .min(1, "국가 이름을 입력해주세요.")
       .max(40, "국가 이름은 40자 이하로 입력해주세요."),
-    latitude: z.coerce
-      .number()
-      .min(-90, "위도는 -90 이상이어야 합니다.")
-      .max(90, "위도는 90 이하여야 합니다."),
-    longitude: z.coerce
-      .number()
-      .min(-180, "경도는 -180 이상이어야 합니다.")
-      .max(180, "경도는 180 이하여야 합니다."),
+    latitude: coordinateField("위도", -90, 90),
+    longitude: coordinateField("경도", -180, 180),
     startedAt: z.string().min(1, "방문 시작일을 입력해주세요."),
     endedAt: z.string().optional(),
     note: z

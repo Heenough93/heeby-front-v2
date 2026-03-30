@@ -17,6 +17,8 @@ import type { TravelVisit } from "@/features/travel/lib/travel-types";
 type LeafletTravelMapProps = {
   visits: TravelVisit[];
   compact?: boolean;
+  selectedVisitId?: string;
+  onSelectVisit?: (visitId: string) => void;
 };
 
 const WORLD_BOUNDS: L.LatLngBoundsExpression = [
@@ -72,7 +74,9 @@ const latestVisitIcon = L.divIcon({
 
 export function LeafletTravelMap({
   visits,
-  compact = false
+  compact = false,
+  selectedVisitId,
+  onSelectVisit
 }: LeafletTravelMapProps) {
   const sortedVisits = useMemo(() => sortTravelVisits(visits), [visits]);
   const positions = useMemo(
@@ -96,6 +100,11 @@ export function LeafletTravelMap({
       />
 
       <TravelMapViewport positions={positions} compact={compact} />
+      <SelectedVisitViewport
+        visits={sortedVisits}
+        selectedVisitId={selectedVisitId}
+        compact={compact}
+      />
 
       {positions.length > 1 ? (
         <>
@@ -113,7 +122,20 @@ export function LeafletTravelMap({
       {sortedVisits.map((visit, index) => {
         const isLatest = index === sortedVisits.length - 1;
         const isFirst = index === 0;
-        const radius = compact ? (isLatest ? 7 : 5) : isLatest ? 9 : isFirst ? 8 : 6;
+        const isSelected = visit.id === selectedVisitId;
+        const radius = compact
+          ? isSelected
+            ? 8
+            : isLatest
+              ? 7
+              : 5
+          : isSelected
+            ? 10
+            : isLatest
+              ? 9
+              : isFirst
+                ? 8
+                : 6;
         const outerRadius = radius + (compact ? 4 : 6);
 
         return (
@@ -124,14 +146,21 @@ export function LeafletTravelMap({
               interactive={false}
               pathOptions={{
                 stroke: false,
-                fillColor: isLatest ? "#f472b6" : "#60a5fa",
-                fillOpacity: isLatest ? 0.24 : 0.18
+                fillColor: isSelected ? "#fb7185" : isLatest ? "#f472b6" : "#60a5fa",
+                fillOpacity: isSelected ? 0.34 : isLatest ? 0.24 : 0.18
               }}
             />
             {isLatest ? (
               <Marker
                 position={[visit.latitude, visit.longitude]}
                 icon={latestVisitIcon}
+                eventHandlers={
+                  onSelectVisit
+                    ? {
+                        click: () => onSelectVisit(visit.id)
+                      }
+                    : undefined
+                }
               >
                 <Tooltip
                   direction="top"
@@ -162,10 +191,17 @@ export function LeafletTravelMap({
               <CircleMarker
                 center={[visit.latitude, visit.longitude]}
                 radius={radius}
+                eventHandlers={
+                  onSelectVisit
+                    ? {
+                        click: () => onSelectVisit(visit.id)
+                      }
+                    : undefined
+                }
                 pathOptions={{
-                  color: "#eff6ff",
-                  weight: 2.5,
-                  fillColor: isFirst ? "#0f766e" : "#2563eb",
+                  color: isSelected ? "#fee2e2" : "#eff6ff",
+                  weight: isSelected ? 3.5 : 2.5,
+                  fillColor: isSelected ? "#e11d48" : isFirst ? "#0f766e" : "#2563eb",
                   fillOpacity: 0.95
                 }}
               >
@@ -227,6 +263,43 @@ function TravelMapViewport({ positions, compact }: TravelMapViewportProps) {
       padding: compact ? [24, 24] : [36, 36]
     });
   }, [compact, map, positions]);
+
+  return null;
+}
+
+type SelectedVisitViewportProps = {
+  visits: TravelVisit[];
+  selectedVisitId?: string;
+  compact: boolean;
+};
+
+function SelectedVisitViewport({
+  visits,
+  selectedVisitId,
+  compact
+}: SelectedVisitViewportProps) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!selectedVisitId) {
+      return;
+    }
+
+    const selectedVisit = visits.find((visit) => visit.id === selectedVisitId);
+
+    if (!selectedVisit) {
+      return;
+    }
+
+    map.flyTo(
+      [selectedVisit.latitude, selectedVisit.longitude],
+      compact ? Math.max(map.getZoom(), 3) : Math.max(map.getZoom(), 5),
+      {
+        animate: true,
+        duration: 0.8
+      }
+    );
+  }, [compact, map, selectedVisitId, visits]);
 
   return null;
 }

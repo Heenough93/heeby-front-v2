@@ -19,6 +19,23 @@ export function TravelPage() {
   const [isVisitFormOpen, setIsVisitFormOpen] = useState(false);
   const [editingVisit, setEditingVisit] = useState<TravelVisit | undefined>();
   const sortedVisits = useMemo(() => sortTravelVisits(visits), [visits]);
+  const [selectedVisitId, setSelectedVisitId] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (sortedVisits.length === 0) {
+      setSelectedVisitId(undefined);
+      return;
+    }
+
+    if (!selectedVisitId) {
+      setSelectedVisitId(sortedVisits[sortedVisits.length - 1]?.id);
+      return;
+    }
+
+    if (!sortedVisits.some((visit) => visit.id === selectedVisitId)) {
+      setSelectedVisitId(sortedVisits[sortedVisits.length - 1]?.id);
+    }
+  }, [selectedVisitId, sortedVisits]);
 
   useEffect(() => {
     if (!isVisitFormOpen) {
@@ -54,6 +71,7 @@ export function TravelPage() {
         title: `${nextVisit.city} 방문지가 수정되었습니다.`,
         variant: "success"
       });
+      setSelectedVisitId(nextVisit.id);
       handleCloseVisitForm();
       return;
     }
@@ -63,6 +81,7 @@ export function TravelPage() {
       title: `${nextVisit.city} 방문지가 추가되었습니다.`,
       variant: "success"
     });
+    setSelectedVisitId(nextVisit.id);
     handleCloseVisitForm();
   };
 
@@ -101,13 +120,20 @@ export function TravelPage() {
         </div>
 
         <div className="mt-6">
-          <WorldTravelMap visits={sortedVisits} />
+          <WorldTravelMap
+            visits={sortedVisits}
+            selectedVisitId={selectedVisitId}
+            onSelectVisit={setSelectedVisitId}
+          />
         </div>
       </section>
 
       <TravelVisitList
         visits={sortedVisits}
+        selectedVisitId={selectedVisitId}
+        onSelectVisit={setSelectedVisitId}
         onEdit={(visit) => {
+          setSelectedVisitId(visit.id);
           setEditingVisit(visit);
           setIsVisitFormOpen(true);
         }}
@@ -121,7 +147,7 @@ export function TravelPage() {
       />
 
       {isVisitFormOpen ? (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 py-8">
+        <div className="fixed inset-0 z-[80] flex items-end justify-center md:items-center md:px-4 md:py-8">
           <button
             type="button"
             onClick={handleCloseVisitForm}
@@ -129,28 +155,15 @@ export function TravelPage() {
             aria-label="방문지 추가 모달 닫기"
           />
 
-          <div className="relative z-10 w-full max-w-2xl">
+          <div className="relative z-10 w-full md:max-w-2xl">
             <TravelVisitForm
               visit={editingVisit}
-              showHeader={false}
               submitLabel={editingVisit ? "변경 저장" : "방문지 추가"}
-              className="border-0 px-6 pb-6 pt-32 md:px-7 md:pb-7 md:pt-36"
+              className="max-h-[92dvh] overflow-y-auto rounded-t-[28px] border-0 px-5 pb-5 pt-6 shadow-[0_-20px_60px_rgba(15,23,42,0.24)] md:max-h-none md:rounded-[28px] md:px-7 md:py-7 md:shadow-card"
               onSubmit={handleSubmitVisit}
             />
 
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-6 py-6 md:px-7">
-              <div className="pointer-events-auto">
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-                  {editingVisit ? "Edit Visit" : "Add Visit"}
-                </p>
-                <h2 className="mt-2 text-2xl font-bold">
-                  {editingVisit ? "방문지 수정" : "방문지 추가"}
-                </h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-ink/62">
-                  도시, 날짜, 좌표를 정리하면 지도와 방문 순서에 바로 반영됩니다.
-                </p>
-              </div>
-
+            <div className="pointer-events-none absolute right-5 top-5 z-20 md:right-7 md:top-7">
               <button
                 type="button"
                 onClick={handleCloseVisitForm}

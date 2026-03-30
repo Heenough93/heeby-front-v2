@@ -2,15 +2,20 @@
 
 import { formatTravelPeriod, sortTravelVisits } from "@/features/travel/lib/travel-map";
 import type { TravelVisit } from "@/features/travel/lib/travel-types";
+import { cn } from "@/lib/utils";
 
 type TravelVisitListProps = {
   visits: TravelVisit[];
+  selectedVisitId?: string;
+  onSelectVisit: (visitId: string) => void;
   onEdit: (visit: TravelVisit) => void;
   onRemove: (id: string) => void;
 };
 
 export function TravelVisitList({
   visits,
+  selectedVisitId,
+  onSelectVisit,
   onEdit,
   onRemove
 }: TravelVisitListProps) {
@@ -34,15 +39,29 @@ export function TravelVisitList({
         {sortedVisits.map((visit, index) => (
           <article
             key={visit.id}
-            className="rounded-[22px] border border-line/10 bg-paper px-4 py-4"
+            className={formatVisitCardClassName(visit.id === selectedVisitId)}
           >
             <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 gap-3">
-                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-coral text-xs font-semibold text-white">
+              <button
+                type="button"
+                onClick={() => onSelectVisit(visit.id)}
+                className="flex min-w-0 flex-1 gap-3 text-left"
+              >
+                <span
+                  className={cn(
+                    "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white",
+                    visit.id === selectedVisitId ? "bg-rose-600" : "bg-coral"
+                  )}
+                >
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-coral/80">
+                  <p
+                    className={cn(
+                      "text-[11px] font-semibold uppercase tracking-[0.2em]",
+                      visit.id === selectedVisitId ? "text-rose-600" : "text-coral/80"
+                    )}
+                  >
                     {formatTravelPeriod(visit)}
                   </p>
                   <h3 className="mt-1.5 text-base font-semibold leading-tight">
@@ -57,7 +76,7 @@ export function TravelVisitList({
                     </p>
                   ) : null}
                 </div>
-              </div>
+              </button>
 
               <div className="flex shrink-0 gap-2">
                 <button
@@ -80,5 +99,14 @@ export function TravelVisitList({
         ))}
       </div>
     </section>
+  );
+}
+
+function formatVisitCardClassName(isSelected: boolean) {
+  return cn(
+    "rounded-[22px] border bg-paper px-4 py-4 transition",
+    isSelected
+      ? "border-rose-300 bg-rose-50/70 shadow-[0_10px_30px_rgba(244,63,94,0.14)]"
+      : "border-line/10"
   );
 }

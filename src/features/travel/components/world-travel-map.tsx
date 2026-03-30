@@ -8,6 +8,8 @@ type WorldTravelMapProps = {
   visits: TravelVisit[];
   className?: string;
   compact?: boolean;
+  selectedVisitId?: string;
+  onSelectVisit?: (visitId: string) => void;
 };
 
 const LeafletTravelMap = dynamic(
@@ -28,7 +30,9 @@ const LeafletTravelMap = dynamic(
 export function WorldTravelMap({
   visits,
   className,
-  compact = false
+  compact = false,
+  selectedVisitId,
+  onSelectVisit
 }: WorldTravelMapProps) {
   return (
     <div
@@ -37,7 +41,12 @@ export function WorldTravelMap({
         className
       )}
     >
-      <LeafletTravelMap visits={visits} compact={compact} />
+      <LeafletTravelMap
+        visits={visits}
+        compact={compact}
+        selectedVisitId={selectedVisitId}
+        onSelectVisit={onSelectVisit}
+      />
     </div>
   );
 }
