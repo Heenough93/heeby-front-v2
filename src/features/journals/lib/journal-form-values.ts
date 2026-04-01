@@ -1,4 +1,4 @@
-import type { JournalFormValues } from "@/schemas/journal-schema";
+import type { JournalFormValues } from "@/features/journals/lib/journal-form-schema";
 import type { Journal } from "@/features/journals/lib/journal-types";
 
 export function toJournalFormValues(journal: Journal): JournalFormValues {

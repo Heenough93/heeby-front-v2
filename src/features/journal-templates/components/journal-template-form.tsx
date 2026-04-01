@@ -7,11 +7,11 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertDialog } from "@/shared/components/feedback/alert-dialog";
 import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
-import { themes } from "@/constants/themes";
 import {
   journalTemplateFormSchema,
   type JournalTemplateFormValues
-} from "@/schemas/journal-template-schema";
+} from "@/features/journal-templates/lib/journal-template-form-schema";
+import { themes } from "@/constants/themes";
 import { cn } from "@/lib/utils";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 

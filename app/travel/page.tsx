@@ -1,13 +1,15 @@
-import { TravelPage } from "@/features/travel/components/travel-page";
 import { AppShell } from "@/shared/components/layout/app-shell";
+import { TravelArchiveList } from "@/features/travel/components/travel-archive-list";
+import { TravelPageActions } from "@/features/travel/components/travel-page-actions";
 
 export default function TravelRoutePage() {
   return (
     <AppShell
-      title="여행 지도"
-      description="도시 좌표와 방문 날짜를 쌓아두고, 세계지도 위에서 이동 흐름을 순서대로 확인합니다."
+      title="여행"
+      description="공개 가능한 여행 아카이브를 둘러보고, 선택한 여행의 이동 흐름과 방문 순서를 상세에서 확인합니다."
+      actions={<TravelPageActions />}
     >
-      <TravelPage />
+      <TravelArchiveList />
     </AppShell>
   );
 }

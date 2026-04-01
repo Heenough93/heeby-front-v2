@@ -4,9 +4,9 @@ import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import type { JournalTemplateFormValues } from "@/features/journal-templates/lib/journal-template-form-schema";
 import type { JournalTemplate } from "@/features/journal-templates/lib/journal-template-types";
 import { journalTemplates as initialJournalTemplates } from "@/mocks/journal-templates";
-import type { JournalTemplateFormValues } from "@/schemas/journal-template-schema";
 import type { Theme } from "@/types/domain";
 
 export type JournalTemplateStore = {

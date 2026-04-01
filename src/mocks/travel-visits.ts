@@ -3,6 +3,7 @@ import type { TravelVisit } from "@/features/travel/lib/travel-types";
 export const travelVisits: TravelVisit[] = [
   {
     id: "travel-seoul",
+    tripId: "trip-east-asia-2023",
     city: "서울",
     country: "대한민국",
     latitude: 37.5665,
@@ -15,6 +16,7 @@ export const travelVisits: TravelVisit[] = [
   },
   {
     id: "travel-tokyo",
+    tripId: "trip-east-asia-2023",
     city: "도쿄",
     country: "일본",
     latitude: 35.6762,
@@ -27,6 +29,7 @@ export const travelVisits: TravelVisit[] = [
   },
   {
     id: "travel-singapore",
+    tripId: "trip-east-asia-2023",
     city: "싱가포르",
     country: "싱가포르",
     latitude: 1.3521,
@@ -39,6 +42,7 @@ export const travelVisits: TravelVisit[] = [
   },
   {
     id: "travel-paris",
+    tripId: "trip-europe-2024",
     city: "파리",
     country: "프랑스",
     latitude: 48.8566,
@@ -51,6 +55,7 @@ export const travelVisits: TravelVisit[] = [
   },
   {
     id: "travel-newyork",
+    tripId: "trip-usa-2024",
     city: "뉴욕",
     country: "미국",
     latitude: 40.7128,

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { formatTravelPeriod, sortTravelVisits } from "@/features/travel/lib/travel-map";
 import type { TravelVisit } from "@/features/travel/lib/travel-types";
 import { cn } from "@/lib/utils";
@@ -7,9 +8,9 @@ import { cn } from "@/lib/utils";
 type TravelVisitListProps = {
   visits: TravelVisit[];
   selectedVisitId?: string;
-  onSelectVisit: (visitId: string) => void;
-  onEdit: (visit: TravelVisit) => void;
-  onRemove: (id: string) => void;
+  onSelectVisit?: (visitId: string) => void;
+  onEdit?: (visit: TravelVisit) => void;
+  onRemove?: (id: string) => void;
 };
 
 export function TravelVisitList({
@@ -44,7 +45,7 @@ export function TravelVisitList({
             <div className="flex items-start justify-between gap-3">
               <button
                 type="button"
-                onClick={() => onSelectVisit(visit.id)}
+                onClick={() => onSelectVisit?.(visit.id)}
                 className="flex min-w-0 flex-1 gap-3 text-left"
               >
                 <span
@@ -78,22 +79,28 @@ export function TravelVisitList({
                 </div>
               </button>
 
-              <div className="flex shrink-0 gap-2">
-                <button
-                  type="button"
-                  onClick={() => onEdit(visit)}
-                  className="rounded-full border border-line/10 bg-surface px-3 py-2 text-xs font-semibold text-ink/65 transition hover:border-coral/35 hover:bg-soft"
-                >
-                  수정
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onRemove(visit.id)}
-                  className="rounded-full border border-line/10 bg-surface px-3 py-2 text-xs font-semibold text-ink/65 transition hover:border-coral/35 hover:bg-soft"
-                >
-                  삭제
-                </button>
-              </div>
+              {onEdit || onRemove ? (
+                <div className="flex shrink-0 gap-2">
+                  {onEdit ? (
+                    <button
+                      type="button"
+                      onClick={() => onEdit(visit)}
+                      className="rounded-full border border-line/10 bg-surface px-3 py-2 text-xs font-semibold text-ink/65 transition hover:border-coral/35 hover:bg-soft"
+                    >
+                      수정
+                    </button>
+                  ) : null}
+                  {onRemove ? (
+                    <button
+                      type="button"
+                      onClick={() => onRemove(visit.id)}
+                      className="rounded-full border border-line/10 bg-surface px-3 py-2 text-xs font-semibold text-ink/65 transition hover:border-coral/35 hover:bg-soft"
+                    >
+                      삭제
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </article>
         ))}

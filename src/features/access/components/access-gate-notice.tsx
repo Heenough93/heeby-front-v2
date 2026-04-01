@@ -25,6 +25,8 @@ export function AccessGateNotice() {
         <p className="mt-4 text-base leading-7 text-ink/68">
           {featureKey === "journalEditor"
             ? "기록 작성과 비공개 기록 관리는 로그인 후 사용할 수 있습니다."
+            : featureKey === "travelEditor"
+              ? "여행 생성, 수정, 방문지 편집은 로그인 후 사용할 수 있습니다."
             : "게스트 상태에서는 공개된 기록만 볼 수 있습니다. 공개 기록은 상세에서 전체 내용을 그대로 확인할 수 있습니다."}
         </p>
 

@@ -35,7 +35,7 @@ const navItems = [
     href: "/travel",
     label: "여행",
     description: "세계지도와 방문 순서",
-    feature: "travelTracker"
+    feature: "travelArchive"
   },
   {
     href: "/journals",

@@ -54,6 +54,7 @@ export function HomeDashboard() {
   const flags = useFeatureFlagStore((state) => state.flags);
   const journals = useJournalStore((state) => state.journals);
   const journalTemplates = useJournalTemplateStore((state) => state.journalTemplates);
+  const travelTrips = useTravelStore((state) => state.trips);
   const travelVisits = useTravelStore((state) => state.visits);
   const getRecentJournalTemplates = useJournalTemplateStore(
     (state) => state.getRecentJournalTemplates
@@ -117,8 +118,8 @@ export function HomeDashboard() {
             템플릿으로 시작하고, 생활 기능을 하나의 허브에 모으는 개인 앱
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-ink/72 md:text-lg">
-            방문자는 공개된 기록을 볼 수 있고, 로그인 후에는 기록 작성과 비공개
-            기록 관리까지 한곳에서 할 수 있습니다.
+            방문자는 공개된 기록과 공개 여행을 둘러볼 수 있고, 로그인 후에는
+            기록 작성과 비공개 아카이브 관리까지 한곳에서 할 수 있습니다.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
@@ -143,7 +144,7 @@ export function HomeDashboard() {
             <div className="rounded-[24px] border border-line/10 bg-surface p-5">
               <p className="text-sm font-semibold">여행</p>
               <p className="mt-2 text-sm leading-6 text-ink/62">
-                지도 기반 정리와 방문지 아카이브를 붙일 예정입니다.
+                공개 여행 아카이브를 보고, 상세에서 방문 순서와 이동 흐름을 읽습니다.
               </p>
             </div>
             <div className="rounded-[24px] border border-line/10 bg-surface p-5">
@@ -211,7 +212,7 @@ export function HomeDashboard() {
               </Link>
               <div className="rounded-[24px] border border-line/10 bg-surface px-5 py-5">
                 <p className="text-sm font-semibold">주식 기록</p>
-                <p className="mt-2 text-sm text-ink/62">곧 연결될 요약 모듈</p>
+                <p className="mt-2 text-sm text-ink/62">다음 확장 도메인 검토 중</p>
               </div>
             </div>
           </div>
@@ -234,15 +235,19 @@ export function HomeDashboard() {
                   <dt className="text-ink/55">가장 많이 쓴 주제</dt>
                   <dd className="mt-1 text-lg font-semibold">{mostUsedTheme}</dd>
                 </div>
+                <div>
+                  <dt className="text-ink/55">여행 수</dt>
+                  <dd className="mt-1 text-2xl font-bold">{travelTrips.length}</dd>
+                </div>
               </dl>
             </div>
 
             <div className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
               <p className="text-sm font-semibold text-coral">한 줄 메모</p>
               <p className="mt-4 text-sm leading-6 text-ink/68">
-                지금 홈은 전체 생활 기능을 연결하는 허브로 재구성되는 중입니다.
-                기록 흐름은 유지하고, 여행과 주식 같은 기능은 위젯 단위로
-                붙여나가는 방향이 맞습니다.
+                지금 홈은 기록과 여행 아카이브를 함께 다루는 개인 허브입니다.
+                기록은 문서형 흐름으로, 여행은 상위 여행 단위 아카이브로 정리하는
+                현재 구조가 기준선입니다.
               </p>
             </div>
           </div>
@@ -376,7 +381,7 @@ export function HomeDashboard() {
                   </p>
                   <h3 className="mt-2 text-xl font-bold">주식 모듈 자리</h3>
                   <p className="mt-3 text-sm leading-6 text-ink/62">
-                    계좌 변화, 시장 요약, 섹터 메모를 위젯형으로 연결할 예정입니다.
+                    계좌 변화, 시장 요약, 섹터 메모를 어떤 단위로 묶을지 검토 중입니다.
                   </p>
                 </div>
               ) : null}

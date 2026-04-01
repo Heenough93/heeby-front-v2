@@ -19,7 +19,12 @@ export const featurePolicies = {
     member: true,
     admin: true
   },
-  travelTracker: {
+  travelArchive: {
+    guest: true,
+    member: true,
+    admin: true
+  },
+  travelEditor: {
     guest: false,
     member: true,
     admin: true
@@ -77,7 +82,18 @@ export function canReadContent(
   return true;
 }
 
+export function canReadTravelTrip(
+  accessMode: AccessMode,
+  visibility: ContentVisibility
+) {
+  return canReadContent(accessMode, visibility);
+}
+
 export function canEditJournal(accessMode: AccessMode) {
+  return accessMode === "member" || accessMode === "admin";
+}
+
+export function canManageTravel(accessMode: AccessMode) {
   return accessMode === "member" || accessMode === "admin";
 }
 

@@ -1,7 +1,8 @@
 export const featureRoutePatterns = {
   home: ["/"],
   login: ["/login"],
-  travelTracker: ["/travel", /^\/travel\/.+/],
+  travelArchive: ["/travel", /^\/travel\/[^/]+$/],
+  travelEditor: ["/travel/new", /^\/travel\/[^/]+\/edit$/],
   journalTemplateAdmin: ["/templates", /^\/templates\/.+/],
   journalEditor: ["/journals/new", /^\/journals\/.+\/edit$/],
   journalArchive: ["/journals", /^\/journals\/.+/]
