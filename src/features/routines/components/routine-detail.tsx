@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertDialog } from "@/shared/components/feedback/alert-dialog";
+import { canManageRoutine } from "@/features/access/lib/access-policy";
+import {
+  getAccessMode,
+  useAccessStore
+} from "@/features/access/store/access-store";
 import { buildRoutineTelegramMessage } from "@/features/routines/lib/routine-delivery";
 import { useRoutineStore } from "@/features/routines/store/routine-store";
 import { getRoutineNextRunHint, getRoutineRepeatLabel } from "@/features/routines/lib/routine-schedule";
@@ -15,11 +20,13 @@ type RoutineDetailProps = {
 
 export function RoutineDetail({ routineId }: RoutineDetailProps) {
   const router = useRouter();
+  const accessMode = useAccessStore(getAccessMode);
   const routine = useRoutineStore((state) => state.getRoutineById(routineId));
   const removeRoutine = useRoutineStore((state) => state.removeRoutine);
   const showToast = useToastStore((state) => state.showToast);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isTestSending, setIsTestSending] = useState(false);
+  const canManage = canManageRoutine(accessMode);
 
   if (!routine) {
     return (
@@ -60,62 +67,66 @@ export function RoutineDetail({ routineId }: RoutineDetailProps) {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              disabled={isTestSending}
-              onClick={async () => {
-                setIsTestSending(true);
+            {canManage ? (
+              <>
+                <button
+                  type="button"
+                  disabled={isTestSending}
+                  onClick={async () => {
+                    setIsTestSending(true);
 
-                try {
-                  const response = await fetch("/api/routines/telegram/test", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                      message: buildRoutineTelegramMessage(routine)
-                    })
-                  });
-                  const payload = (await response.json()) as { message?: string };
+                    try {
+                      const response = await fetch("/api/routines/telegram/test", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                          message: buildRoutineTelegramMessage(routine)
+                        })
+                      });
+                      const payload = (await response.json()) as { message?: string };
 
-                  if (!response.ok) {
-                    showToast({
-                      title: payload.message ?? "텔레그램 테스트 발송에 실패했습니다.",
-                      variant: "error"
-                    });
-                    return;
-                  }
+                      if (!response.ok) {
+                        showToast({
+                          title: payload.message ?? "텔레그램 테스트 발송에 실패했습니다.",
+                          variant: "error"
+                        });
+                        return;
+                      }
 
-                  showToast({
-                    title: "텔레그램 테스트 메시지를 전송했습니다.",
-                    variant: "success"
-                  });
-                } catch {
-                  showToast({
-                    title: "텔레그램 테스트 요청 중 오류가 발생했습니다.",
-                    variant: "error"
-                  });
-                } finally {
-                  setIsTestSending(false);
-                }
-              }}
-              className="rounded-full border border-line/10 bg-surface/85 px-5 py-3 text-sm font-semibold text-ink transition hover:border-coral/40 hover:bg-soft disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isTestSending ? "전송 중..." : "테스트 발송"}
-            </button>
-            <Link
-              href={`/routines/${routine.id}/edit`}
-              className="rounded-full border border-line/10 bg-surface/85 px-5 py-3 text-sm font-semibold text-ink transition hover:border-coral/40 hover:bg-soft"
-            >
-              수정
-            </Link>
-            <button
-              type="button"
-              onClick={() => setIsDeleteDialogOpen(true)}
-              className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-            >
-              삭제
-            </button>
+                      showToast({
+                        title: "텔레그램 테스트 메시지를 전송했습니다.",
+                        variant: "success"
+                      });
+                    } catch {
+                      showToast({
+                        title: "텔레그램 테스트 요청 중 오류가 발생했습니다.",
+                        variant: "error"
+                      });
+                    } finally {
+                      setIsTestSending(false);
+                    }
+                  }}
+                  className="rounded-full border border-line/10 bg-surface/85 px-5 py-3 text-sm font-semibold text-ink transition hover:border-coral/40 hover:bg-soft disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isTestSending ? "전송 중..." : "테스트 발송"}
+                </button>
+                <Link
+                  href={`/routines/${routine.id}/edit`}
+                  className="rounded-full border border-line/10 bg-surface/85 px-5 py-3 text-sm font-semibold text-ink transition hover:border-coral/40 hover:bg-soft"
+                >
+                  수정
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                >
+                  삭제
+                </button>
+              </>
+            ) : null}
           </div>
         </div>
       </div>

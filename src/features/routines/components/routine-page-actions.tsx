@@ -1,8 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { canManageRoutine } from "@/features/access/lib/access-policy";
+import {
+  getAccessMode,
+  useAccessStore
+} from "@/features/access/store/access-store";
 
 export function RoutinePageActions() {
+  const accessMode = useAccessStore(getAccessMode);
+
+  if (!canManageRoutine(accessMode)) {
+    return null;
+  }
+
   return (
     <Link
       href="/routines/new"
