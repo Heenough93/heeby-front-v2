@@ -38,6 +38,12 @@ const navItems = [
     feature: "travelArchive"
   },
   {
+    href: "/routines",
+    label: "루틴",
+    description: "텔레그램 리마인더 관리",
+    feature: "routineArchive"
+  },
+  {
     href: "/journals",
     label: "기록",
     description: "공개 기록과 내 기록 보기",

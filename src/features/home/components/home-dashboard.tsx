@@ -11,6 +11,7 @@ import {
 } from "@/features/access/store/access-store";
 import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
 import { useJournalStore } from "@/features/journals/store/journal-store";
+import { useRoutineStore } from "@/features/routines/store/routine-store";
 import { TravelWidget } from "@/features/travel/components/travel-widget";
 import { useTravelStore } from "@/features/travel/store/travel-store";
 import { useFeatureFlagStore } from "@/stores/app/use-feature-flag-store";
@@ -54,6 +55,7 @@ export function HomeDashboard() {
   const flags = useFeatureFlagStore((state) => state.flags);
   const journals = useJournalStore((state) => state.journals);
   const journalTemplates = useJournalTemplateStore((state) => state.journalTemplates);
+  const routines = useRoutineStore((state) => state.routines);
   const travelTrips = useTravelStore((state) => state.trips);
   const travelVisits = useTravelStore((state) => state.visits);
   const getRecentJournalTemplates = useJournalTemplateStore(
@@ -148,6 +150,12 @@ export function HomeDashboard() {
               </p>
             </div>
             <div className="rounded-[24px] border border-line/10 bg-surface p-5">
+              <p className="text-sm font-semibold">루틴</p>
+              <p className="mt-2 text-sm leading-6 text-ink/62">
+                정해진 시간에 나에게 텔레그램 메시지를 보내는 리마인더를 관리합니다.
+              </p>
+            </div>
+            <div className="rounded-[24px] border border-line/10 bg-surface p-5">
               <p className="text-sm font-semibold">주식</p>
               <p className="mt-2 text-sm leading-6 text-ink/62">
                 계좌, 시장, 섹터 메모를 생활 기록과 함께 관리합니다.
@@ -177,7 +185,7 @@ export function HomeDashboard() {
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               <Link
                 href="/journals/new"
                 className="rounded-[24px] border border-coral/15 bg-coral px-5 py-5 text-white transition hover:opacity-92"
@@ -210,6 +218,15 @@ export function HomeDashboard() {
                   방문 도시와 이동 경로 보기
                 </p>
               </Link>
+              <Link
+                href="/routines"
+                className="rounded-[24px] border border-line/10 bg-surface px-5 py-5 transition hover:border-coral/35 hover:bg-soft"
+              >
+                <p className="text-sm font-semibold">루틴 관리</p>
+                <p className="mt-2 text-sm text-ink/62">
+                  텔레그램 리마인더 만들기
+                </p>
+              </Link>
               <div className="rounded-[24px] border border-line/10 bg-surface px-5 py-5">
                 <p className="text-sm font-semibold">주식 기록</p>
                 <p className="mt-2 text-sm text-ink/62">다음 확장 도메인 검토 중</p>
@@ -239,6 +256,10 @@ export function HomeDashboard() {
                   <dt className="text-ink/55">여행 수</dt>
                   <dd className="mt-1 text-2xl font-bold">{travelTrips.length}</dd>
                 </div>
+                <div>
+                  <dt className="text-ink/55">루틴 수</dt>
+                  <dd className="mt-1 text-2xl font-bold">{routines.length}</dd>
+                </div>
               </dl>
             </div>
 
@@ -246,8 +267,8 @@ export function HomeDashboard() {
               <p className="text-sm font-semibold text-coral">한 줄 메모</p>
               <p className="mt-4 text-sm leading-6 text-ink/68">
                 지금 홈은 기록과 여행 아카이브를 함께 다루는 개인 허브입니다.
-                기록은 문서형 흐름으로, 여행은 상위 여행 단위 아카이브로 정리하는
-                현재 구조가 기준선입니다.
+                기록은 문서형 흐름으로, 여행은 상위 여행 단위 아카이브로, 루틴은
+                텔레그램 기반 리마인더로 정리하는 현재 구조가 기준선입니다.
               </p>
             </div>
           </div>

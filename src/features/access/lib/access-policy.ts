@@ -29,6 +29,16 @@ export const featurePolicies = {
     member: true,
     admin: true
   },
+  routineArchive: {
+    guest: false,
+    member: true,
+    admin: true
+  },
+  routineEditor: {
+    guest: false,
+    member: true,
+    admin: true
+  },
   journalArchive: {
     guest: true,
     member: true,
@@ -94,6 +104,10 @@ export function canEditJournal(accessMode: AccessMode) {
 }
 
 export function canManageTravel(accessMode: AccessMode) {
+  return accessMode === "member" || accessMode === "admin";
+}
+
+export function canManageRoutine(accessMode: AccessMode) {
   return accessMode === "member" || accessMode === "admin";
 }
 

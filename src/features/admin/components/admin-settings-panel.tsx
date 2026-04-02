@@ -13,6 +13,7 @@ import {
 } from "@/stores/app/use-feature-flag-store";
 import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
 import { useJournalStore } from "@/features/journals/store/journal-store";
+import { useRoutineStore } from "@/features/routines/store/routine-store";
 import { useTravelStore } from "@/features/travel/store/travel-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 
@@ -48,6 +49,7 @@ export function AdminSettingsPanel() {
   const journalTemplates = useJournalTemplateStore(
     (state) => state.journalTemplates
   );
+  const routines = useRoutineStore((state) => state.routines);
   const travelTrips = useTravelStore((state) => state.trips);
   const travelVisits = useTravelStore((state) => state.visits);
   const announcements = useAnnouncementStore((state) => state.announcements);
@@ -174,7 +176,7 @@ export function AdminSettingsPanel() {
       </p>
       <h2 className="mt-2 text-2xl font-bold">운영 설정 패널</h2>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-5">
+      <div className="mt-5 grid gap-4 md:grid-cols-6">
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 기록 수</p>
           <p className="mt-2 text-2xl font-bold">{journals.length}</p>
@@ -182,6 +184,10 @@ export function AdminSettingsPanel() {
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 템플릿 수</p>
           <p className="mt-2 text-2xl font-bold">{journalTemplates.length}</p>
+        </div>
+        <div className="rounded-[24px] border border-line/10 bg-paper p-4">
+          <p className="text-sm text-ink/55">현재 루틴 수</p>
+          <p className="mt-2 text-2xl font-bold">{routines.length}</p>
         </div>
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 여행 수</p>
