@@ -44,6 +44,12 @@ const navItems = [
     feature: "routineArchive"
   },
   {
+    href: "/stocks",
+    label: "주식",
+    description: "주간 시총 스냅샷 기록",
+    feature: "stockArchive"
+  },
+  {
     href: "/journals",
     label: "기록",
     description: "공개 기록과 내 기록 보기",

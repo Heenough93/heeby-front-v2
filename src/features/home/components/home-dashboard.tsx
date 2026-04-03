@@ -12,6 +12,8 @@ import {
 import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
 import { useJournalStore } from "@/features/journals/store/journal-store";
 import { useRoutineStore } from "@/features/routines/store/routine-store";
+import { StockWidget } from "@/features/stocks/components/stock-widget";
+import { useStockStore } from "@/features/stocks/store/stock-store";
 import { TravelWidget } from "@/features/travel/components/travel-widget";
 import { useTravelStore } from "@/features/travel/store/travel-store";
 import { useFeatureFlagStore } from "@/stores/app/use-feature-flag-store";
@@ -56,6 +58,7 @@ export function HomeDashboard() {
   const journals = useJournalStore((state) => state.journals);
   const journalTemplates = useJournalTemplateStore((state) => state.journalTemplates);
   const routines = useRoutineStore((state) => state.routines);
+  const stockSnapshots = useStockStore((state) => state.snapshots);
   const travelTrips = useTravelStore((state) => state.trips);
   const travelVisits = useTravelStore((state) => state.visits);
   const getRecentJournalTemplates = useJournalTemplateStore(
@@ -158,7 +161,7 @@ export function HomeDashboard() {
             <div className="rounded-[24px] border border-line/10 bg-surface p-5">
               <p className="text-sm font-semibold">주식</p>
               <p className="mt-2 text-sm leading-6 text-ink/62">
-                계좌, 시장, 섹터 메모를 생활 기록과 함께 관리합니다.
+                로그인 후 주간 시총 스냅샷을 쌓고, 이후 다른 투자 기록 도메인으로 확장합니다.
               </p>
             </div>
           </div>
@@ -227,10 +230,15 @@ export function HomeDashboard() {
                   텔레그램 리마인더 만들기
                 </p>
               </Link>
-              <div className="rounded-[24px] border border-line/10 bg-surface px-5 py-5">
+              <Link
+                href="/stocks"
+                className="rounded-[24px] border border-line/10 bg-surface px-5 py-5 transition hover:border-coral/35 hover:bg-soft"
+              >
                 <p className="text-sm font-semibold">주식 기록</p>
-                <p className="mt-2 text-sm text-ink/62">다음 확장 도메인 검토 중</p>
-              </div>
+                <p className="mt-2 text-sm text-ink/62">
+                  시총 스냅샷과 통합 매매일지 보기
+                </p>
+              </Link>
             </div>
           </div>
 
@@ -260,15 +268,19 @@ export function HomeDashboard() {
                   <dt className="text-ink/55">루틴 수</dt>
                   <dd className="mt-1 text-2xl font-bold">{routines.length}</dd>
                 </div>
+                <div>
+                  <dt className="text-ink/55">주식 스냅샷 수</dt>
+                  <dd className="mt-1 text-2xl font-bold">{stockSnapshots.length}</dd>
+                </div>
               </dl>
             </div>
 
             <div className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
               <p className="text-sm font-semibold text-coral">한 줄 메모</p>
               <p className="mt-4 text-sm leading-6 text-ink/68">
-                지금 홈은 기록과 여행 아카이브를 함께 다루는 개인 허브입니다.
-                기록은 문서형 흐름으로, 여행은 상위 여행 단위 아카이브로, 루틴은
-                텔레그램 기반 리마인더로 정리하는 현재 구조가 기준선입니다.
+                지금 홈은 기록, 여행, 루틴, 주식 스냅샷을 함께 다루는 개인 허브입니다.
+                주식은 시총 스냅샷과 통합 매매일지를 같은 도메인 아래에서 관리하는
+                흐름으로 확장하고 있습니다.
               </p>
             </div>
           </div>
@@ -396,15 +408,7 @@ export function HomeDashboard() {
               ) : null}
 
               {flags.showStockWidget ? (
-                <div className="rounded-[30px] border border-dashed border-line/20 bg-surface p-6 shadow-card">
-                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-                    Stock Widget
-                  </p>
-                  <h3 className="mt-2 text-xl font-bold">주식 모듈 자리</h3>
-                  <p className="mt-3 text-sm leading-6 text-ink/62">
-                    계좌 변화, 시장 요약, 섹터 메모를 어떤 단위로 묶을지 검토 중입니다.
-                  </p>
-                </div>
+                <StockWidget />
               ) : null}
             </section>
           ) : null}

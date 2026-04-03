@@ -39,6 +39,16 @@ export const featurePolicies = {
     member: true,
     admin: true
   },
+  stockArchive: {
+    guest: false,
+    member: true,
+    admin: true
+  },
+  stockEditor: {
+    guest: false,
+    member: true,
+    admin: true
+  },
   journalArchive: {
     guest: true,
     member: true,
@@ -108,6 +118,10 @@ export function canManageTravel(accessMode: AccessMode) {
 }
 
 export function canManageRoutine(accessMode: AccessMode) {
+  return accessMode === "member" || accessMode === "admin";
+}
+
+export function canManageStock(accessMode: AccessMode) {
   return accessMode === "member" || accessMode === "admin";
 }
 

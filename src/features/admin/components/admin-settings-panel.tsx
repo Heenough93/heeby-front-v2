@@ -14,6 +14,7 @@ import {
 import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
 import { useJournalStore } from "@/features/journals/store/journal-store";
 import { useRoutineStore } from "@/features/routines/store/routine-store";
+import { useStockStore } from "@/features/stocks/store/stock-store";
 import { useTravelStore } from "@/features/travel/store/travel-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 
@@ -30,7 +31,7 @@ const featureFlagItems: Array<{
   {
     key: "showStockWidget",
     label: "주식 위젯 표시",
-    description: "홈에서 주식 placeholder 또는 추후 주식 위젯을 노출합니다."
+    description: "홈에서 최근 주간 시총 스냅샷 요약 위젯을 노출합니다."
   }
 ];
 
@@ -50,6 +51,9 @@ export function AdminSettingsPanel() {
     (state) => state.journalTemplates
   );
   const routines = useRoutineStore((state) => state.routines);
+  const stockSnapshots = useStockStore((state) => state.snapshots);
+  const stockMasters = useStockStore((state) => state.stocks);
+  const stockTradeEntries = useStockStore((state) => state.tradeEntries);
   const travelTrips = useTravelStore((state) => state.trips);
   const travelVisits = useTravelStore((state) => state.visits);
   const announcements = useAnnouncementStore((state) => state.announcements);
@@ -176,7 +180,7 @@ export function AdminSettingsPanel() {
       </p>
       <h2 className="mt-2 text-2xl font-bold">운영 설정 패널</h2>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-6">
+      <div className="mt-5 grid gap-4 md:grid-cols-9">
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 기록 수</p>
           <p className="mt-2 text-2xl font-bold">{journals.length}</p>
@@ -196,6 +200,18 @@ export function AdminSettingsPanel() {
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 여행 방문지 수</p>
           <p className="mt-2 text-2xl font-bold">{travelVisits.length}</p>
+        </div>
+        <div className="rounded-[24px] border border-line/10 bg-paper p-4">
+          <p className="text-sm text-ink/55">현재 주식 마스터 수</p>
+          <p className="mt-2 text-2xl font-bold">{stockMasters.length}</p>
+        </div>
+        <div className="rounded-[24px] border border-line/10 bg-paper p-4">
+          <p className="text-sm text-ink/55">현재 주식 스냅샷 수</p>
+          <p className="mt-2 text-2xl font-bold">{stockSnapshots.length}</p>
+        </div>
+        <div className="rounded-[24px] border border-line/10 bg-paper p-4">
+          <p className="text-sm text-ink/55">현재 주식 거래 수</p>
+          <p className="mt-2 text-2xl font-bold">{stockTradeEntries.length}</p>
         </div>
         <div className="rounded-[24px] border border-line/10 bg-paper p-4">
           <p className="text-sm text-ink/55">현재 상태</p>
