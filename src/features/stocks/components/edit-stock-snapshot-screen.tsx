@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/shared/components/layout/app-shell";
+import { ListBackAction } from "@/shared/components/layout/list-back-action";
 import { StockSnapshotEditor } from "@/features/stocks/components/stock-snapshot-editor";
 import { createDraftFromSnapshot } from "@/features/stocks/lib/stock-snapshot-utils";
 import { useStockStore } from "@/features/stocks/store/stock-store";
@@ -66,6 +67,7 @@ export function EditStockSnapshotScreen({
     <AppShell
       title="시총 스냅샷 수정"
       description="저장된 주차 기록을 다시 열어 순위, 종목, 메모를 조정합니다."
+      actions={<ListBackAction href={`/stocks?scope=${snapshot.marketScope}`} />}
     >
       <StockSnapshotEditor
         value={initialValues}

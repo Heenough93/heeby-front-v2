@@ -5,6 +5,7 @@ import { AppShell } from "@/shared/components/layout/app-shell";
 import { toJournalFormValues } from "@/features/journals/lib/journal-form-values";
 import { useJournalStore } from "@/features/journals/store/journal-store";
 import { JournalForm } from "@/features/journals/components/journal-form";
+import { ListBackAction } from "@/shared/components/layout/list-back-action";
 
 type EditJournalScreenProps = {
   journalId: string;
@@ -36,6 +37,7 @@ export function EditJournalScreen({ journalId }: EditJournalScreenProps) {
     <AppShell
       title="기록 수정"
       description="기록 제목, 템플릿 선택, 질문별 답변을 다시 수정할 수 있습니다."
+      actions={<ListBackAction href="/journals" />}
     >
       <JournalForm
         mode="edit"

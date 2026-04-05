@@ -6,6 +6,7 @@ import { RoutineForm } from "@/features/routines/components/routine-form";
 import type { RoutineFormValues } from "@/features/routines/lib/routine-schema";
 import { useRoutineStore } from "@/features/routines/store/routine-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
+import { ListBackAction } from "@/shared/components/layout/list-back-action";
 
 type EditRoutineScreenProps = {
   routineId: string;
@@ -56,6 +57,7 @@ export function EditRoutineScreen({ routineId }: EditRoutineScreenProps) {
     <AppShell
       title="루틴 수정"
       description="반복 방식과 메시지를 다시 조정해 텔레그램 리마인더를 관리합니다."
+      actions={<ListBackAction href="/routines" />}
     >
       <RoutineForm
         routine={routine}

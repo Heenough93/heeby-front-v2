@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/shared/components/layout/app-shell";
+import { ListBackAction } from "@/shared/components/layout/list-back-action";
 import { AlertDialog } from "@/shared/components/feedback/alert-dialog";
 import { getVisibilityLabel } from "@/features/access/lib/access-policy";
 import { TravelTripForm } from "@/features/travel/components/travel-trip-form";
@@ -144,6 +145,7 @@ export function EditTravelTripScreen({ tripId }: EditTravelTripScreenProps) {
     <AppShell
       title="여행 수정"
       description="여행 정보와 공개 범위를 수정하고, 같은 화면에서 방문지를 계속 관리합니다."
+      actions={<ListBackAction href="/travel" />}
     >
       <div className="grid gap-6">
         <section className="rounded-[30px] border border-line/10 bg-surface p-6 shadow-card md:p-7">

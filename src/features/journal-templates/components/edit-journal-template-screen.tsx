@@ -5,6 +5,7 @@ import { AppShell } from "@/shared/components/layout/app-shell";
 import { toJournalTemplateFormValues } from "@/features/journal-templates/lib/journal-template-form-values";
 import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
 import { JournalTemplateForm } from "@/features/journal-templates/components/journal-template-form";
+import { ListBackAction } from "@/shared/components/layout/list-back-action";
 
 type EditJournalTemplateScreenProps = {
   journalTemplateId: string;
@@ -40,6 +41,7 @@ export function EditJournalTemplateScreen({
     <AppShell
       title="템플릿 수정"
       description="기존 질문 구조를 수정해 템플릿을 다시 다듬습니다."
+      actions={<ListBackAction href="/templates" />}
     >
       <JournalTemplateForm
         mode="edit"

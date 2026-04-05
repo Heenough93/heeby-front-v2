@@ -6,6 +6,7 @@ import { RoutineForm } from "@/features/routines/components/routine-form";
 import type { RoutineFormValues } from "@/features/routines/lib/routine-schema";
 import { useRoutineStore } from "@/features/routines/store/routine-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
+import { ListBackAction } from "@/shared/components/layout/list-back-action";
 
 export function NewRoutineScreen() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export function NewRoutineScreen() {
     <AppShell
       title="새 루틴"
       description="반복 시간과 텔레그램 메시지를 저장해 개인 리마인더를 만듭니다."
+      actions={<ListBackAction href="/routines" />}
     >
       <RoutineForm onSubmit={handleSubmit} submitLabel="루틴 저장" />
     </AppShell>

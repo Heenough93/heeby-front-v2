@@ -6,6 +6,7 @@ import { TravelTripForm } from "@/features/travel/components/travel-trip-form";
 import type { TravelTripFormValues } from "@/features/travel/lib/travel-trip-schema";
 import { useTravelStore } from "@/features/travel/store/travel-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
+import { ListBackAction } from "@/shared/components/layout/list-back-action";
 
 export function NewTravelTripScreen() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export function NewTravelTripScreen() {
     <AppShell
       title="새 여행"
       description="여행 이름과 공개 범위를 먼저 정한 뒤, 저장 후 방문지를 이어서 추가합니다."
+      actions={<ListBackAction href="/travel" />}
     >
       <TravelTripForm onSubmit={handleSubmit} submitLabel="여행 저장" />
     </AppShell>

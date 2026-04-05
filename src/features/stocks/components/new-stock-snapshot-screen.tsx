@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/shared/components/layout/app-shell";
+import { ListBackAction } from "@/shared/components/layout/list-back-action";
 import { StockSnapshotEditor } from "@/features/stocks/components/stock-snapshot-editor";
 import {
   createDraftFromLatestSnapshot,
@@ -75,6 +76,7 @@ export function NewStockSnapshotScreen({
           ? `${sourceSnapshot.weekKey} 스냅샷을 복사한 뒤, 이번 주 순위를 다시 정리하고 한 줄 총평을 남깁니다.`
           : "기본값으로 지난 스냅샷을 불러온 뒤, 이번 주 순서를 다시 정리하고 한 줄 총평을 남깁니다."
       }
+      actions={<ListBackAction href={`/stocks?scope=${initialScope}`} />}
     >
       <StockSnapshotEditor
         value={initialValues}
