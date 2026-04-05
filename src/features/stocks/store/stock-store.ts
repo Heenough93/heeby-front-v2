@@ -79,6 +79,9 @@ type StockStore = {
     id: string,
     values: StockTradeBatchValues["entries"][number]
   ) => StockTradeEntry | undefined;
+  refreshTradePrices: (
+    updates: Array<{ id: string; currentPrice: number; updatedAt: string }>
+  ) => void;
   getTradeEntryById: (id: string) => StockTradeEntry | undefined;
   getTradeDraftRowById: (id: string) => StockTradeDraftRow | undefined;
   removeTradeEntry: (id: string) => void;
@@ -256,9 +259,13 @@ export const useStockStore = create<StockStore>()(
           stockName: entry.stockName.trim(),
           ticker: normalizeTicker(entry.ticker),
           market: entry.market,
-          side: entry.side,
+          positionStatus: entry.positionStatus,
           quantity: Number(entry.quantity),
-          price: Number(entry.price),
+          buyPrice: Number(entry.buyPrice),
+          currentPrice: entry.currentPrice ? Number(entry.currentPrice) : undefined,
+          currentPriceUpdatedAt: entry.currentPrice ? now : undefined,
+          soldAt: entry.soldAt || undefined,
+          sellPrice: entry.sellPrice ? Number(entry.sellPrice) : undefined,
           exchangeRate: entry.exchangeRate ? Number(entry.exchangeRate) : undefined,
           fee: entry.fee ? Number(entry.fee) : undefined,
           note: entry.note?.trim() || undefined,
@@ -289,9 +296,13 @@ export const useStockStore = create<StockStore>()(
           stockName: nextInput.stockName.trim(),
           ticker: normalizeTicker(nextInput.ticker),
           market: nextInput.market,
-          side: nextInput.side,
+          positionStatus: nextInput.positionStatus,
           quantity: Number(nextInput.quantity),
-          price: Number(nextInput.price),
+          buyPrice: Number(nextInput.buyPrice),
+          currentPrice: nextInput.currentPrice ? Number(nextInput.currentPrice) : undefined,
+          currentPriceUpdatedAt: nextInput.currentPrice ? dayjs().toISOString() : undefined,
+          soldAt: nextInput.soldAt || undefined,
+          sellPrice: nextInput.sellPrice ? Number(nextInput.sellPrice) : undefined,
           exchangeRate: nextInput.exchangeRate ? Number(nextInput.exchangeRate) : undefined,
           fee: nextInput.fee ? Number(nextInput.fee) : undefined,
           note: nextInput.note?.trim() || undefined,
@@ -306,6 +317,25 @@ export const useStockStore = create<StockStore>()(
 
         return nextEntry;
       },
+      refreshTradePrices: (updates) =>
+        set((state) => ({
+          tradeEntries: sortTradeEntries(
+            state.tradeEntries.map((entry) => {
+              const nextUpdate = updates.find((update) => update.id === entry.id);
+
+              if (!nextUpdate || entry.positionStatus !== "open") {
+                return entry;
+              }
+
+              return {
+                ...entry,
+                currentPrice: nextUpdate.currentPrice,
+                currentPriceUpdatedAt: nextUpdate.updatedAt,
+                updatedAt: nextUpdate.updatedAt
+              };
+            })
+          )
+        })),
       getTradeEntryById: (id) => get().tradeEntries.find((entry) => entry.id === id),
       getTradeDraftRowById: (id) => {
         const entry = get().tradeEntries.find((item) => item.id === id);
@@ -323,9 +353,12 @@ export const useStockStore = create<StockStore>()(
           stockName: entry.stockName,
           ticker: entry.ticker,
           market: entry.market,
-          side: entry.side,
+          positionStatus: entry.positionStatus,
           quantity: String(entry.quantity),
-          price: String(entry.price),
+          buyPrice: String(entry.buyPrice),
+          currentPrice: entry.currentPrice ? String(entry.currentPrice) : "",
+          soldAt: entry.soldAt ?? "",
+          sellPrice: entry.sellPrice ? String(entry.sellPrice) : "",
           exchangeRate: entry.exchangeRate ? String(entry.exchangeRate) : "",
           fee: entry.fee ? String(entry.fee) : "",
           note: entry.note ?? ""
@@ -350,7 +383,7 @@ export const useStockStore = create<StockStore>()(
     }),
     {
       name: "heeby-stock-store",
-      version: 4,
+      version: 6,
       migrate: (persistedState, version) => {
         const state = persistedState as Partial<StockStore> | undefined;
 
@@ -379,6 +412,20 @@ export const useStockStore = create<StockStore>()(
                       stocks: nextStocks
                     })
             })) as StockSnapshot[]
+          );
+        }
+
+        if (version < 5) {
+          nextState.tradeEntries = sortTradeEntries(initialStockTradeEntries);
+        }
+
+        if (version < 6) {
+          nextState.tradeEntries = sortTradeEntries(
+            (nextState.tradeEntries ?? initialStockTradeEntries).map((entry) => ({
+              ...entry,
+              currentPriceUpdatedAt:
+                "currentPriceUpdatedAt" in entry ? entry.currentPriceUpdatedAt : undefined
+            })) as StockTradeEntry[]
           );
         }
 

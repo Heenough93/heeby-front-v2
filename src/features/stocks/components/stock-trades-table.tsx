@@ -5,27 +5,33 @@ import { stockTradeBatchSchema } from "@/features/stocks/lib/stock-trade-schema"
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import {
   formatTradeCurrency,
+  formatTradeRate,
   getTradeAccountTypeLabel,
-  getTradeAmount,
-  getTradeAmountKrw,
+  getTradeBuyAmountKrw,
+  getTradeCurrentAmountKrw,
   getTradeMonthKey,
-  getTradeSideLabel
+  getTradePositionStatusLabel,
+  getTradeProfitAmountKrw,
+  getTradeProfitRate,
+  getTradeReferencePrice,
+  getTradeSellAmountKrw
 } from "@/features/stocks/lib/stock-trade-utils";
 import { AlertDialog } from "@/shared/components/feedback/alert-dialog";
 import type {
   StockTradeAccountType,
   StockTradeDraftRow,
   StockTradeEntry,
-  StockTradeSide
+  StockTradePositionStatus
 } from "@/features/stocks/lib/stock-types";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 
-type TradeSortKey = "latest" | "oldest" | "amount-desc" | "amount-asc";
+type TradeSortKey = "latest" | "oldest" | "buy-desc" | "buy-asc" | "profit-desc" | "profit-asc";
 
 export function StockTradesTable() {
   const tradeEntries = useStockStore((state) => state.tradeEntries);
   const getTradeDraftRowById = useStockStore((state) => state.getTradeDraftRowById);
   const updateTradeEntry = useStockStore((state) => state.updateTradeEntry);
+  const refreshTradePrices = useStockStore((state) => state.refreshTradePrices);
   const removeTradeEntry = useStockStore((state) => state.removeTradeEntry);
   const showToast = useToastStore((state) => state.showToast);
   const monthOptions = useMemo(
@@ -39,7 +45,7 @@ export function StockTradesTable() {
   const [month, setMonth] = useState("");
   const [accountName, setAccountName] = useState("전체");
   const [accountType, setAccountType] = useState<"전체" | StockTradeAccountType>("전체");
-  const [side, setSide] = useState<"전체" | StockTradeSide>("전체");
+  const [positionStatus, setPositionStatus] = useState<"전체" | StockTradePositionStatus>("전체");
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<TradeSortKey>("latest");
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -47,6 +53,9 @@ export function StockTradesTable() {
   const [editingRow, setEditingRow] = useState<StockTradeDraftRow | null>(null);
   const [editError, setEditError] = useState<string>();
   const [pendingDeleteEntry, setPendingDeleteEntry] = useState<StockTradeEntry | null>(null);
+  const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
+  const [lastRefreshAt, setLastRefreshAt] = useState<string>();
+  const [lastFailedSymbols, setLastFailedSymbols] = useState<string[]>([]);
 
   const filteredEntries = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -64,7 +73,7 @@ export function StockTradesTable() {
         return false;
       }
 
-      if (side !== "전체" && entry.side !== side) {
+      if (positionStatus !== "전체" && entry.positionStatus !== positionStatus) {
         return false;
       }
 
@@ -81,36 +90,49 @@ export function StockTradesTable() {
       switch (sortKey) {
         case "oldest":
           return a.tradedAt.localeCompare(b.tradedAt);
-        case "amount-desc":
-          return getTradeAmountKrw(b) - getTradeAmountKrw(a);
-        case "amount-asc":
-          return getTradeAmountKrw(a) - getTradeAmountKrw(b);
+        case "buy-desc":
+          return getTradeBuyAmountKrw(b) - getTradeBuyAmountKrw(a);
+        case "buy-asc":
+          return getTradeBuyAmountKrw(a) - getTradeBuyAmountKrw(b);
+        case "profit-desc":
+          return (getTradeProfitAmountKrw(b) ?? Number.NEGATIVE_INFINITY) -
+            (getTradeProfitAmountKrw(a) ?? Number.NEGATIVE_INFINITY);
+        case "profit-asc":
+          return (getTradeProfitAmountKrw(a) ?? Number.POSITIVE_INFINITY) -
+            (getTradeProfitAmountKrw(b) ?? Number.POSITIVE_INFINITY);
         case "latest":
         default:
           return b.tradedAt.localeCompare(a.tradedAt);
       }
     });
-  }, [accountName, accountType, month, search, side, sortKey, tradeEntries]);
+  }, [accountName, accountType, month, positionStatus, search, sortKey, tradeEntries]);
 
   const activeFilterChips = [
-    month ? `${month}` : null,
+    month || null,
     accountName !== "전체" ? accountName : null,
     accountType !== "전체" ? getTradeAccountTypeLabel(accountType) : null,
-    side !== "전체" ? getTradeSideLabel(side) : null,
+    positionStatus !== "전체" ? getTradePositionStatusLabel(positionStatus) : null,
     search.trim() ? `검색: ${search.trim()}` : null
   ].filter(Boolean) as string[];
-  const buyAmountKrw = filteredEntries
-    .filter((entry) => entry.side === "buy")
-    .reduce((sum, entry) => sum + getTradeAmountKrw(entry), 0);
-  const sellAmountKrw = filteredEntries
-    .filter((entry) => entry.side === "sell")
-    .reduce((sum, entry) => sum + getTradeAmountKrw(entry), 0);
+
+  const openCount = filteredEntries.filter((entry) => entry.positionStatus === "open").length;
+  const closedCount = filteredEntries.filter((entry) => entry.positionStatus === "closed").length;
+  const totalBuyAmountKrw = filteredEntries.reduce(
+    (sum, entry) => sum + getTradeBuyAmountKrw(entry),
+    0
+  );
+  const totalProfitAmountKrw = filteredEntries.reduce(
+    (sum, entry) => sum + (getTradeProfitAmountKrw(entry) ?? 0),
+    0
+  );
+  const totalProfitRate =
+    totalBuyAmountKrw > 0 ? (totalProfitAmountKrw / totalBuyAmountKrw) * 100 : undefined;
 
   const resetFilters = () => {
     setMonth("");
     setAccountName("전체");
     setAccountType("전체");
-    setSide("전체");
+    setPositionStatus("전체");
     setSearch("");
     setSortKey("latest");
     setIsAdvancedOpen(false);
@@ -120,7 +142,31 @@ export function StockTradesTable() {
     key: K,
     value: StockTradeDraftRow[K]
   ) => {
-    setEditingRow((current) => (current ? { ...current, [key]: value } : current));
+    setEditingRow((current) => {
+      if (!current) {
+        return current;
+      }
+
+      if (key === "market") {
+        return {
+          ...current,
+          market: value as StockTradeDraftRow["market"],
+          exchangeRate: value === "US" ? current.exchangeRate : ""
+        };
+      }
+
+      if (key === "positionStatus") {
+        return {
+          ...current,
+          positionStatus: value as StockTradeDraftRow["positionStatus"],
+          currentPrice: value === "open" ? current.currentPrice : "",
+          soldAt: value === "closed" ? current.soldAt : "",
+          sellPrice: value === "closed" ? current.sellPrice : ""
+        };
+      }
+
+      return { ...current, [key]: value };
+    });
   };
 
   const openEditModal = (entryId: string) => {
@@ -167,6 +213,82 @@ export function StockTradesTable() {
       variant: "success"
     });
     closeEditModal();
+  };
+
+  const handleRefreshPrices = async () => {
+    const openEntries = tradeEntries.filter(
+      (entry) =>
+        entry.positionStatus === "open" && (entry.market === "KR" || entry.market === "US" || entry.market === "ETF")
+    );
+
+    if (openEntries.length === 0) {
+      showToast({
+        title: "갱신할 보유 포지션이 없습니다.",
+        variant: "error"
+      });
+      return;
+    }
+
+    setIsRefreshingPrices(true);
+
+    try {
+      const response = await fetch("/api/stocks/quotes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          entries: openEntries.map((entry) => ({
+            id: entry.id,
+            ticker: entry.ticker,
+            market: entry.market
+          }))
+        })
+      });
+
+      const payload = (await response.json()) as {
+        quotes?: Array<{ id: string; currentPrice: number }>;
+        failures?: Array<{ id: string; symbol: string }>;
+        message?: string;
+      };
+
+      if (!response.ok) {
+        showToast({
+          title: payload.message ?? "현재가를 갱신하지 못했습니다.",
+          variant: "error"
+        });
+        return;
+      }
+
+      const updatedAt = new Date().toISOString();
+      const quotes: Array<{ id: string; currentPrice: number }> = payload.quotes ?? [];
+      const failures = payload.failures ?? [];
+
+      refreshTradePrices(
+        quotes.map((quote) => ({
+          id: quote.id,
+          currentPrice: quote.currentPrice,
+          updatedAt
+        }))
+      );
+      setLastRefreshAt(updatedAt);
+      setLastFailedSymbols(failures.map((failure) => failure.symbol));
+
+      showToast({
+        title:
+          quotes.length > 0
+            ? `${quotes.length}개 포지션의 현재가를 갱신했습니다.`
+            : "조회 가능한 현재가가 없었습니다.",
+        variant: quotes.length > 0 ? "success" : "error"
+      });
+    } catch {
+      showToast({
+        title: "현재가 조회 중 오류가 발생했습니다.",
+        variant: "error"
+      });
+    } finally {
+      setIsRefreshingPrices(false);
+    }
   };
 
   return (
@@ -223,10 +345,12 @@ export function StockTradesTable() {
                 onChange={(event) => setSortKey(event.target.value as TradeSortKey)}
                 className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral focus:bg-surface"
               >
-                <option value="latest">최신 거래순</option>
-                <option value="oldest">오래된 거래순</option>
-                <option value="amount-desc">거래금액 큰 순</option>
-                <option value="amount-asc">거래금액 작은 순</option>
+                <option value="latest">최신 등록순</option>
+                <option value="oldest">오래된 등록순</option>
+                <option value="buy-desc">매수금액 큰 순</option>
+                <option value="buy-asc">매수금액 작은 순</option>
+                <option value="profit-desc">손익 큰 순</option>
+                <option value="profit-asc">손익 작은 순</option>
               </select>
             </label>
 
@@ -270,15 +394,19 @@ export function StockTradesTable() {
             </label>
 
             <label className="grid gap-2">
-              <span className="text-sm font-semibold text-ink/75">매수/매도</span>
+              <span className="text-sm font-semibold text-ink/75">보유 상태</span>
               <select
-                value={side}
-                onChange={(event) => setSide(event.target.value as "전체" | StockTradeSide)}
+                value={positionStatus}
+                onChange={(event) =>
+                  setPositionStatus(
+                    event.target.value as "전체" | StockTradePositionStatus
+                  )
+                }
                 className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral focus:bg-surface"
               >
                 <option value="전체">전체</option>
-                <option value="buy">매수</option>
-                <option value="sell">매도</option>
+                <option value="open">보유중</option>
+                <option value="closed">매도완료</option>
               </select>
             </label>
           </div>
@@ -299,41 +427,66 @@ export function StockTradesTable() {
       </div>
 
       <div className="grid w-full gap-4 md:grid-cols-3">
-        <SummaryCard label="전체 / 매수 / 매도" value={`${filteredEntries.length} / ${filteredEntries.filter((entry) => entry.side === "buy").length} / ${filteredEntries.filter((entry) => entry.side === "sell").length}`} />
-        <SummaryCard label="매수 합" value={`${formatTradeCurrency(buyAmountKrw)}원`} />
-        <SummaryCard label="매도 합" value={`${formatTradeCurrency(sellAmountKrw)}원`} />
+        <SummaryCard label="전체 / 보유중 / 매도완료" value={`${filteredEntries.length} / ${openCount} / ${closedCount}`} />
+        <SummaryCard label="총 손익" value={formatProfitValue(totalProfitAmountKrw)} />
+        <SummaryCard label="총 수익률" value={formatTradeRate(totalProfitRate)} />
       </div>
 
       <div className="w-full rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-              Trade Table
+              Position Table
             </p>
             <h2 className="mt-2 text-2xl font-bold">통합 매매일지</h2>
+            {lastRefreshAt ? (
+              <p className="mt-2 text-sm text-ink/58">
+                마지막 현재가 갱신 {formatRefreshDate(lastRefreshAt)}
+              </p>
+            ) : null}
           </div>
-          <span className="rounded-full bg-paper px-4 py-2 text-sm font-semibold text-ink/68">
-            거래 {filteredEntries.length}건
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleRefreshPrices}
+              disabled={isRefreshingPrices}
+              className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft disabled:cursor-wait disabled:opacity-60"
+            >
+              {isRefreshingPrices ? "현재가 갱신 중..." : "현재가 갱신"}
+            </button>
+            <span className="rounded-full bg-paper px-4 py-2 text-sm font-semibold text-ink/68">
+              포지션 {filteredEntries.length}건
+            </span>
+          </div>
         </div>
+
+        {lastFailedSymbols.length ? (
+          <div className="mt-4 rounded-[20px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            조회 실패 종목: {lastFailedSymbols.join(", ")}
+          </div>
+        ) : null}
 
         <div className="mt-6 hidden overflow-x-auto md:block">
           <table className="w-full divide-y divide-line/10 text-sm">
             <thead>
               <tr className="text-left text-ink/55">
-                <th className="px-3 py-3 font-semibold">거래일</th>
+                <th className="px-3 py-3 font-semibold">매수일</th>
                 <th className="px-3 py-3 font-semibold">계좌</th>
                 <th className="px-3 py-3 font-semibold">종목</th>
-                <th className="px-3 py-3 font-semibold">구분</th>
-                <th className="px-3 py-3 font-semibold">수량</th>
-                <th className="px-3 py-3 font-semibold">단가</th>
-                <th className="px-3 py-3 font-semibold">거래금액</th>
+                <th className="px-3 py-3 font-semibold">상태</th>
+                <th className="px-3 py-3 font-semibold">매수가</th>
+                <th className="px-3 py-3 font-semibold">현재가/매도가</th>
+                <th className="px-3 py-3 font-semibold">손익</th>
+                <th className="px-3 py-3 font-semibold">수익률</th>
                 <th className="px-3 py-3 font-semibold">상세</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line/10">
               {filteredEntries.map((entry) => {
                 const isExpanded = expandedEntryId === entry.id;
+                const referencePrice = getTradeReferencePrice(entry);
+                const profitAmount = getTradeProfitAmountKrw(entry);
+                const profitRate = getTradeProfitRate(entry);
 
                 return (
                   <Fragment key={entry.id}>
@@ -345,19 +498,18 @@ export function StockTradesTable() {
                         <div className="mt-1 text-xs text-ink/52">{entry.ticker}</div>
                       </td>
                       <td className="px-3 py-4">
-                        <span
-                          className={
-                            entry.side === "buy"
-                              ? "rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral"
-                              : "rounded-full bg-ink/10 px-3 py-1 text-xs font-semibold text-ink/70"
-                          }
-                        >
-                          {getTradeSideLabel(entry.side)}
-                        </span>
+                        <StatusBadge status={entry.positionStatus} />
                       </td>
-                      <td className="px-3 py-4">{formatTradeCurrency(entry.quantity)}</td>
-                      <td className="px-3 py-4">{formatTradeCurrency(entry.price)}</td>
-                      <td className="px-3 py-4">{formatTradeCurrency(getTradeAmountKrw(entry))}</td>
+                      <td className="px-3 py-4">{formatTradeCurrency(entry.buyPrice)}</td>
+                      <td className="px-3 py-4">
+                        {referencePrice ? formatTradeCurrency(referencePrice) : "-"}
+                      </td>
+                      <td className="px-3 py-4">
+                        <ProfitText value={profitAmount} />
+                      </td>
+                      <td className="px-3 py-4">
+                        <ProfitRateText value={profitRate} />
+                      </td>
                       <td className="px-3 py-4">
                         <button
                           type="button"
@@ -375,7 +527,7 @@ export function StockTradesTable() {
 
                     {isExpanded ? (
                       <tr>
-                        <td colSpan={8} className="px-3 pb-4">
+                        <td colSpan={9} className="px-3 pb-4">
                           <div className="rounded-[20px] border border-line/10 bg-paper p-4">
                             <div className="grid gap-3 text-sm md:grid-cols-2 xl:grid-cols-4">
                               <DetailItem
@@ -383,6 +535,10 @@ export function StockTradesTable() {
                                 value={getTradeAccountTypeLabel(entry.accountType)}
                               />
                               <DetailItem label="시장" value={entry.market} />
+                              <DetailItem
+                                label="수량"
+                                value={formatTradeCurrency(entry.quantity)}
+                              />
                               <DetailItem
                                 label="환율"
                                 value={
@@ -392,10 +548,28 @@ export function StockTradesTable() {
                                 }
                               />
                               <DetailItem
+                                label="현재가 갱신"
+                                value={entry.currentPriceUpdatedAt ? formatRefreshDate(entry.currentPriceUpdatedAt) : "-"}
+                              />
+                              <DetailItem
+                                label="매수금액"
+                                value={`${formatTradeCurrency(getTradeBuyAmountKrw(entry))}원`}
+                              />
+                              <DetailItem
+                                label="평가금액/매도금액"
+                                value={`${formatTradeCurrency(
+                                  entry.positionStatus === "closed"
+                                    ? getTradeSellAmountKrw(entry)
+                                    : getTradeCurrentAmountKrw(entry)
+                                )}원`}
+                              />
+                              <DetailItem
+                                label="매도일"
+                                value={entry.soldAt ?? "-"}
+                              />
+                              <DetailItem
                                 label="수수료"
-                                value={
-                                  entry.fee ? formatTradeCurrency(entry.fee) : "-"
-                                }
+                                value={entry.fee ? formatTradeCurrency(entry.fee) : "-"}
                               />
                               <DetailItem label="티커" value={entry.ticker} />
                             </div>
@@ -446,24 +620,28 @@ export function StockTradesTable() {
                     {entry.accountName} · {entry.ticker}
                   </p>
                 </div>
-                <span
-                  className={
-                    entry.side === "buy"
-                      ? "rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral"
-                      : "rounded-full bg-ink/10 px-3 py-1 text-xs font-semibold text-ink/70"
-                  }
-                >
-                  {getTradeSideLabel(entry.side)}
-                </span>
+                <StatusBadge status={entry.positionStatus} />
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <DetailItem label="수량" value={formatTradeCurrency(entry.quantity)} />
-                <DetailItem label="단가" value={formatTradeCurrency(entry.price)} />
+                <DetailItem label="매수가" value={formatTradeCurrency(entry.buyPrice)} />
                 <DetailItem
-                  label="거래금액"
-                  value={formatTradeCurrency(getTradeAmountKrw(entry))}
+                  label={entry.positionStatus === "closed" ? "매도가" : "현재가"}
+                  value={
+                    getTradeReferencePrice(entry)
+                      ? formatTradeCurrency(getTradeReferencePrice(entry)!)
+                      : "-"
+                  }
                 />
+                <DetailItem
+                  label="손익"
+                  value={formatProfitValue(getTradeProfitAmountKrw(entry))}
+                />
+                <DetailItem
+                  label="수익률"
+                  value={formatTradeRate(getTradeProfitRate(entry))}
+                />
+                <DetailItem label="수량" value={formatTradeCurrency(entry.quantity)} />
                 <DetailItem
                   label="환율"
                   value={
@@ -471,10 +649,6 @@ export function StockTradesTable() {
                       ? formatTradeCurrency(entry.exchangeRate)
                       : "-"
                   }
-                />
-                <DetailItem
-                  label="수수료"
-                  value={entry.fee ? formatTradeCurrency(entry.fee) : "-"}
                 />
               </div>
 
@@ -521,9 +695,9 @@ export function StockTradesTable() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-                  Edit Trade
+                  Edit Position
                 </p>
-                <h2 className="mt-2 text-2xl font-bold">거래 수정</h2>
+                <h2 className="mt-2 text-2xl font-bold">매매일지 수정</h2>
               </div>
               <button
                 type="button"
@@ -535,7 +709,7 @@ export function StockTradesTable() {
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <TradeField label="거래일">
+              <TradeField label="매수일">
                 <input
                   type="date"
                   value={editingRow.tradedAt}
@@ -599,16 +773,19 @@ export function StockTradesTable() {
                   <option value="OTHER">기타</option>
                 </select>
               </TradeField>
-              <TradeField label="구분">
+              <TradeField label="보유 상태">
                 <select
-                  value={editingRow.side}
+                  value={editingRow.positionStatus}
                   onChange={(event) =>
-                    updateEditingField("side", event.target.value as StockTradeSide)
+                    updateEditingField(
+                      "positionStatus",
+                      event.target.value as StockTradeDraftRow["positionStatus"]
+                    )
                   }
                   className={editInputClassName}
                 >
-                  <option value="buy">매수</option>
-                  <option value="sell">매도</option>
+                  <option value="open">보유중</option>
+                  <option value="closed">매도완료</option>
                 </select>
               </TradeField>
               <TradeField label="수량">
@@ -621,13 +798,45 @@ export function StockTradesTable() {
                   className={editInputClassName}
                 />
               </TradeField>
-              <TradeField label="단가">
+              <TradeField label="매수가">
                 <input
                   type="number"
                   min="0"
                   step="0.0001"
-                  value={editingRow.price}
-                  onChange={(event) => updateEditingField("price", event.target.value)}
+                  value={editingRow.buyPrice}
+                  onChange={(event) => updateEditingField("buyPrice", event.target.value)}
+                  className={editInputClassName}
+                />
+              </TradeField>
+              <TradeField label={editingRow.positionStatus === "closed" ? "매도일" : "현재가 기준일"}>
+                <input
+                  type={editingRow.positionStatus === "closed" ? "date" : "text"}
+                  value={
+                    editingRow.positionStatus === "closed"
+                      ? editingRow.soldAt
+                      : "실시간/수동 입력"
+                  }
+                  onChange={(event) => updateEditingField("soldAt", event.target.value)}
+                  className={editInputClassName}
+                  disabled={editingRow.positionStatus !== "closed"}
+                />
+              </TradeField>
+              <TradeField label={editingRow.positionStatus === "closed" ? "매도가" : "현재가"}>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.0001"
+                  value={
+                    editingRow.positionStatus === "closed"
+                      ? editingRow.sellPrice
+                      : editingRow.currentPrice
+                  }
+                  onChange={(event) =>
+                    updateEditingField(
+                      editingRow.positionStatus === "closed" ? "sellPrice" : "currentPrice",
+                      event.target.value
+                    )
+                  }
                   className={editInputClassName}
                 />
               </TradeField>
@@ -653,7 +862,7 @@ export function StockTradesTable() {
                   className={editInputClassName}
                 />
               </TradeField>
-              <div className="xl:col-span-4 md:col-span-2">
+              <div className="md:col-span-2 xl:col-span-4">
                 <TradeField label="메모">
                   <textarea
                     value={editingRow.note}
@@ -692,7 +901,7 @@ export function StockTradesTable() {
         title="거래를 삭제할까요?"
         description={
           pendingDeleteEntry
-            ? `${pendingDeleteEntry.tradedAt} ${pendingDeleteEntry.stockName} 거래를 삭제하면 이 브라우저의 로컬 기록에서 사라집니다.`
+            ? `${pendingDeleteEntry.tradedAt} ${pendingDeleteEntry.stockName} 기록을 삭제하면 이 브라우저의 로컬 기록에서 사라집니다.`
             : ""
         }
         confirmLabel="거래 삭제"
@@ -747,6 +956,66 @@ function TradeField({
       {children}
     </label>
   );
+}
+
+function StatusBadge({ status }: { status: StockTradePositionStatus }) {
+  return (
+    <span
+      className={
+        status === "open"
+          ? "rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral"
+          : "rounded-full bg-ink/10 px-3 py-1 text-xs font-semibold text-ink/70"
+      }
+    >
+      {getTradePositionStatusLabel(status)}
+    </span>
+  );
+}
+
+function ProfitText({ value }: { value?: number }) {
+  const className =
+    value === undefined
+      ? "text-ink/55"
+      : value >= 0
+        ? "text-coral"
+        : "text-sky-700";
+
+  return <span className={`font-semibold ${className}`}>{formatProfitValue(value)}</span>;
+}
+
+function ProfitRateText({ value }: { value?: number }) {
+  const className =
+    value === undefined
+      ? "text-ink/55"
+      : value >= 0
+        ? "text-coral"
+        : "text-sky-700";
+
+  return <span className={`font-semibold ${className}`}>{formatTradeRate(value)}</span>;
+}
+
+function formatProfitValue(value?: number) {
+  if (value === undefined) {
+    return "-";
+  }
+
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${formatTradeCurrency(value)}원`;
+}
+
+function formatRefreshDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
 }
 
 const editInputClassName =

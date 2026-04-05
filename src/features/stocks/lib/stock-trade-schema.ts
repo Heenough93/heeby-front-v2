@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   stockMarketValues,
   stockTradeAccountTypeValues,
-  stockTradeSideValues
+  stockTradePositionStatusValues
 } from "@/features/stocks/lib/stock-types";
 
 export const stockTradeDraftRowSchema = z.object({
@@ -25,17 +25,32 @@ export const stockTradeDraftRowSchema = z.object({
     .min(1, "티커를 입력해주세요.")
     .max(16, "티커는 16자 이하로 입력해주세요."),
   market: z.enum(stockMarketValues),
-  side: z.enum(stockTradeSideValues),
+  positionStatus: z.enum(stockTradePositionStatusValues),
   quantity: z
     .string()
     .trim()
     .min(1, "수량을 입력해주세요.")
     .refine((value) => Number(value) > 0, "수량은 0보다 커야 합니다."),
-  price: z
+  buyPrice: z
     .string()
     .trim()
-    .min(1, "단가를 입력해주세요.")
-    .refine((value) => Number(value) > 0, "단가는 0보다 커야 합니다."),
+    .min(1, "매수가를 입력해주세요.")
+    .refine((value) => Number(value) > 0, "매수가는 0보다 커야 합니다."),
+  currentPrice: z
+    .string()
+    .trim()
+    .refine(
+      (value) => value === "" || Number(value) > 0,
+      "현재가는 비워두거나 0보다 크게 입력해주세요."
+    ),
+  soldAt: z.string().trim(),
+  sellPrice: z
+    .string()
+    .trim()
+    .refine(
+      (value) => value === "" || Number(value) > 0,
+      "매도가는 비워두거나 0보다 크게 입력해주세요."
+    ),
   exchangeRate: z.string().trim(),
   fee: z
     .string()
@@ -47,23 +62,54 @@ export const stockTradeDraftRowSchema = z.object({
     .max(120, "메모는 120자 이하로 입력해주세요.")
 }).superRefine((value, ctx) => {
   if (value.market !== "US") {
+    if (value.exchangeRate !== "" && Number(value.exchangeRate) <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["exchangeRate"],
+        message: "환율은 0보다 커야 합니다."
+      });
+    }
+  } else {
+    if (value.exchangeRate === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["exchangeRate"],
+        message: "미국 거래는 환율을 입력해주세요."
+      });
+    } else if (Number(value.exchangeRate) <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["exchangeRate"],
+        message: "환율은 0보다 커야 합니다."
+      });
+    }
+  }
+
+  if (value.positionStatus === "closed") {
+    if (value.soldAt === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["soldAt"],
+        message: "매도 완료 상태는 매도일을 입력해주세요."
+      });
+    }
+
+    if (value.sellPrice === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["sellPrice"],
+        message: "매도 완료 상태는 매도가를 입력해주세요."
+      });
+    }
+
     return;
   }
 
-  if (value.exchangeRate === "") {
+  if (value.currentPrice === "") {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ["exchangeRate"],
-      message: "미국 거래는 환율을 입력해주세요."
-    });
-    return;
-  }
-
-  if (Number(value.exchangeRate) <= 0) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["exchangeRate"],
-      message: "환율은 0보다 커야 합니다."
+      path: ["currentPrice"],
+      message: "보유중 상태는 현재가를 입력해주세요."
     });
   }
 });

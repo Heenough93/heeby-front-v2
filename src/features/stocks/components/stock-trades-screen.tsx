@@ -18,7 +18,7 @@ export function StockTradesScreen() {
   return (
     <AppShell
       title="통합 매매일지"
-      description="여러 계좌에서 발생한 매매를 월, 계좌, 계좌 성격, 매수/매도 조건으로 필터링하면서 한 표에서 다시 읽습니다."
+      description="여러 계좌의 보유 포지션과 매도 완료 기록을 월, 계좌, 계좌 성격, 보유 상태 조건으로 다시 읽습니다."
       actions={
         canManage ? (
           <button

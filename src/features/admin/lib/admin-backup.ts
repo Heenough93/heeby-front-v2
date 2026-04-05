@@ -26,7 +26,7 @@ import {
   stockMarketValues,
   stockSnapshotScopeValues,
   stockTradeAccountTypeValues,
-  stockTradeSideValues
+  stockTradePositionStatusValues
 } from "@/features/stocks/lib/stock-types";
 import { contentVisibilityValues, themeValues } from "@/types/domain";
 
@@ -169,9 +169,13 @@ const stockTradeEntrySchema = baseEntitySchema.extend({
   stockName: z.string().min(1),
   ticker: z.string().min(1),
   market: z.enum(stockMarketValues),
-  side: z.enum(stockTradeSideValues),
+  positionStatus: z.enum(stockTradePositionStatusValues),
   quantity: z.number().positive(),
-  price: z.number().positive(),
+  buyPrice: z.number().positive(),
+  currentPrice: z.number().positive().optional(),
+  currentPriceUpdatedAt: isoDateTimeSchema.optional(),
+  soldAt: localDateSchema.optional(),
+  sellPrice: z.number().positive().optional(),
   exchangeRate: z.number().positive().optional(),
   fee: z.number().min(0).optional(),
   note: z.string().optional()
@@ -182,6 +186,24 @@ const stockTradeEntrySchema = baseEntitySchema.extend({
       path: ["exchangeRate"],
       message: "미국 거래 데이터에는 환율이 필요합니다."
     });
+  }
+
+  if (value.positionStatus === "closed") {
+    if (!value.soldAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["soldAt"],
+        message: "매도 완료 데이터에는 매도일이 필요합니다."
+      });
+    }
+
+    if (value.sellPrice === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["sellPrice"],
+        message: "매도 완료 데이터에는 매도가가 필요합니다."
+      });
+    }
   }
 });
 

@@ -5,8 +5,7 @@ import { stockTradeBatchSchema } from "@/features/stocks/lib/stock-trade-schema"
 import { createEmptyTradeRow } from "@/features/stocks/lib/stock-trade-utils";
 import type {
   StockTradeAccountType,
-  StockTradeDraftRow,
-  StockTradeSide
+  StockTradeDraftRow
 } from "@/features/stocks/lib/stock-types";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
@@ -43,6 +42,16 @@ export function StockTradeBatchForm({
             ...row,
             market: value as StockTradeDraftRow["market"],
             exchangeRate: value === "US" ? row.exchangeRate : ""
+          };
+        }
+
+        if (key === "positionStatus") {
+          return {
+            ...row,
+            positionStatus: value as StockTradeDraftRow["positionStatus"],
+            currentPrice: value === "open" ? row.currentPrice : "",
+            soldAt: value === "closed" ? row.soldAt : "",
+            sellPrice: value === "closed" ? row.sellPrice : ""
           };
         }
 
@@ -190,16 +199,20 @@ export function StockTradeBatchForm({
                   <option value="OTHER">기타</option>
                 </select>
               </Field>
-              <Field label="구분">
+              <Field label="보유 상태">
                 <select
-                  value={row.side}
+                  value={row.positionStatus}
                   onChange={(event) =>
-                    updateRow(row.id, "side", event.target.value as StockTradeSide)
+                    updateRow(
+                      row.id,
+                      "positionStatus",
+                      event.target.value as StockTradeDraftRow["positionStatus"]
+                    )
                   }
                   className={inputClassName}
                 >
-                  <option value="buy">매수</option>
-                  <option value="sell">매도</option>
+                  <option value="open">보유중</option>
+                  <option value="closed">매도완료</option>
                 </select>
               </Field>
               <Field label="수량">
@@ -212,14 +225,40 @@ export function StockTradeBatchForm({
                   className={inputClassName}
                 />
               </Field>
-              <Field label="단가">
+              <Field label="매수가">
                 <input
                   type="number"
                   min="0"
                   step="0.0001"
-                  value={row.price}
-                  onChange={(event) => updateRow(row.id, "price", event.target.value)}
+                  value={row.buyPrice}
+                  onChange={(event) => updateRow(row.id, "buyPrice", event.target.value)}
                   className={inputClassName}
+                />
+              </Field>
+              <Field label={row.positionStatus === "closed" ? "매도일" : "현재가 기준일"}>
+                <input
+                  type={row.positionStatus === "closed" ? "date" : "text"}
+                  value={row.positionStatus === "closed" ? row.soldAt : "실시간/수동 입력"}
+                  onChange={(event) => updateRow(row.id, "soldAt", event.target.value)}
+                  className={inputClassName}
+                  disabled={row.positionStatus !== "closed"}
+                />
+              </Field>
+              <Field label={row.positionStatus === "closed" ? "매도가" : "현재가"}>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.0001"
+                  value={row.positionStatus === "closed" ? row.sellPrice : row.currentPrice}
+                  onChange={(event) =>
+                    updateRow(
+                      row.id,
+                      row.positionStatus === "closed" ? "sellPrice" : "currentPrice",
+                      event.target.value
+                    )
+                  }
+                  className={inputClassName}
+                  placeholder={row.positionStatus === "closed" ? "매도가 입력" : "현재가 입력"}
                 />
               </Field>
               <Field label="환율">

@@ -1,4 +1,4 @@
-import { EditStockTradeScreen } from "@/features/stocks/components/edit-stock-trade-screen";
+import { redirect } from "next/navigation";
 
 type EditStockTradeRoutePageProps = {
   params: {
@@ -9,5 +9,5 @@ type EditStockTradeRoutePageProps = {
 export default function EditStockTradeRoutePage({
   params
 }: EditStockTradeRoutePageProps) {
-  return <EditStockTradeScreen tradeId={params.id} />;
+  redirect("/stocks/trades");
 }

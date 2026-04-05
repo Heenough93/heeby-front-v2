@@ -70,9 +70,9 @@ export const stockTradeAccountTypeValues = [
 
 export type StockTradeAccountType = (typeof stockTradeAccountTypeValues)[number];
 
-export const stockTradeSideValues = ["buy", "sell"] as const;
+export const stockTradePositionStatusValues = ["open", "closed"] as const;
 
-export type StockTradeSide = (typeof stockTradeSideValues)[number];
+export type StockTradePositionStatus = (typeof stockTradePositionStatusValues)[number];
 
 export type StockTradeEntry = {
   id: string;
@@ -82,9 +82,13 @@ export type StockTradeEntry = {
   stockName: string;
   ticker: string;
   market: StockMarket;
-  side: StockTradeSide;
+  positionStatus: StockTradePositionStatus;
   quantity: number;
-  price: number;
+  buyPrice: number;
+  currentPrice?: number;
+  currentPriceUpdatedAt?: string;
+  soldAt?: string;
+  sellPrice?: number;
   exchangeRate?: number;
   fee?: number;
   note?: string;
@@ -100,9 +104,12 @@ export type StockTradeDraftRow = {
   stockName: string;
   ticker: string;
   market: StockMarket;
-  side: StockTradeSide;
+  positionStatus: StockTradePositionStatus;
   quantity: string;
-  price: string;
+  buyPrice: string;
+  currentPrice: string;
+  soldAt: string;
+  sellPrice: string;
   exchangeRate: string;
   fee: string;
   note: string;

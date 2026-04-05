@@ -4,7 +4,7 @@ import type {
   StockTradeAccountType,
   StockTradeDraftRow,
   StockTradeEntry,
-  StockTradeSide
+  StockTradePositionStatus
 } from "@/features/stocks/lib/stock-types";
 
 export function createEmptyTradeRow(date = dayjs().format("YYYY-MM-DD")): StockTradeDraftRow {
@@ -16,9 +16,12 @@ export function createEmptyTradeRow(date = dayjs().format("YYYY-MM-DD")): StockT
     stockName: "",
     ticker: "",
     market: "KR",
-    side: "buy",
+    positionStatus: "open",
     quantity: "",
-    price: "",
+    buyPrice: "",
+    currentPrice: "",
+    soldAt: "",
+    sellPrice: "",
     exchangeRate: "",
     fee: "",
     note: ""
@@ -29,20 +32,105 @@ export function getTradeMonthKey(tradedAt: string) {
   return dayjs(tradedAt).format("YYYY-MM");
 }
 
-export function getTradeAmount(entry: Pick<StockTradeEntry, "quantity" | "price">) {
-  return entry.quantity * entry.price;
+export function getTradeBuyAmount(entry: Pick<StockTradeEntry, "quantity" | "buyPrice">) {
+  return entry.quantity * entry.buyPrice;
 }
 
-export function getTradeAmountKrw(
-  entry: Pick<StockTradeEntry, "market" | "quantity" | "price" | "exchangeRate">
+function applyKrwRate(
+  market: StockTradeEntry["market"],
+  amount: number,
+  exchangeRate?: number
 ) {
-  const baseAmount = getTradeAmount(entry);
-
-  if (entry.market !== "US") {
-    return baseAmount;
+  if (market !== "US") {
+    return amount;
   }
 
-  return baseAmount * (entry.exchangeRate ?? 0);
+  return amount * (exchangeRate ?? 0);
+}
+
+export function getTradeBuyAmountKrw(
+  entry: Pick<StockTradeEntry, "market" | "quantity" | "buyPrice" | "exchangeRate">
+) {
+  return applyKrwRate(entry.market, getTradeBuyAmount(entry), entry.exchangeRate);
+}
+
+export function getTradeSellAmount(entry: Pick<StockTradeEntry, "quantity" | "sellPrice">) {
+  return entry.sellPrice ? entry.quantity * entry.sellPrice : 0;
+}
+
+export function getTradeSellAmountKrw(
+  entry: Pick<StockTradeEntry, "market" | "quantity" | "sellPrice" | "exchangeRate">
+) {
+  return applyKrwRate(entry.market, getTradeSellAmount(entry), entry.exchangeRate);
+}
+
+export function getTradeCurrentAmount(entry: Pick<StockTradeEntry, "quantity" | "currentPrice">) {
+  return entry.currentPrice ? entry.quantity * entry.currentPrice : 0;
+}
+
+export function getTradeCurrentAmountKrw(
+  entry: Pick<StockTradeEntry, "market" | "quantity" | "currentPrice" | "exchangeRate">
+) {
+  return applyKrwRate(entry.market, getTradeCurrentAmount(entry), entry.exchangeRate);
+}
+
+export function getTradeReferencePrice(entry: Pick<StockTradeEntry, "positionStatus" | "currentPrice" | "sellPrice">) {
+  return entry.positionStatus === "closed" ? entry.sellPrice : entry.currentPrice;
+}
+
+export function getTradeProfitAmountKrw(
+  entry: Pick<
+    StockTradeEntry,
+    | "market"
+    | "positionStatus"
+    | "quantity"
+    | "buyPrice"
+    | "currentPrice"
+    | "sellPrice"
+    | "exchangeRate"
+    | "fee"
+  >
+) {
+  const buyAmountKrw = getTradeBuyAmountKrw(entry);
+  const targetAmountKrw =
+    entry.positionStatus === "closed"
+      ? getTradeSellAmountKrw(entry)
+      : getTradeCurrentAmountKrw(entry);
+  const referencePrice = getTradeReferencePrice(entry);
+
+  if (!referencePrice) {
+    return undefined;
+  }
+
+  return targetAmountKrw - buyAmountKrw - (entry.fee ?? 0);
+}
+
+export function getTradeProfitRate(
+  entry: Pick<
+    StockTradeEntry,
+    | "market"
+    | "positionStatus"
+    | "quantity"
+    | "buyPrice"
+    | "currentPrice"
+    | "sellPrice"
+    | "exchangeRate"
+    | "fee"
+  >
+) {
+  const buyAmountKrw = getTradeBuyAmountKrw(entry);
+
+  if (buyAmountKrw <= 0) {
+    return undefined;
+  }
+
+  const profitAmountKrw = getTradeProfitAmountKrw(entry);
+
+  if (profitAmountKrw === undefined) {
+    return undefined;
+  }
+
+  return (profitAmountKrw / buyAmountKrw) * 100;
 }
 
 export function formatTradeCurrency(value: number) {
@@ -70,8 +158,17 @@ export function getTradeAccountTypeLabel(type: StockTradeAccountType) {
   }
 }
 
-export function getTradeSideLabel(side: StockTradeSide) {
-  return side === "buy" ? "매수" : "매도";
+export function getTradePositionStatusLabel(status: StockTradePositionStatus) {
+  return status === "open" ? "보유중" : "매도완료";
+}
+
+export function formatTradeRate(value?: number) {
+  if (value === undefined || !Number.isFinite(value)) {
+    return "-";
+  }
+
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}%`;
 }
 
 export function sortTradeEntries(entries: StockTradeEntry[]) {
