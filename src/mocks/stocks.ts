@@ -48,6 +48,7 @@ export const stockSnapshots: StockSnapshot[] = [
     id: "snapshot-2026-w13",
     title: "2026-W13 시총 스냅샷",
     weekKey: "2026-W13",
+    marketScope: "US",
     comment: "AI 인프라와 플랫폼 대형주를 우선순위로 유지했습니다.",
     createdAt: "2026-03-29T04:00:00.000Z",
     updatedAt: "2026-03-29T04:00:00.000Z"
@@ -56,6 +57,7 @@ export const stockSnapshots: StockSnapshot[] = [
     id: "snapshot-2026-w14",
     title: "2026-W14 시총 스냅샷",
     weekKey: "2026-W14",
+    marketScope: "US",
     comment: "반도체 비중을 높이고 자동차는 뒤로 밀었습니다.",
     sourceSnapshotId: "snapshot-2026-w13",
     createdAt: "2026-04-02T04:00:00.000Z",

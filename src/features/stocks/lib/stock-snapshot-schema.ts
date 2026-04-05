@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  stockSnapshotScopeValues,
   stockMarketValues,
   type StockSnapshotEditorValues
 } from "@/features/stocks/lib/stock-types";
@@ -52,6 +53,9 @@ export const stockSnapshotEditorSchema = z.object({
     .string()
     .trim()
     .regex(/^\d{4}-W\d{2}$/, "주차는 YYYY-W## 형식으로 입력해주세요."),
+  marketScope: z.enum(stockSnapshotScopeValues, {
+    message: "스냅샷 시장을 선택해주세요."
+  }),
   comment: z
     .string()
     .trim()
@@ -59,6 +63,18 @@ export const stockSnapshotEditorSchema = z.object({
     .optional(),
   sourceSnapshotId: z.string().optional(),
   items: z.array(stockSnapshotDraftItemSchema).min(1, "최소 1개 종목을 추가해주세요.")
+}).superRefine((value, ctx) => {
+  const invalidItem = value.items.find((item) => item.market !== value.marketScope);
+
+  if (!invalidItem) {
+    return;
+  }
+
+  ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    path: ["items"],
+    message: "스냅샷 시장과 다른 종목은 추가할 수 없습니다."
+  });
 });
 
 export type StockSnapshotEditorSchemaValues = z.infer<

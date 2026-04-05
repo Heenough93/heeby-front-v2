@@ -42,6 +42,23 @@ function sortSnapshots(snapshots: StockSnapshot[]) {
   });
 }
 
+function resolveSnapshotScope(params: {
+  snapshotId: string;
+  snapshotItems: StockSnapshotItem[];
+  stocks: Stock[];
+}) {
+  const firstItem = params.snapshotItems.find((item) => item.snapshotId === params.snapshotId);
+
+  if (!firstItem) {
+    return "KR" as const;
+  }
+
+  const stockMarket =
+    params.stocks.find((stock) => stock.id === firstItem.stockId)?.market ?? "KR";
+
+  return stockMarket === "US" ? "US" : "KR";
+}
+
 type StockStore = {
   stocks: Stock[];
   snapshots: StockSnapshot[];
@@ -122,6 +139,7 @@ function buildSnapshotPayload(
     id: currentSnapshot?.id ?? nanoid(),
     title: parsedValues.title.trim(),
     weekKey: parsedValues.weekKey.trim(),
+    marketScope: parsedValues.marketScope,
     comment: parsedValues.comment?.trim() || undefined,
     sourceSnapshotId: parsedValues.sourceSnapshotId,
     createdAt: currentSnapshot?.createdAt ?? now,
@@ -332,7 +350,7 @@ export const useStockStore = create<StockStore>()(
     }),
     {
       name: "heeby-stock-store",
-      version: 3,
+      version: 4,
       migrate: (persistedState, version) => {
         const state = persistedState as Partial<StockStore> | undefined;
 
@@ -340,14 +358,31 @@ export const useStockStore = create<StockStore>()(
           return persistedState as StockStore;
         }
 
+        const nextState: Partial<StockStore> = { ...state };
+
         if (version < 3) {
-          return {
-            ...state,
-            tradeEntries: sortTradeEntries(initialStockTradeEntries)
-          } satisfies Partial<StockStore>;
+          nextState.tradeEntries = sortTradeEntries(initialStockTradeEntries);
         }
 
-        return persistedState as StockStore;
+        if (version < 4) {
+          const nextStocks = nextState.stocks ?? initialStocks;
+          const nextSnapshotItems = nextState.snapshotItems ?? initialStockSnapshotItems;
+          nextState.snapshots = sortSnapshots(
+            (nextState.snapshots ?? initialStockSnapshots).map((snapshot) => ({
+              ...snapshot,
+              marketScope:
+                "marketScope" in snapshot && snapshot.marketScope
+                  ? snapshot.marketScope
+                  : resolveSnapshotScope({
+                      snapshotId: snapshot.id,
+                      snapshotItems: nextSnapshotItems,
+                      stocks: nextStocks
+                    })
+            })) as StockSnapshot[]
+          );
+        }
+
+        return nextState as StockStore;
       },
       storage: createJSONStorage(() => localStorage)
     }

@@ -6,7 +6,7 @@ import { stockSnapshotDraftItemSchema } from "@/features/stocks/lib/stock-snapsh
 import {
   cloneDraftItem,
   createDefaultStockSnapshotValues,
-  getStockMarketLabel,
+  getStockSnapshotScopeLabel,
   moveItem
 } from "@/features/stocks/lib/stock-snapshot-utils";
 import type {
@@ -53,7 +53,9 @@ export function StockSnapshotEditor({
   const openAddModal = () => {
     setModal({
       open: true,
-      values: cloneDraftItem(),
+      values: cloneDraftItem({
+        market: draft.marketScope
+      }),
       error: undefined
     });
   };
@@ -93,7 +95,7 @@ export function StockSnapshotEditor({
 
   const handleItemFieldChange = (
     itemId: string,
-    key: "marketCap" | "price" | "note",
+    key: "name" | "ticker" | "sector" | "marketCap" | "price" | "note",
     nextValue: string
   ) => {
     setDraft((current) => ({
@@ -102,7 +104,7 @@ export function StockSnapshotEditor({
         item.id === itemId
           ? {
               ...item,
-              [key]: nextValue
+              [key]: key === "ticker" ? nextValue.toUpperCase() : nextValue
             }
           : item
       )
@@ -192,6 +194,33 @@ export function StockSnapshotEditor({
           </label>
         </div>
 
+        <div className="mt-5 grid gap-5">
+          <label className="grid gap-2">
+            <span className="text-sm font-semibold text-ink/75">스냅샷 시장</span>
+            <select
+              value={draft.marketScope}
+              onChange={(event) =>
+                setDraft((current) => {
+                  const nextScope = event.target.value as StockSnapshotEditorValues["marketScope"];
+
+                  return {
+                    ...current,
+                    marketScope: nextScope,
+                    items: current.items.map((item) => ({
+                      ...item,
+                      market: nextScope
+                    }))
+                  };
+                })
+              }
+              className={inputClassName}
+            >
+              <option value="KR">한국시장</option>
+              <option value="US">미국시장</option>
+            </select>
+          </label>
+        </div>
+
         <label className="mt-5 grid gap-2">
           <span className="text-sm font-semibold text-ink/75">이번 주 한 줄 총평</span>
           <textarea
@@ -246,7 +275,7 @@ export function StockSnapshotEditor({
           {sortedItems.map((item, index) => (
             <article
               key={item.id}
-              draggable
+              // draggable
               onDragStart={() => setDraggedItemId(item.id)}
               onDragOver={(event) => event.preventDefault()}
               onDrop={() => handleDropItem(item.id)}
@@ -259,12 +288,48 @@ export function StockSnapshotEditor({
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-base font-semibold">{item.name}</p>
-                      <span className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-ink/60">
-                        {item.ticker.toUpperCase()}
-                      </span>
                       <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink/60">
-                        {getStockMarketLabel(item.market)}
+                        {getStockSnapshotScopeLabel(draft.marketScope)}
+                      </span>
+                    </div>
+                    <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                      <label className="grid gap-1">
+                        <span className="text-xs font-semibold text-ink/55">종목명</span>
+                        <input
+                          value={item.name}
+                          onChange={(event) =>
+                            handleItemFieldChange(item.id, "name", event.target.value)
+                          }
+                          className={inlineInputClassName}
+                          placeholder="예: NVIDIA"
+                        />
+                      </label>
+                      <label className="grid gap-1">
+                        <span className="text-xs font-semibold text-ink/55">티커</span>
+                        <input
+                          value={item.ticker}
+                          onChange={(event) =>
+                            handleItemFieldChange(item.id, "ticker", event.target.value)
+                          }
+                          className={inlineInputClassName}
+                          placeholder="예: NVDA"
+                        />
+                      </label>
+                      <label className="grid gap-1">
+                        <span className="text-xs font-semibold text-ink/55">산업</span>
+                        <input
+                          value={item.sector ?? ""}
+                          onChange={(event) =>
+                            handleItemFieldChange(item.id, "sector", event.target.value)
+                          }
+                          className={inlineInputClassName}
+                          placeholder="예: 반도체"
+                        />
+                      </label>
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink/60">
+                        {item.ticker.toUpperCase()}
                       </span>
                       {item.sector ? (
                         <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink/60">
@@ -419,24 +484,9 @@ export function StockSnapshotEditor({
 
               <label className="grid gap-2">
                 <span className="text-sm font-semibold text-ink/75">시장</span>
-                <select
-                  value={modal.values.market}
-                  onChange={(event) =>
-                    setModal((current) => ({
-                      ...current,
-                      values: {
-                        ...current.values,
-                        market: event.target.value as StockSnapshotDraftItem["market"]
-                      }
-                    }))
-                  }
-                  className={inputClassName}
-                >
-                  <option value="KR">국내</option>
-                  <option value="US">미국</option>
-                  <option value="ETF">ETF</option>
-                  <option value="OTHER">기타</option>
-                </select>
+                <div className="flex h-12 items-center rounded-2xl border border-line/10 bg-paper px-4 text-sm font-semibold text-ink/68">
+                  {getStockSnapshotScopeLabel(draft.marketScope)}
+                </div>
               </label>
 
               <label className="grid gap-2">

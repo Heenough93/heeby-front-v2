@@ -2,6 +2,10 @@ export const stockMarketValues = ["KR", "US", "ETF", "OTHER"] as const;
 
 export type StockMarket = (typeof stockMarketValues)[number];
 
+export const stockSnapshotScopeValues = ["KR", "US"] as const;
+
+export type StockSnapshotScope = (typeof stockSnapshotScopeValues)[number];
+
 export type Stock = {
   id: string;
   name: string;
@@ -16,6 +20,7 @@ export type StockSnapshot = {
   id: string;
   title: string;
   weekKey: string;
+  marketScope: StockSnapshotScope;
   comment?: string;
   sourceSnapshotId?: string;
   createdAt: string;
@@ -49,6 +54,7 @@ export type StockSnapshotDraftItem = {
 export type StockSnapshotEditorValues = {
   title: string;
   weekKey: string;
+  marketScope: StockSnapshotScope;
   comment?: string;
   sourceSnapshotId?: string;
   items: StockSnapshotDraftItem[];

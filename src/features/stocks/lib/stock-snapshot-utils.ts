@@ -5,6 +5,7 @@ import type {
   StockMarket,
   StockSnapshot,
   StockSnapshotDraftItem,
+  StockSnapshotScope,
   StockSnapshotEditorValues,
   StockSnapshotItem
 } from "@/features/stocks/lib/stock-types";
@@ -27,11 +28,18 @@ export function getIsoWeekKey(input = dayjs()) {
 }
 
 export function createDefaultStockSnapshotValues(): StockSnapshotEditorValues {
+  return createDefaultStockSnapshotValuesByScope("KR");
+}
+
+export function createDefaultStockSnapshotValuesByScope(
+  marketScope: StockSnapshotScope
+): StockSnapshotEditorValues {
   const weekKey = getIsoWeekKey();
 
   return {
-    title: `${weekKey} 시총 스냅샷`,
+    title: `${weekKey} ${getStockSnapshotScopeLabel(marketScope)} 시총 스냅샷`,
     weekKey,
+    marketScope,
     comment: "",
     items: []
   };
@@ -63,6 +71,7 @@ export function createDraftFromSnapshot(params: {
   return {
     title: params.snapshot.title,
     weekKey: params.snapshot.weekKey,
+    marketScope: params.snapshot.marketScope,
     comment: params.snapshot.comment ?? "",
     sourceSnapshotId: params.snapshot.sourceSnapshotId,
     items: [...params.items]
@@ -89,9 +98,10 @@ export function createDraftFromLatestSnapshot(params: {
   latestSnapshot?: StockSnapshot;
   items: StockSnapshotItem[];
   stocks: Stock[];
+  marketScope?: StockSnapshotScope;
 }): StockSnapshotEditorValues {
   if (!params.latestSnapshot) {
-    return createDefaultStockSnapshotValues();
+    return createDefaultStockSnapshotValuesByScope(params.marketScope ?? "KR");
   }
 
   return {
@@ -100,7 +110,9 @@ export function createDraftFromLatestSnapshot(params: {
       items: params.items,
       stocks: params.stocks
     }),
-    title: `${getIsoWeekKey()} 시총 스냅샷`,
+    title: `${getIsoWeekKey()} ${getStockSnapshotScopeLabel(
+      params.latestSnapshot.marketScope
+    )} 시총 스냅샷`,
     weekKey: getIsoWeekKey(),
     sourceSnapshotId: params.latestSnapshot.id
   };
@@ -110,9 +122,10 @@ export function createDraftFromSourceSnapshot(params: {
   sourceSnapshot?: StockSnapshot;
   items: StockSnapshotItem[];
   stocks: Stock[];
+  marketScope?: StockSnapshotScope;
 }) {
   if (!params.sourceSnapshot) {
-    return createDefaultStockSnapshotValues();
+    return createDefaultStockSnapshotValuesByScope(params.marketScope ?? "KR");
   }
 
   return {
@@ -121,7 +134,9 @@ export function createDraftFromSourceSnapshot(params: {
       items: params.items,
       stocks: params.stocks
     }),
-    title: `${getIsoWeekKey()} 시총 스냅샷`,
+    title: `${getIsoWeekKey()} ${getStockSnapshotScopeLabel(
+      params.sourceSnapshot.marketScope
+    )} 시총 스냅샷`,
     weekKey: getIsoWeekKey(),
     sourceSnapshotId: params.sourceSnapshot.id
   };
@@ -150,6 +165,10 @@ export function getStockMarketLabel(market: StockMarket) {
     case "OTHER":
       return "기타";
   }
+}
+
+export function getStockSnapshotScopeLabel(scope: StockSnapshotScope) {
+  return scope === "KR" ? "한국시장" : "미국시장";
 }
 
 export function normalizeTicker(ticker: string) {

@@ -13,7 +13,8 @@ import {
 } from "@/features/stocks/lib/stock-snapshot-compare";
 import {
   formatSnapshotUpdatedAt,
-  getStockMarketLabel
+  getStockMarketLabel,
+  getStockSnapshotScopeLabel
 } from "@/features/stocks/lib/stock-snapshot-utils";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
@@ -29,15 +30,22 @@ export function StockSnapshotDetail({ snapshotId }: StockSnapshotDetailProps) {
   const accessMode = useAccessStore(getAccessMode);
   const getSnapshotById = useStockStore((state) => state.getSnapshotById);
   const getSnapshotItems = useStockStore((state) => state.getSnapshotItems);
-  const getPreviousSnapshot = useStockStore((state) => state.getPreviousSnapshot);
-  const getNextSnapshot = useStockStore((state) => state.getNextSnapshot);
+  const snapshots = useStockStore((state) => state.snapshots);
   const stocks = useStockStore((state) => state.stocks);
   const removeSnapshot = useStockStore((state) => state.removeSnapshot);
   const showToast = useToastStore((state) => state.showToast);
   const snapshot = getSnapshotById(snapshotId);
   const currentItems = getSnapshotItems(snapshotId);
-  const previousSnapshot = getPreviousSnapshot(snapshotId);
-  const nextSnapshot = getNextSnapshot(snapshotId);
+  const scopedSnapshots = snapshots.filter(
+    (candidate) => candidate.marketScope === snapshot?.marketScope
+  );
+  const currentSnapshotIndex = scopedSnapshots.findIndex(
+    (candidate) => candidate.id === snapshotId
+  );
+  const previousSnapshot =
+    currentSnapshotIndex === -1 ? undefined : scopedSnapshots[currentSnapshotIndex + 1];
+  const nextSnapshot =
+    currentSnapshotIndex <= 0 ? undefined : scopedSnapshots[currentSnapshotIndex - 1];
   const previousItems = previousSnapshot
     ? getSnapshotItems(previousSnapshot.id)
     : emptySnapshotItems;
@@ -70,7 +78,7 @@ export function StockSnapshotDetail({ snapshotId }: StockSnapshotDetailProps) {
       title: "스냅샷을 삭제했습니다.",
       variant: "success"
     });
-    router.push("/stocks");
+    router.push(`/stocks?scope=${snapshot.marketScope}`);
   };
 
   return (
@@ -81,6 +89,9 @@ export function StockSnapshotDetail({ snapshotId }: StockSnapshotDetailProps) {
             <div className="flex flex-wrap items-center gap-3">
               <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
                 {snapshot.weekKey}
+              </span>
+              <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink/68">
+                {getStockSnapshotScopeLabel(snapshot.marketScope)}
               </span>
               <span className="rounded-full bg-paper px-3 py-1 text-xs font-semibold text-ink/68">
                 종목 {currentItems.length}개

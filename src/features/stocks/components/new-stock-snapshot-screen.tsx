@@ -8,24 +8,30 @@ import {
   createDraftFromLatestSnapshot,
   createDraftFromSourceSnapshot
 } from "@/features/stocks/lib/stock-snapshot-utils";
+import type { StockSnapshotScope } from "@/features/stocks/lib/stock-types";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 
 type NewStockSnapshotScreenProps = {
   sourceSnapshotId?: string;
+  initialScope?: StockSnapshotScope;
 };
 
 export function NewStockSnapshotScreen({
-  sourceSnapshotId
+  sourceSnapshotId,
+  initialScope = "KR"
 }: NewStockSnapshotScreenProps) {
   const router = useRouter();
   const stocks = useStockStore((state) => state.stocks);
-  const getLatestSnapshot = useStockStore((state) => state.getLatestSnapshot);
+  const snapshots = useStockStore((state) => state.snapshots);
   const getSnapshotById = useStockStore((state) => state.getSnapshotById);
   const getSnapshotItems = useStockStore((state) => state.getSnapshotItems);
   const addSnapshot = useStockStore((state) => state.addSnapshot);
   const showToast = useToastStore((state) => state.showToast);
-  const latestSnapshot = getLatestSnapshot();
+  const latestSnapshot = useMemo(
+    () => snapshots.find((snapshot) => snapshot.marketScope === initialScope),
+    [initialScope, snapshots]
+  );
   const sourceSnapshot = sourceSnapshotId
     ? getSnapshotById(sourceSnapshotId)
     : undefined;
@@ -36,17 +42,19 @@ export function NewStockSnapshotScreen({
         return createDraftFromSourceSnapshot({
           sourceSnapshot,
           items: getSnapshotItems(sourceSnapshot.id),
-          stocks
+          stocks,
+          marketScope: initialScope
         });
       }
 
       return createDraftFromLatestSnapshot({
         latestSnapshot,
         items: latestSnapshot ? getSnapshotItems(latestSnapshot.id) : [],
-        stocks
+        stocks,
+        marketScope: initialScope
       });
     },
-    [getSnapshotById, getSnapshotItems, latestSnapshot, sourceSnapshot, stocks]
+    [getSnapshotById, getSnapshotItems, initialScope, latestSnapshot, sourceSnapshot, stocks]
   );
 
   const handleSubmit = (values: Parameters<typeof addSnapshot>[0]) => {
