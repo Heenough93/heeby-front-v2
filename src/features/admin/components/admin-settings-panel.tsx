@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import {
+  applyAdminBackup,
+  createAdminBackup,
+  parseAdminBackup,
+  type AdminBackupData
+} from "@/features/admin/lib/admin-backup";
 import { AlertDialog } from "@/shared/components/feedback/alert-dialog";
 import {
   useAnnouncementStore,
@@ -46,6 +52,7 @@ const createEmptyAnnouncementDraft = (): AnnouncementDraft => ({
 });
 
 export function AdminSettingsPanel() {
+  const backupFileInputRef = useRef<HTMLInputElement | null>(null);
   const journals = useJournalStore((state) => state.journals);
   const journalTemplates = useJournalTemplateStore(
     (state) => state.journalTemplates
@@ -79,12 +86,20 @@ export function AdminSettingsPanel() {
   );
   const [lastAction, setLastAction] = useState("");
   const [pendingAction, setPendingAction] = useState<
-    "reset-journals" | "reset-templates" | "reset-all" | "reset-announcements" | null
+    | "reset-journals"
+    | "reset-templates"
+    | "reset-all"
+    | "reset-announcements"
+    | "import-backup"
+    | null
   >(null);
   const [pendingFlagKey, setPendingFlagKey] = useState<FeatureFlagKey | null>(null);
   const [pendingAnnouncementDeleteId, setPendingAnnouncementDeleteId] = useState<
     string | null
   >(null);
+  const [pendingBackupImport, setPendingBackupImport] =
+    useState<AdminBackupData | null>(null);
+  const [pendingBackupFileName, setPendingBackupFileName] = useState("");
   const [isResetFlagsDialogOpen, setIsResetFlagsDialogOpen] = useState(false);
   const [editingAnnouncementId, setEditingAnnouncementId] = useState<string | null>(
     sortedAnnouncements[0]?.id ?? null
@@ -173,8 +188,66 @@ export function AdminSettingsPanel() {
     }
   };
 
+  const handleBackupExport = () => {
+    const backup = createAdminBackup();
+    const exportedAt = backup.exportedAt.slice(0, 10);
+    const fileName = `heeby-backup-${exportedAt}.json`;
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {
+      type: "application/json"
+    });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = downloadUrl;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+
+    setLastAction(`백업 파일 ${fileName}을 내보냈습니다.`);
+    showToast({
+      title: "백업 파일을 내보냈습니다.",
+      description: fileName,
+      variant: "success"
+    });
+  };
+
+  const handleBackupFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const selectedFile = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!selectedFile) {
+      return;
+    }
+
+    const raw = await selectedFile.text();
+    const parsed = parseAdminBackup(raw);
+
+    if (!parsed.ok) {
+      showToast({
+        title: "백업 파일을 가져오지 못했습니다.",
+        description: parsed.error,
+        variant: "error"
+      });
+      return;
+    }
+
+    setPendingBackupImport(parsed.backup);
+    setPendingBackupFileName(selectedFile.name);
+    setPendingAction("import-backup");
+  };
+
   return (
     <section className="rounded-[30px] border border-line/10 bg-surface p-6 shadow-card md:p-7">
+      <input
+        ref={backupFileInputRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={handleBackupFileSelect}
+      />
+
       <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
         Admin Layer
       </p>
@@ -252,6 +325,34 @@ export function AdminSettingsPanel() {
             브라우저에 저장된 모든 로컬 데이터를 한 번에 초기 상태로 되돌립니다.
           </p>
         </button>
+      </div>
+
+      <div className="mt-6 rounded-[24px] border border-line/10 bg-paper p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold">로컬 백업 관리</p>
+            <p className="mt-2 text-sm leading-6 text-ink/62">
+              현재 브라우저 데이터를 JSON 파일로 내보내거나, 저장해 둔 백업으로
+              전체 복원합니다.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleBackupExport}
+              className="rounded-full border border-line/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+            >
+              백업 내보내기
+            </button>
+            <button
+              type="button"
+              onClick={() => backupFileInputRef.current?.click()}
+              className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              백업 가져오기
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="mt-6 rounded-[24px] border border-line/10 bg-paper p-4">
@@ -524,6 +625,39 @@ export function AdminSettingsPanel() {
           <p className="mt-3 text-sm font-medium text-coral">{lastAction}</p>
         ) : null}
       </div>
+
+      <AlertDialog
+        open={pendingAction === "import-backup"}
+        title="백업 파일로 전체 복원할까요?"
+        description={
+          pendingBackupImport
+            ? `${pendingBackupFileName || "선택한 파일"}의 데이터로 현재 브라우저 데이터를 모두 덮어씁니다.`
+            : ""
+        }
+        confirmLabel="백업 복원"
+        variant="danger"
+        onClose={() => {
+          setPendingAction(null);
+          setPendingBackupImport(null);
+          setPendingBackupFileName("");
+        }}
+        onConfirm={() => {
+          if (!pendingBackupImport) {
+            return;
+          }
+
+          applyAdminBackup(pendingBackupImport);
+          setLastAction(`백업 파일 ${pendingBackupFileName || ""}으로 로컬 데이터를 복원했습니다.`);
+          showToast({
+            title: "백업 데이터를 복원했습니다.",
+            description: pendingBackupFileName || undefined,
+            variant: "success"
+          });
+          setPendingAction(null);
+          setPendingBackupImport(null);
+          setPendingBackupFileName("");
+        }}
+      />
 
       <AlertDialog
         open={pendingAction === "reset-journals"}
