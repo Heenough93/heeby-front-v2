@@ -246,6 +246,10 @@ function NavigationPanel({
   pathname,
   visibleNavItems
 }: NavigationPanelProps) {
+  const [isStockMenuOpen, setIsStockMenuOpen] = useState(
+    pathname.startsWith("/stocks")
+  );
+
   return (
     <section className="rounded-[28px] border border-line/10 bg-surface p-5 shadow-card">
       <p className="text-xs font-semibold uppercase tracking-[0.28em] text-coral">
@@ -253,6 +257,72 @@ function NavigationPanel({
       </p>
       <nav className="mt-4 grid gap-2">
         {visibleNavItems.map((item) => {
+          if (item.href === "/stocks") {
+            const isParentActive = pathname.startsWith("/stocks");
+
+            return (
+              <div
+                key={item.href}
+                className={cn(
+                  "rounded-[22px] border transition",
+                  isParentActive
+                    ? "border-coral/35 bg-coral/10"
+                    : "border-line/10 bg-paper"
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsStockMenuOpen((current) => !current)}
+                  className="flex w-full items-start justify-between gap-3 px-4 py-4 text-left"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{item.label}</p>
+                    <p className="mt-1 text-xs leading-5 text-ink/58">
+                      {item.description}
+                    </p>
+                  </div>
+                  <span className="text-sm text-ink/48">
+                    {isStockMenuOpen ? "−" : "+"}
+                  </span>
+                </button>
+
+                {isStockMenuOpen ? (
+                  <div className="grid gap-2 border-t border-line/10 px-3 pb-3 pt-2">
+                    <Link
+                      href="/stocks/snapshots?scope=KR"
+                      className={cn(
+                        "rounded-[18px] border px-3 py-3 transition",
+                        pathname.startsWith("/stocks/snapshots")
+                          ? "border-coral/35 bg-paper"
+                          : "border-line/10 bg-surface hover:border-coral/30 hover:bg-soft"
+                      )}
+                    >
+                      <p className="text-sm font-semibold text-ink">시총 스냅샷</p>
+                      <p className="mt-1 text-xs leading-5 text-ink/58">
+                        한국시장 / 미국시장 스냅샷
+                      </p>
+                    </Link>
+
+                    <Link
+                      href="/stocks/trades"
+                      className={cn(
+                        "rounded-[18px] border px-3 py-3 transition",
+                        pathname.startsWith("/stocks/trades")
+                          ? "border-coral/35 bg-paper"
+                          : "border-line/10 bg-surface hover:border-coral/30 hover:bg-soft"
+                      )}
+                    >
+                      <p className="text-sm font-semibold text-ink">매매일지</p>
+                      <p className="mt-1 text-xs leading-5 text-ink/58">
+                        통합 거래 테이블
+                      </p>
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
+            );
+          }
+
           const isActive =
             item.href === "/"
               ? pathname === item.href

@@ -1,22 +1,24 @@
-import type { StockSnapshotScope } from "@/features/stocks/lib/stock-types";
-import { NewStockSnapshotScreen } from "@/features/stocks/components/new-stock-snapshot-screen";
+import { redirect } from "next/navigation";
 
-type NewStockSnapshotRoutePageProps = {
+type LegacyStockNewRoutePageProps = {
   searchParams?: {
     sourceId?: string;
     scope?: string;
   };
 };
 
-export default function NewStockSnapshotRoutePage({
+export default function LegacyStockNewRoutePage({
   searchParams
-}: NewStockSnapshotRoutePageProps) {
-  const initialScope = searchParams?.scope === "US" ? "US" : "KR";
+}: LegacyStockNewRoutePageProps) {
+  const params = new URLSearchParams();
 
-  return (
-    <NewStockSnapshotScreen
-      sourceSnapshotId={searchParams?.sourceId}
-      initialScope={initialScope as StockSnapshotScope}
-    />
-  );
+  if (searchParams?.sourceId) {
+    params.set("sourceId", searchParams.sourceId);
+  }
+
+  if (searchParams?.scope) {
+    params.set("scope", searchParams.scope);
+  }
+
+  redirect(`/stocks/snapshots/new${params.toString() ? `?${params.toString()}` : ""}`);
 }

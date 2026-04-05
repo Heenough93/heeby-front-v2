@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { EditStockSnapshotScreen } from "@/features/stocks/components/edit-stock-snapshot-screen";
 
 type EditStockSnapshotRoutePageProps = {
   params: {
@@ -9,5 +9,5 @@ type EditStockSnapshotRoutePageProps = {
 export default function EditStockSnapshotRoutePage({
   params
 }: EditStockSnapshotRoutePageProps) {
-  redirect(`/stocks/snapshots/${params.id}/edit`);
+  return <EditStockSnapshotScreen snapshotId={params.id} />;
 }

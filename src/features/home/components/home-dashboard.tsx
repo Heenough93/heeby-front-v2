@@ -236,7 +236,7 @@ export function HomeDashboard() {
               >
                 <p className="text-sm font-semibold">주식 기록</p>
                 <p className="mt-2 text-sm text-ink/62">
-                  시총 스냅샷과 통합 매매일지 보기
+                  스냅샷과 매매일지 허브로 이동
                 </p>
               </Link>
             </div>

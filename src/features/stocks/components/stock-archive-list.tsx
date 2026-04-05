@@ -136,7 +136,7 @@ export function StockArchiveList() {
           return (
             <Link
               key={snapshot.id}
-              href={`/stocks/${snapshot.id}`}
+              href={`/stocks/snapshots/${snapshot.id}`}
               className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card transition hover:-translate-y-0.5 hover:border-coral/30"
             >
               <div className="flex flex-wrap items-center justify-between gap-3">

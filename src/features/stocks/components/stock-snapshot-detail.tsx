@@ -78,7 +78,7 @@ export function StockSnapshotDetail({ snapshotId }: StockSnapshotDetailProps) {
       title: "스냅샷을 삭제했습니다.",
       variant: "success"
     });
-    router.push(`/stocks?scope=${snapshot.marketScope}`);
+    router.push(`/stocks/snapshots?scope=${snapshot.marketScope}`);
   };
 
   return (
@@ -106,13 +106,13 @@ export function StockSnapshotDetail({ snapshotId }: StockSnapshotDetailProps) {
           {canManageStock(accessMode) ? (
             <div className="flex flex-wrap items-center gap-2">
               <Link
-                href={`/stocks/new?sourceId=${snapshot.id}`}
+                href={`/stocks/snapshots/new?sourceId=${snapshot.id}&scope=${snapshot.marketScope}`}
                 className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
               >
                 이 스냅샷 복사
               </Link>
               <Link
-                href={`/stocks/${snapshot.id}/edit`}
+                href={`/stocks/snapshots/${snapshot.id}/edit`}
                 className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
               >
                 수정
@@ -139,7 +139,7 @@ export function StockSnapshotDetail({ snapshotId }: StockSnapshotDetailProps) {
             {previousSnapshot ? <span>비교 기준: {previousSnapshot.weekKey} 스냅샷</span> : null}
             {previousSnapshot ? (
               <Link
-                href={`/stocks/${previousSnapshot.id}`}
+                href={`/stocks/snapshots/${previousSnapshot.id}`}
                 className="rounded-full border border-line/10 bg-paper px-3 py-1.5 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
               >
                 이전 주 보기
@@ -147,7 +147,7 @@ export function StockSnapshotDetail({ snapshotId }: StockSnapshotDetailProps) {
             ) : null}
             {nextSnapshot ? (
               <Link
-                href={`/stocks/${nextSnapshot.id}`}
+                href={`/stocks/snapshots/${nextSnapshot.id}`}
                 className="rounded-full border border-line/10 bg-paper px-3 py-1.5 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
               >
                 이후 주 보기

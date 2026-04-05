@@ -19,7 +19,7 @@ export function StockSnapshotPageActions({
 
   return (
     <Link
-      href={`/stocks?scope=${snapshot.marketScope}`}
+      href={`/stocks/snapshots?scope=${snapshot.marketScope}`}
       className="inline-flex rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
     >
       ← 목록

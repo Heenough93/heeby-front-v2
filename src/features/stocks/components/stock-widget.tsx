@@ -34,7 +34,7 @@ export function StockWidget() {
 
   return (
     <Link
-      href={`/stocks/${latestSnapshot.id}`}
+      href={`/stocks/snapshots/${latestSnapshot.id}`}
       className="rounded-[30px] border border-line/10 bg-surface p-6 shadow-card transition hover:border-coral/35 hover:bg-soft"
     >
       <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">

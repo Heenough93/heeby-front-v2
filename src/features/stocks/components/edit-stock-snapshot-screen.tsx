@@ -60,14 +60,14 @@ export function EditStockSnapshotScreen({
       title: "스냅샷을 수정했습니다.",
       variant: "success"
     });
-    router.push(`/stocks/${nextSnapshot.id}`);
+    router.push(`/stocks/snapshots/${nextSnapshot.id}`);
   };
 
   return (
     <AppShell
       title="시총 스냅샷 수정"
       description="저장된 주차 기록을 다시 열어 순위, 종목, 메모를 조정합니다."
-      actions={<ListBackAction href={`/stocks?scope=${snapshot.marketScope}`} />}
+      actions={<ListBackAction href={`/stocks/snapshots?scope=${snapshot.marketScope}`} />}
     >
       <StockSnapshotEditor
         value={initialValues}
