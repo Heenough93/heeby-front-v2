@@ -32,8 +32,8 @@ export const defaultAnnouncements: Announcement[] = [
     title: "Heeby에 오신 것을 환영합니다",
     description:
       "기록은 템플릿으로 빠르게 시작하고, 홈에서는 여행과 주식 같은 생활 기능을 함께 연결할 수 있습니다.",
-    primaryActionLabel: "새 기록 시작",
-    primaryActionHref: "/journals/new",
+    primaryActionLabel: "매매일지 열기",
+    primaryActionHref: "/stocks/trades",
     dismissMode: "hide-for-today",
     isActive: true,
     priority: 100
@@ -78,6 +78,23 @@ export const useAnnouncementStore = create<AnnouncementStore>()(
     }),
     {
       name: "heeby-announcement-store",
+      version: 2,
+      migrate: (persistedState, version) => {
+        const state = persistedState as Partial<AnnouncementStore> | undefined;
+
+        if (!state) {
+          return persistedState as AnnouncementStore;
+        }
+
+        if (version < 2) {
+          return {
+            ...state,
+            announcements: defaultAnnouncements
+          } satisfies Partial<AnnouncementStore>;
+        }
+
+        return persistedState as AnnouncementStore;
+      },
       storage: createJSONStorage(() => localStorage)
     }
   )
