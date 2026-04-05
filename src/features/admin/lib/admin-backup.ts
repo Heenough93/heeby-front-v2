@@ -176,18 +176,9 @@ const stockTradeEntrySchema = baseEntitySchema.extend({
   currentPriceUpdatedAt: isoDateTimeSchema.optional(),
   soldAt: localDateSchema.optional(),
   sellPrice: z.number().positive().optional(),
-  exchangeRate: z.number().positive().optional(),
   fee: z.number().min(0).optional(),
   note: z.string().optional()
 }).superRefine((value, ctx) => {
-  if (value.market === "US" && value.exchangeRate === undefined) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["exchangeRate"],
-      message: "미국 거래 데이터에는 환율이 필요합니다."
-    });
-  }
-
   if (value.positionStatus === "closed") {
     if (!value.soldAt) {
       ctx.addIssue({

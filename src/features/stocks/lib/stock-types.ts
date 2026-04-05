@@ -89,7 +89,6 @@ export type StockTradeEntry = {
   currentPriceUpdatedAt?: string;
   soldAt?: string;
   sellPrice?: number;
-  exchangeRate?: number;
   fee?: number;
   note?: string;
   createdAt: string;
@@ -110,7 +109,6 @@ export type StockTradeDraftRow = {
   currentPrice: string;
   soldAt: string;
   sellPrice: string;
-  exchangeRate: string;
   fee: string;
   note: string;
 };

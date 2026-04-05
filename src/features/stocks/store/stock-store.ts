@@ -266,7 +266,6 @@ export const useStockStore = create<StockStore>()(
           currentPriceUpdatedAt: entry.currentPrice ? now : undefined,
           soldAt: entry.soldAt || undefined,
           sellPrice: entry.sellPrice ? Number(entry.sellPrice) : undefined,
-          exchangeRate: entry.exchangeRate ? Number(entry.exchangeRate) : undefined,
           fee: entry.fee ? Number(entry.fee) : undefined,
           note: entry.note?.trim() || undefined,
           createdAt: now,
@@ -303,7 +302,6 @@ export const useStockStore = create<StockStore>()(
           currentPriceUpdatedAt: nextInput.currentPrice ? dayjs().toISOString() : undefined,
           soldAt: nextInput.soldAt || undefined,
           sellPrice: nextInput.sellPrice ? Number(nextInput.sellPrice) : undefined,
-          exchangeRate: nextInput.exchangeRate ? Number(nextInput.exchangeRate) : undefined,
           fee: nextInput.fee ? Number(nextInput.fee) : undefined,
           note: nextInput.note?.trim() || undefined,
           updatedAt: dayjs().toISOString()
@@ -359,7 +357,6 @@ export const useStockStore = create<StockStore>()(
           currentPrice: entry.currentPrice ? String(entry.currentPrice) : "",
           soldAt: entry.soldAt ?? "",
           sellPrice: entry.sellPrice ? String(entry.sellPrice) : "",
-          exchangeRate: entry.exchangeRate ? String(entry.exchangeRate) : "",
           fee: entry.fee ? String(entry.fee) : "",
           note: entry.note ?? ""
         };
@@ -383,7 +380,7 @@ export const useStockStore = create<StockStore>()(
     }),
     {
       name: "heeby-stock-store",
-      version: 6,
+      version: 7,
       migrate: (persistedState, version) => {
         const state = persistedState as Partial<StockStore> | undefined;
 
@@ -426,6 +423,16 @@ export const useStockStore = create<StockStore>()(
               currentPriceUpdatedAt:
                 "currentPriceUpdatedAt" in entry ? entry.currentPriceUpdatedAt : undefined
             })) as StockTradeEntry[]
+          );
+        }
+
+        if (version < 7) {
+          nextState.tradeEntries = sortTradeEntries(
+            (nextState.tradeEntries ?? initialStockTradeEntries).map((entry) => {
+              const nextEntry = { ...entry } as Record<string, unknown>;
+              delete nextEntry.exchangeRate;
+              return nextEntry as StockTradeEntry;
+            })
           );
         }
 

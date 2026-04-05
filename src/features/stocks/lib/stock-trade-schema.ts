@@ -51,7 +51,6 @@ export const stockTradeDraftRowSchema = z.object({
       (value) => value === "" || Number(value) > 0,
       "매도가는 비워두거나 0보다 크게 입력해주세요."
     ),
-  exchangeRate: z.string().trim(),
   fee: z
     .string()
     .trim()
@@ -61,30 +60,6 @@ export const stockTradeDraftRowSchema = z.object({
     .trim()
     .max(120, "메모는 120자 이하로 입력해주세요.")
 }).superRefine((value, ctx) => {
-  if (value.market !== "US") {
-    if (value.exchangeRate !== "" && Number(value.exchangeRate) <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["exchangeRate"],
-        message: "환율은 0보다 커야 합니다."
-      });
-    }
-  } else {
-    if (value.exchangeRate === "") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["exchangeRate"],
-        message: "미국 거래는 환율을 입력해주세요."
-      });
-    } else if (Number(value.exchangeRate) <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["exchangeRate"],
-        message: "환율은 0보다 커야 합니다."
-      });
-    }
-  }
-
   if (value.positionStatus === "closed") {
     if (value.soldAt === "") {
       ctx.addIssue({

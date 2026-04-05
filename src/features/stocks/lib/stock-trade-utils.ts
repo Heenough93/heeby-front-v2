@@ -1,13 +1,17 @@
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import type {
+  StockMarket,
   StockTradeAccountType,
   StockTradeDraftRow,
   StockTradeEntry,
   StockTradePositionStatus
 } from "@/features/stocks/lib/stock-types";
 
-export function createEmptyTradeRow(date = dayjs().format("YYYY-MM-DD")): StockTradeDraftRow {
+export function createEmptyTradeRow(
+  date = dayjs().format("YYYY-MM-DD"),
+  market: StockMarket = "KR"
+): StockTradeDraftRow {
   return {
     id: nanoid(),
     tradedAt: date,
@@ -15,17 +19,20 @@ export function createEmptyTradeRow(date = dayjs().format("YYYY-MM-DD")): StockT
     accountType: "general",
     stockName: "",
     ticker: "",
-    market: "KR",
+    market,
     positionStatus: "open",
     quantity: "",
     buyPrice: "",
     currentPrice: "",
     soldAt: "",
     sellPrice: "",
-    exchangeRate: "",
     fee: "",
     note: ""
   };
+}
+
+export function getTradeScope(market: StockMarket) {
+  return market === "US" ? "US" : "KR";
 }
 
 export function getTradeMonthKey(tradedAt: string) {
@@ -36,22 +43,10 @@ export function getTradeBuyAmount(entry: Pick<StockTradeEntry, "quantity" | "buy
   return entry.quantity * entry.buyPrice;
 }
 
-function applyKrwRate(
-  market: StockTradeEntry["market"],
-  amount: number,
-  exchangeRate?: number
-) {
-  if (market !== "US") {
-    return amount;
-  }
-
-  return amount * (exchangeRate ?? 0);
-}
-
 export function getTradeBuyAmountKrw(
-  entry: Pick<StockTradeEntry, "market" | "quantity" | "buyPrice" | "exchangeRate">
+  entry: Pick<StockTradeEntry, "quantity" | "buyPrice">
 ) {
-  return applyKrwRate(entry.market, getTradeBuyAmount(entry), entry.exchangeRate);
+  return getTradeBuyAmount(entry);
 }
 
 export function getTradeSellAmount(entry: Pick<StockTradeEntry, "quantity" | "sellPrice">) {
@@ -59,9 +54,9 @@ export function getTradeSellAmount(entry: Pick<StockTradeEntry, "quantity" | "se
 }
 
 export function getTradeSellAmountKrw(
-  entry: Pick<StockTradeEntry, "market" | "quantity" | "sellPrice" | "exchangeRate">
+  entry: Pick<StockTradeEntry, "quantity" | "sellPrice">
 ) {
-  return applyKrwRate(entry.market, getTradeSellAmount(entry), entry.exchangeRate);
+  return getTradeSellAmount(entry);
 }
 
 export function getTradeCurrentAmount(entry: Pick<StockTradeEntry, "quantity" | "currentPrice">) {
@@ -69,9 +64,9 @@ export function getTradeCurrentAmount(entry: Pick<StockTradeEntry, "quantity" | 
 }
 
 export function getTradeCurrentAmountKrw(
-  entry: Pick<StockTradeEntry, "market" | "quantity" | "currentPrice" | "exchangeRate">
+  entry: Pick<StockTradeEntry, "quantity" | "currentPrice">
 ) {
-  return applyKrwRate(entry.market, getTradeCurrentAmount(entry), entry.exchangeRate);
+  return getTradeCurrentAmount(entry);
 }
 
 export function getTradeReferencePrice(entry: Pick<StockTradeEntry, "positionStatus" | "currentPrice" | "sellPrice">) {
@@ -87,7 +82,6 @@ export function getTradeProfitAmountKrw(
     | "buyPrice"
     | "currentPrice"
     | "sellPrice"
-    | "exchangeRate"
     | "fee"
   >
 ) {
@@ -114,7 +108,6 @@ export function getTradeProfitRate(
     | "buyPrice"
     | "currentPrice"
     | "sellPrice"
-    | "exchangeRate"
     | "fee"
   >
 ) {
@@ -141,6 +134,30 @@ export function formatTradeCurrency(value: number) {
   return new Intl.NumberFormat("ko-KR", {
     maximumFractionDigits: value % 1 === 0 ? 0 : 2
   }).format(value);
+}
+
+export function formatTradePrice(
+  value: number,
+  market: StockTradeEntry["market"]
+) {
+  if (!Number.isFinite(value)) {
+    return "-";
+  }
+
+  if (market === "US") {
+    return new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  }
+
+  return new Intl.NumberFormat("ko-KR", {
+    maximumFractionDigits: value % 1 === 0 ? 0 : 2
+  }).format(value);
+}
+
+export function getTradeCurrencyUnit(market: StockTradeEntry["market"]) {
+  return market === "US" ? "USD" : "원";
 }
 
 export function getTradeAccountTypeLabel(type: StockTradeAccountType) {

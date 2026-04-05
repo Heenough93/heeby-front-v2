@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/shared/components/layout/app-shell";
 import { StockTradeBatchForm } from "@/features/stocks/components/stock-trade-batch-form";
 import { StockTradesTable } from "@/features/stocks/components/stock-trades-table";
@@ -9,11 +10,22 @@ import {
   getAccessMode,
   useAccessStore
 } from "@/features/access/store/access-store";
+import type { StockSnapshotScope } from "@/features/stocks/lib/stock-types";
 
 export function StockTradesScreen() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const accessMode = useAccessStore(getAccessMode);
   const canManage = canManageStock(accessMode);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const scopeFilter = (searchParams.get("scope") === "US" ? "US" : "KR") as StockSnapshotScope;
+
+  const setScopeFilter = (scope: StockSnapshotScope) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("scope", scope);
+    router.replace(`${pathname}?${nextParams.toString()}`);
+  };
 
   return (
     <AppShell
@@ -31,7 +43,7 @@ export function StockTradesScreen() {
         ) : undefined
       }
     >
-      <StockTradesTable />
+      <StockTradesTable scopeFilter={scopeFilter} onScopeChange={setScopeFilter} />
 
       {isCreateOpen ? (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/35 px-5 py-6">
@@ -57,6 +69,7 @@ export function StockTradesScreen() {
                 <StockTradeBatchForm
                   inline
                   submitLabel="거래 저장"
+                  initialScope={scopeFilter}
                   onSubmitted={() => setIsCreateOpen(false)}
                 />
               </div>

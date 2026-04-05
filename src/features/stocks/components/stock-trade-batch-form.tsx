@@ -4,6 +4,7 @@ import { useState } from "react";
 import { stockTradeBatchSchema } from "@/features/stocks/lib/stock-trade-schema";
 import { createEmptyTradeRow } from "@/features/stocks/lib/stock-trade-utils";
 import type {
+  StockSnapshotScope,
   StockTradeAccountType,
   StockTradeDraftRow
 } from "@/features/stocks/lib/stock-types";
@@ -14,16 +15,20 @@ type StockTradeBatchFormProps = {
   onSubmitted?: () => void;
   submitLabel?: string;
   inline?: boolean;
+  initialScope?: StockSnapshotScope;
 };
 
 export function StockTradeBatchForm({
   onSubmitted,
   submitLabel = "거래 저장",
-  inline = false
+  inline = false,
+  initialScope = "KR"
 }: StockTradeBatchFormProps) {
   const addTradeEntries = useStockStore((state) => state.addTradeEntries);
   const showToast = useToastStore((state) => state.showToast);
-  const [rows, setRows] = useState<StockTradeDraftRow[]>([createEmptyTradeRow()]);
+  const [rows, setRows] = useState<StockTradeDraftRow[]>([
+    createEmptyTradeRow(undefined, initialScope === "US" ? "US" : "KR")
+  ]);
   const [error, setError] = useState<string>();
 
   const updateRow = <K extends keyof StockTradeDraftRow>(
@@ -40,8 +45,7 @@ export function StockTradeBatchForm({
         if (key === "market") {
           return {
             ...row,
-            market: value as StockTradeDraftRow["market"],
-            exchangeRate: value === "US" ? row.exchangeRate : ""
+            market: value as StockTradeDraftRow["market"]
           };
         }
 
@@ -61,7 +65,10 @@ export function StockTradeBatchForm({
   };
 
   const addRow = () => {
-    setRows((current) => [...current, createEmptyTradeRow()]);
+    setRows((current) => [
+      ...current,
+      createEmptyTradeRow(undefined, initialScope === "US" ? "US" : "KR")
+    ]);
   };
 
   const removeRow = (rowId: string) => {
@@ -259,18 +266,6 @@ export function StockTradeBatchForm({
                   }
                   className={inputClassName}
                   placeholder={row.positionStatus === "closed" ? "매도가 입력" : "현재가 입력"}
-                />
-              </Field>
-              <Field label="환율">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.0001"
-                  value={row.exchangeRate}
-                  onChange={(event) => updateRow(row.id, "exchangeRate", event.target.value)}
-                  className={inputClassName}
-                  placeholder={row.market === "US" ? "예: 1371.2" : "미국 거래만 입력"}
-                  disabled={row.market !== "US"}
                 />
               </Field>
               <Field label="수수료">

@@ -4,7 +4,9 @@ import { Fragment, useMemo, useState } from "react";
 import { stockTradeBatchSchema } from "@/features/stocks/lib/stock-trade-schema";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import {
+  getTradeCurrencyUnit,
   formatTradeCurrency,
+  formatTradePrice,
   formatTradeRate,
   getTradeAccountTypeLabel,
   getTradeBuyAmountKrw,
@@ -14,6 +16,7 @@ import {
   getTradeProfitAmountKrw,
   getTradeProfitRate,
   getTradeReferencePrice,
+  getTradeScope,
   getTradeSellAmountKrw
 } from "@/features/stocks/lib/stock-trade-utils";
 import { AlertDialog } from "@/shared/components/feedback/alert-dialog";
@@ -21,13 +24,22 @@ import type {
   StockTradeAccountType,
   StockTradeDraftRow,
   StockTradeEntry,
+  StockSnapshotScope,
   StockTradePositionStatus
 } from "@/features/stocks/lib/stock-types";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 
 type TradeSortKey = "latest" | "oldest" | "buy-desc" | "buy-asc" | "profit-desc" | "profit-asc";
 
-export function StockTradesTable() {
+type StockTradesTableProps = {
+  scopeFilter: StockSnapshotScope;
+  onScopeChange: (scope: StockSnapshotScope) => void;
+};
+
+export function StockTradesTable({
+  scopeFilter,
+  onScopeChange
+}: StockTradesTableProps) {
   const tradeEntries = useStockStore((state) => state.tradeEntries);
   const getTradeDraftRowById = useStockStore((state) => state.getTradeDraftRowById);
   const updateTradeEntry = useStockStore((state) => state.updateTradeEntry);
@@ -61,6 +73,10 @@ export function StockTradesTable() {
     const normalizedSearch = search.trim().toLowerCase();
 
     const nextEntries = tradeEntries.filter((entry) => {
+      if (getTradeScope(entry.market) !== scopeFilter) {
+        return false;
+      }
+
       if (month && getTradeMonthKey(entry.tradedAt) !== month) {
         return false;
       }
@@ -105,7 +121,7 @@ export function StockTradesTable() {
           return b.tradedAt.localeCompare(a.tradedAt);
       }
     });
-  }, [accountName, accountType, month, positionStatus, search, sortKey, tradeEntries]);
+  }, [accountName, accountType, month, positionStatus, scopeFilter, search, sortKey, tradeEntries]);
 
   const activeFilterChips = [
     month || null,
@@ -150,8 +166,7 @@ export function StockTradesTable() {
       if (key === "market") {
         return {
           ...current,
-          market: value as StockTradeDraftRow["market"],
-          exchangeRate: value === "US" ? current.exchangeRate : ""
+          market: value as StockTradeDraftRow["market"]
         };
       }
 
@@ -294,6 +309,30 @@ export function StockTradesTable() {
   return (
     <section className="grid gap-6">
       <div className="w-full rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
+        <div className="mb-4 flex flex-wrap gap-2">
+          {[
+            { value: "KR", label: "한국시장" },
+            { value: "US", label: "미국시장" }
+          ].map((option) => {
+            const isActive = scopeFilter === option.value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onScopeChange(option.value as StockSnapshotScope)}
+                className={
+                  isActive
+                    ? "rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                    : "rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+                }
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="grid gap-4 lg:grid-cols-[0.9fr_1fr_1.1fr_auto]">
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-ink/75">월</span>
@@ -428,7 +467,10 @@ export function StockTradesTable() {
 
       <div className="grid w-full gap-4 md:grid-cols-3">
         <SummaryCard label="전체 / 보유중 / 매도완료" value={`${filteredEntries.length} / ${openCount} / ${closedCount}`} />
-        <SummaryCard label="총 손익" value={formatProfitValue(totalProfitAmountKrw)} />
+        <SummaryCard
+          label="총 손익"
+          value={`${formatProfitValue(totalProfitAmountKrw)} ${scopeFilter === "US" ? "USD" : "원"}`}
+        />
         <SummaryCard label="총 수익률" value={formatTradeRate(totalProfitRate)} />
       </div>
 
@@ -500,12 +542,12 @@ export function StockTradesTable() {
                       <td className="px-3 py-4">
                         <StatusBadge status={entry.positionStatus} />
                       </td>
-                      <td className="px-3 py-4">{formatTradeCurrency(entry.buyPrice)}</td>
+                      <td className="px-3 py-4">{formatTradePrice(entry.buyPrice, entry.market)}</td>
                       <td className="px-3 py-4">
-                        {referencePrice ? formatTradeCurrency(referencePrice) : "-"}
+                        {referencePrice ? formatTradePrice(referencePrice, entry.market) : "-"}
                       </td>
                       <td className="px-3 py-4">
-                        <ProfitText value={profitAmount} />
+                        <ProfitText value={profitAmount} market={entry.market} />
                       </td>
                       <td className="px-3 py-4">
                         <ProfitRateText value={profitRate} />
@@ -540,20 +582,12 @@ export function StockTradesTable() {
                                 value={formatTradeCurrency(entry.quantity)}
                               />
                               <DetailItem
-                                label="환율"
-                                value={
-                                  entry.market === "US" && entry.exchangeRate
-                                    ? formatTradeCurrency(entry.exchangeRate)
-                                    : "-"
-                                }
-                              />
-                              <DetailItem
                                 label="현재가 갱신"
                                 value={entry.currentPriceUpdatedAt ? formatRefreshDate(entry.currentPriceUpdatedAt) : "-"}
                               />
                               <DetailItem
                                 label="매수금액"
-                                value={`${formatTradeCurrency(getTradeBuyAmountKrw(entry))}원`}
+                                value={`${formatTradeCurrency(getTradeBuyAmountKrw(entry))} ${getTradeCurrencyUnit(entry.market)}`}
                               />
                               <DetailItem
                                 label="평가금액/매도금액"
@@ -561,7 +595,7 @@ export function StockTradesTable() {
                                   entry.positionStatus === "closed"
                                     ? getTradeSellAmountKrw(entry)
                                     : getTradeCurrentAmountKrw(entry)
-                                )}원`}
+                                )} ${getTradeCurrencyUnit(entry.market)}`}
                               />
                               <DetailItem
                                 label="매도일"
@@ -624,32 +658,24 @@ export function StockTradesTable() {
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <DetailItem label="매수가" value={formatTradeCurrency(entry.buyPrice)} />
+                <DetailItem label="매수가" value={formatTradePrice(entry.buyPrice, entry.market)} />
                 <DetailItem
                   label={entry.positionStatus === "closed" ? "매도가" : "현재가"}
                   value={
                     getTradeReferencePrice(entry)
-                      ? formatTradeCurrency(getTradeReferencePrice(entry)!)
+                      ? formatTradePrice(getTradeReferencePrice(entry)!, entry.market)
                       : "-"
                   }
                 />
                 <DetailItem
                   label="손익"
-                  value={formatProfitValue(getTradeProfitAmountKrw(entry))}
+                  value={`${formatProfitValue(getTradeProfitAmountKrw(entry))} ${getTradeCurrencyUnit(entry.market)}`}
                 />
                 <DetailItem
                   label="수익률"
                   value={formatTradeRate(getTradeProfitRate(entry))}
                 />
                 <DetailItem label="수량" value={formatTradeCurrency(entry.quantity)} />
-                <DetailItem
-                  label="환율"
-                  value={
-                    entry.market === "US" && entry.exchangeRate
-                      ? formatTradeCurrency(entry.exchangeRate)
-                      : "-"
-                  }
-                />
               </div>
 
               <div className="mt-4 rounded-[18px] border border-line/10 bg-surface px-4 py-3">
@@ -840,18 +866,6 @@ export function StockTradesTable() {
                   className={editInputClassName}
                 />
               </TradeField>
-              <TradeField label="환율">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.0001"
-                  value={editingRow.exchangeRate}
-                  onChange={(event) => updateEditingField("exchangeRate", event.target.value)}
-                  className={editInputClassName}
-                  placeholder={editingRow.market === "US" ? "예: 1371.2" : "미국 거래만 입력"}
-                  disabled={editingRow.market !== "US"}
-                />
-              </TradeField>
               <TradeField label="수수료">
                 <input
                   type="number"
@@ -972,7 +986,13 @@ function StatusBadge({ status }: { status: StockTradePositionStatus }) {
   );
 }
 
-function ProfitText({ value }: { value?: number }) {
+function ProfitText({
+  value,
+  market
+}: {
+  value?: number;
+  market: StockTradeEntry["market"];
+}) {
   const className =
     value === undefined
       ? "text-ink/55"
@@ -980,7 +1000,11 @@ function ProfitText({ value }: { value?: number }) {
         ? "text-coral"
         : "text-sky-700";
 
-  return <span className={`font-semibold ${className}`}>{formatProfitValue(value)}</span>;
+  return (
+    <span className={`font-semibold ${className}`}>
+      {formatProfitValue(value)} {getTradeCurrencyUnit(market)}
+    </span>
+  );
 }
 
 function ProfitRateText({ value }: { value?: number }) {
@@ -1000,7 +1024,7 @@ function formatProfitValue(value?: number) {
   }
 
   const sign = value > 0 ? "+" : "";
-  return `${sign}${formatTradeCurrency(value)}원`;
+  return `${sign}${formatTradeCurrency(value)}`;
 }
 
 function formatRefreshDate(value: string) {
