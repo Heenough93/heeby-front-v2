@@ -44,9 +44,9 @@ export function AccessControl() {
             setIsOpen((current) => !current);
             setError("");
           }}
-          className="rounded-full border border-line/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+          className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
         >
-          어드민 잠금 해제
+          어드민
         </button>
       ) : (
         <button
@@ -58,9 +58,9 @@ export function AccessControl() {
               variant: "info"
             });
           }}
-          className="rounded-full border border-line/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+          className="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
         >
-          어드민 종료
+          어드민 해제
         </button>
       )}
 
@@ -81,9 +81,6 @@ export function AccessControl() {
       {isOpen ? (
         <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-72 rounded-[24px] border border-line/10 bg-surface p-4 shadow-card">
           <p className="text-sm font-semibold">추가 암호 입력</p>
-          <p className="mt-2 text-sm leading-6 text-ink/62">
-            로그인한 상태에서 추가 암호를 입력하면 어드민 권한을 사용할 수 있습니다.
-          </p>
 
           <form
             className="mt-4 grid gap-3"
@@ -136,7 +133,7 @@ export function AccessControl() {
                 type="submit"
                 className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
               >
-                잠금 해제
+                확인
               </button>
             </div>
           </form>

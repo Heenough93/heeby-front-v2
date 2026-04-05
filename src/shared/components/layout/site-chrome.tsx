@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   canAccessFeature,
@@ -16,8 +16,7 @@ import { AccessGateNotice } from "@/features/access/components/access-gate-notic
 import { ThemeToggle } from "@/shared/components/layout/theme-toggle";
 import {
   getAccessMode,
-  useAccessStore,
-  type AccessMode
+  useAccessStore
 } from "@/features/access/store/access-store";
 
 type SiteChromeProps = {
@@ -28,44 +27,32 @@ const navItems = [
   {
     href: "/",
     label: "홈",
-    description: "오늘 상태와 빠른 실행",
     feature: "home"
+  },
+  {
+    href: "/journals",
+    label: "기록",
+    feature: "journalArchive"
   },
   {
     href: "/travel",
     label: "여행",
-    description: "세계지도와 방문 순서",
     feature: "travelArchive"
   },
   {
     href: "/routines",
     label: "루틴",
-    description: "텔레그램 리마인더 관리",
     feature: "routineArchive"
   },
   {
     href: "/stocks",
     label: "주식",
-    description: "주간 시총 스냅샷 기록",
     feature: "stockArchive"
-  },
-  {
-    href: "/journals",
-    label: "기록",
-    description: "공개 기록과 내 기록 보기",
-    feature: "journalArchive"
   },
   {
     href: "/templates",
     label: "템플릿",
-    description: "질문 구조 관리",
     feature: "journalTemplateAdmin"
-  },
-  {
-    href: "/journals/new",
-    label: "새 기록",
-    description: "템플릿으로 바로 시작",
-    feature: "journalEditor"
   }
 ] as const;
 
@@ -119,13 +106,17 @@ export function SiteChrome({ children }: SiteChromeProps) {
             </Link>
 
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
+              <p className="text-base font-bold uppercase tracking-[0.28em] text-coral md:text-2xl">
                 Heeby
               </p>
-              <p className="mt-1 text-sm text-ink/62">
-                템플릿 기반 개인 허브
-              </p>
             </div>
+          </div>
+
+          <div className="hidden min-w-0 flex-1 justify-center lg:flex">
+            <HeaderNavigation
+              pathname={pathname}
+              visibleNavItems={visibleNavItems}
+            />
           </div>
 
           <div className="flex items-center gap-3">
@@ -155,17 +146,14 @@ export function SiteChrome({ children }: SiteChromeProps) {
 
         <div
           className={cn(
-            "absolute left-0 top-0 flex h-full w-[88vw] max-w-sm flex-col gap-5 overflow-y-auto border-r border-line/10 bg-paper px-5 py-5 shadow-card transition-transform duration-300 ease-out",
+            "absolute left-0 top-0 flex h-full w-[76vw] max-w-[18rem] flex-col gap-5 overflow-y-auto border-r border-line/10 bg-paper px-5 py-5 shadow-card transition-transform duration-300 ease-out",
             isMobileNavOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
+              <p className="text-base font-bold uppercase tracking-[0.28em] text-coral md:text-lg">
                 Heeby
-              </p>
-              <p className="mt-1 text-sm text-ink/62">
-                템플릿 기반 개인 허브
               </p>
             </div>
 
@@ -179,53 +167,44 @@ export function SiteChrome({ children }: SiteChromeProps) {
             </button>
           </div>
 
-          <div className="md:hidden">
-            <AccessControl />
-          </div>
-
           <NavigationPanel
             pathname={pathname}
             visibleNavItems={visibleNavItems}
           />
-
-          <AccessInfoPanel accessMode={accessMode} />
-
-          {accessMode === "admin" ? <AdminInfoPanel /> : null}
         </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-7xl gap-8 px-5 py-8 md:px-8 md:py-10">
-        <aside className="hidden w-72 shrink-0 lg:block">
-          <div className="sticky top-[92px] grid gap-5">
-            <NavigationPanel
-              pathname={pathname}
-              visibleNavItems={visibleNavItems}
-            />
-            <AccessInfoPanel accessMode={accessMode} />
-            {accessMode === "admin" ? <AdminInfoPanel /> : null}
-          </div>
-        </aside>
-
-        <main className="min-w-0 flex-1">
+      <div className="mx-auto w-full max-w-7xl px-5 py-8 md:px-8 md:py-10">
+        <main className="min-w-0">
           {canAccessCurrentPage ? children : <AccessGateNotice />}
         </main>
       </div>
 
       <footer className="border-t border-line/10 bg-surface/88">
-        <div className="mx-auto grid max-w-7xl gap-6 px-5 py-8 md:grid-cols-[1.2fr_1fr] md:px-8">
+        <div className="mx-auto grid max-w-7xl justify-items-center gap-1 px-5 py-8 text-center md:px-8">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-              Heeby
-            </p>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-ink/62">
-              © 2026 Heebyeong Park. All rights reserved.
+            <p className="text-base font-bold uppercase tracking-[0.3em] text-coral md:text-xl">
+              HEEBY
             </p>
           </div>
-
-          <div className="grid gap-3 text-sm text-ink/62">
-            <p>주요 흐름: 템플릿 만들기, 기록 작성, 기록 다시 보기</p>
-            <p>현재 버전: mock 기반 MVP</p>
-          </div>
+          <p className="text-sm leading-6 text-ink/62">
+            © 2026 Heebyeong Park. All rights reserved.
+          </p>
+          <Link
+            href="https://github.com/Heenough93"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line/10 bg-paper text-ink/68 transition hover:border-coral/30 hover:bg-soft hover:text-coral"
+            aria-label="GitHub"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="h-5 w-5 fill-current"
+            >
+              <path d="M12 2C6.48 2 2 6.58 2 12.22c0 4.5 2.87 8.32 6.84 9.66.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.62-3.37-1.2-3.37-1.2-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.36 1.12 2.93.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.09 0-1.13.39-2.05 1.03-2.77-.1-.26-.45-1.31.1-2.74 0 0 .84-.28 2.75 1.06A9.3 9.3 0 0 1 12 6.84c.85 0 1.7.12 2.5.35 1.9-1.34 2.74-1.06 2.74-1.06.55 1.43.2 2.48.1 2.74.64.72 1.03 1.64 1.03 2.77 0 3.96-2.34 4.82-4.57 5.08.36.32.68.94.68 1.9 0 1.38-.01 2.49-.01 2.83 0 .27.18.59.69.49A10.24 10.24 0 0 0 22 12.22C22 6.58 17.52 2 12 2Z" />
+            </svg>
+          </Link>
         </div>
       </footer>
 
@@ -242,6 +221,114 @@ type NavigationPanelProps = {
   visibleNavItems: NavigationItem[];
 };
 
+function HeaderNavigation({
+  pathname,
+  visibleNavItems
+}: NavigationPanelProps) {
+  const [isStockMenuOpen, setIsStockMenuOpen] = useState(
+    pathname.startsWith("/stocks")
+  );
+  const stockMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (
+          stockMenuRef.current &&
+          !stockMenuRef.current.contains(event.target as Node)
+      ) {
+          setIsStockMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+    };
+  }, []);
+
+
+  return (
+    <nav className="flex items-center gap-2">
+      {visibleNavItems.map((item) => {
+        if (item.href === "/stocks") {
+          const isParentActive = pathname.startsWith("/stocks");
+
+          return (
+            <div key={item.href} className="relative" ref={stockMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsStockMenuOpen((current) => !current)}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition",
+                  isParentActive
+                    ? "border-coral/35 bg-coral/10 text-ink"
+                    : "border-line/10 bg-surface text-ink hover:border-coral/30 hover:bg-soft"
+                )}
+              >
+                <span>{item.label}</span>
+                <span className="text-xs text-ink/50">
+                  {isStockMenuOpen ? "−" : "+"}
+                </span>
+              </button>
+
+              {isStockMenuOpen ? (
+                <div className="absolute left-1/2 top-full z-30 mt-3 grid min-w-[12rem] -translate-x-1/2 gap-2 rounded-[24px] border border-line/10 bg-paper p-3 shadow-card">
+                  <Link
+                    href="/stocks/snapshots?scope=KR"
+                    onClick={() => setIsStockMenuOpen(false)}
+                    className={cn(
+                      "rounded-[18px] border px-3 py-3 text-sm font-semibold transition",
+                      pathname.startsWith("/stocks/snapshots")
+                        ? "border-coral/35 bg-soft text-ink"
+                        : "border-line/10 bg-surface text-ink hover:border-coral/30 hover:bg-soft"
+                    )}
+                  >
+                    시총 스냅샷
+                  </Link>
+
+                  <Link
+                    href="/stocks/trades"
+                    onClick={() => setIsStockMenuOpen(false)}
+                    className={cn(
+                      "rounded-[18px] border px-3 py-3 text-sm font-semibold transition",
+                      pathname.startsWith("/stocks/trades")
+                        ? "border-coral/35 bg-soft text-ink"
+                        : "border-line/10 bg-surface text-ink hover:border-coral/30 hover:bg-soft"
+                    )}
+                  >
+                    매매일지
+                  </Link>
+                </div>
+              ) : null}
+            </div>
+          );
+        }
+
+        const isActive =
+          item.href === "/"
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "rounded-full border px-4 py-2 text-sm font-semibold transition",
+              isActive
+                ? "border-coral/35 bg-coral/10 text-ink"
+                : "border-line/10 bg-surface text-ink hover:border-coral/30 hover:bg-soft"
+            )}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 function NavigationPanel({
   pathname,
   visibleNavItems
@@ -252,10 +339,7 @@ function NavigationPanel({
 
   return (
     <section className="rounded-[28px] border border-line/10 bg-surface p-5 shadow-card">
-      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-coral">
-        Navigation
-      </p>
-      <nav className="mt-4 grid gap-2">
+      <nav className="grid gap-2">
         {visibleNavItems.map((item) => {
           if (item.href === "/stocks") {
             const isParentActive = pathname.startsWith("/stocks");
@@ -277,9 +361,6 @@ function NavigationPanel({
                 >
                   <div>
                     <p className="text-sm font-semibold text-ink">{item.label}</p>
-                    <p className="mt-1 text-xs leading-5 text-ink/58">
-                      {item.description}
-                    </p>
                   </div>
                   <span className="text-sm text-ink/48">
                     {isStockMenuOpen ? "−" : "+"}
@@ -298,9 +379,6 @@ function NavigationPanel({
                       )}
                     >
                       <p className="text-sm font-semibold text-ink">시총 스냅샷</p>
-                      <p className="mt-1 text-xs leading-5 text-ink/58">
-                        한국시장 / 미국시장 스냅샷
-                      </p>
                     </Link>
 
                     <Link
@@ -313,9 +391,6 @@ function NavigationPanel({
                       )}
                     >
                       <p className="text-sm font-semibold text-ink">매매일지</p>
-                      <p className="mt-1 text-xs leading-5 text-ink/58">
-                        통합 거래 테이블
-                      </p>
                     </Link>
                   </div>
                 ) : null}
@@ -327,9 +402,7 @@ function NavigationPanel({
             item.href === "/"
               ? pathname === item.href
               : pathname === item.href ||
-                (item.href !== "/journals/new" &&
-                  pathname.startsWith(`${item.href}/`) &&
-                  !pathname.startsWith("/journals/new"));
+                pathname.startsWith(`${item.href}/`);
 
           return (
             <Link
@@ -343,69 +416,10 @@ function NavigationPanel({
               )}
             >
               <p className="text-sm font-semibold text-ink">{item.label}</p>
-              <p className="mt-1 text-xs leading-5 text-ink/58">
-                {item.description}
-              </p>
             </Link>
           );
         })}
       </nav>
     </section>
   );
-}
-
-function AccessInfoPanel({ accessMode }: { accessMode: AccessMode }) {
-  return (
-    <section className="rounded-[28px] border border-line/10 bg-surface p-5 shadow-card">
-      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-coral">
-        Access
-      </p>
-      <div className="mt-4 grid gap-3 text-sm leading-6 text-ink/68">
-        <p>
-          현재 모드:
-          {" "}
-          <span className="font-semibold">{getAccessModeLabel(accessMode)}</span>
-        </p>
-        <p>{getAccessModeDescription(accessMode)}</p>
-      </div>
-    </section>
-  );
-}
-
-function AdminInfoPanel() {
-  return (
-    <section className="rounded-[28px] border border-line/10 bg-surface p-5 shadow-card">
-      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-coral">
-        Admin
-      </p>
-      <div className="mt-4 grid gap-3 text-sm leading-6 text-ink/68">
-        <p>실험 기능, 민감한 설정, 관리 도구를 분리해 붙일 자리입니다.</p>
-        <p>지금 단계에서는 구조만 먼저 확보합니다.</p>
-      </div>
-    </section>
-  );
-}
-
-function getAccessModeLabel(accessMode: AccessMode) {
-  if (accessMode === "guest") {
-    return "게스트";
-  }
-
-  if (accessMode === "admin") {
-    return "어드민";
-  }
-
-  return "일반";
-}
-
-function getAccessModeDescription(accessMode: AccessMode) {
-  if (accessMode === "guest") {
-    return "공개 기록만 열고, 비공개 기록 작성과 템플릿 관리는 막습니다.";
-  }
-
-  if (accessMode === "admin") {
-    return "일반 사용 흐름에 더해 운영성 기능과 실험용 화면을 추가로 노출합니다.";
-  }
-
-  return "기록 작성과 비공개 기록 관리를 열고, 템플릿 관리는 어드민 권한에서만 엽니다.";
 }
