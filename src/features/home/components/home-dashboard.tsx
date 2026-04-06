@@ -112,6 +112,33 @@ export function HomeDashboard() {
     return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "없음";
   }, [journals]);
 
+  const publicJournals = useMemo(
+    () =>
+      journals
+        .filter((journal) => journal.visibility === "public")
+        .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf()),
+    [journals]
+  );
+
+  const publicTrips = useMemo(
+    () =>
+      travelTrips
+        .filter((trip) => trip.visibility === "public")
+        .sort((a, b) => dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf()),
+    [travelTrips]
+  );
+
+  const publicTripVisitCount = useMemo(
+    () =>
+      new Map(
+        publicTrips.map((trip) => [
+          trip.id,
+          travelVisits.filter((visit) => visit.tripId === trip.id).length
+        ])
+      ),
+    [publicTrips, travelVisits]
+  );
+
   if (accessMode === "guest") {
     return (
       <div className="mx-auto flex max-w-6xl flex-col gap-8 text-ink">
@@ -120,51 +147,126 @@ export function HomeDashboard() {
             Heeby
           </p>
           <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-tight md:text-5xl">
-            템플릿으로 시작하고, 생활 기능을 하나의 허브에 모으는 개인 앱
+            공개 기록과 공개 여행을 둘러보세요
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-ink/72 md:text-lg">
-            방문자는 공개된 기록과 공개 여행을 둘러볼 수 있고, 로그인 후에는
-            기록 작성과 비공개 아카이브 관리까지 한곳에서 할 수 있습니다.
+            로그인하면 기록, 여행, 루틴, 주식까지 내 흐름에 맞게 이어 쓸 수 있습니다.
           </p>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/login"
-              className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-            >
-              로그인
-            </Link>
-            <p className="self-center text-sm text-ink/60">
-              어드민 모드는 로그인 후 헤더에서 추가 암호로 잠금 해제합니다.
-            </p>
-          </div>
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             <div className="rounded-[24px] border border-line/10 bg-surface p-5">
-              <p className="text-sm font-semibold">기록</p>
+              <p className="text-sm font-semibold">공개 기록</p>
               <p className="mt-2 text-sm leading-6 text-ink/62">
-                템플릿 질문으로 부담 없이 시작하고, 저장 후에는 문서처럼 읽습니다.
+                {publicJournals.length}개의 공개 기록을 바로 읽을 수 있습니다.
               </p>
             </div>
             <div className="rounded-[24px] border border-line/10 bg-surface p-5">
-              <p className="text-sm font-semibold">여행</p>
+              <p className="text-sm font-semibold">공개 여행</p>
               <p className="mt-2 text-sm leading-6 text-ink/62">
-                공개 여행 아카이브를 보고, 상세에서 방문 순서와 이동 흐름을 읽습니다.
+                {publicTrips.length}개의 공개 여행을 지도와 함께 볼 수 있습니다.
               </p>
             </div>
             <div className="rounded-[24px] border border-line/10 bg-surface p-5">
-              <p className="text-sm font-semibold">루틴</p>
+              <p className="text-sm font-semibold">로그인 후</p>
               <p className="mt-2 text-sm leading-6 text-ink/62">
-                정해진 시간에 나에게 텔레그램 메시지를 보내는 리마인더를 관리합니다.
-              </p>
-            </div>
-            <div className="rounded-[24px] border border-line/10 bg-surface p-5">
-              <p className="text-sm font-semibold">주식</p>
-              <p className="mt-2 text-sm leading-6 text-ink/62">
-                로그인 후 주간 시총 스냅샷을 쌓고, 이후 다른 투자 기록 도메인으로 확장합니다.
+                루틴과 주식까지 내 기록 흐름에 맞게 이어 쓸 수 있습니다.
               </p>
             </div>
           </div>
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <section className="rounded-[30px] border border-line/10 bg-surface p-6 shadow-card md:p-7">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
+                  Public Journals
+                </p>
+                <h2 className="mt-2 text-2xl font-bold">최근 공개 기록</h2>
+              </div>
+              <Link
+                href="/journals"
+                className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+              >
+                전체 보기
+              </Link>
+            </div>
+
+            <div className="mt-6 grid gap-4">
+              {publicJournals.slice(0, 3).map((journal) => (
+                <Link
+                  key={journal.id}
+                  href={`/journals/${journal.id}`}
+                  className="rounded-[24px] border border-line/10 bg-paper p-5 transition hover:border-coral/35 hover:bg-soft"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
+                      {journal.theme}
+                    </span>
+                    <span className="text-xs text-ink/48">
+                      {dayjs(journal.createdAt).format("MM.DD")}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-lg font-semibold">{journal.title}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-ink/62">
+                    {journal.answers.map((item) => item.answer).join(" ")}
+                  </p>
+                </Link>
+              ))}
+
+              {publicJournals.length === 0 ? (
+                <div className="rounded-[24px] border border-dashed border-line/15 bg-paper p-6 text-sm text-ink/62">
+                  아직 공개 기록이 없습니다.
+                </div>
+              ) : null}
+            </div>
+          </section>
+
+          <section className="rounded-[30px] border border-line/10 bg-surface p-6 shadow-card md:p-7">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
+                  Public Trips
+                </p>
+                <h2 className="mt-2 text-2xl font-bold">최근 공개 여행</h2>
+              </div>
+              <Link
+                href="/travel"
+                className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+              >
+                전체 보기
+              </Link>
+            </div>
+
+            <div className="mt-6 grid gap-4">
+              {publicTrips.slice(0, 3).map((trip) => (
+                <Link
+                  key={trip.id}
+                  href={`/travel/${trip.id}`}
+                  className="rounded-[24px] border border-line/10 bg-paper p-5 transition hover:border-coral/35 hover:bg-soft"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
+                      방문지 {publicTripVisitCount.get(trip.id) ?? 0}개
+                    </span>
+                    <span className="text-xs text-ink/48">
+                      {dayjs(trip.updatedAt).format("MM.DD")}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-lg font-semibold">{trip.name}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-ink/62">
+                    {trip.note ?? "저장된 방문 흐름을 자세히 볼 수 있습니다."}
+                  </p>
+                </Link>
+              ))}
+
+              {publicTrips.length === 0 ? (
+                <div className="rounded-[24px] border border-dashed border-line/15 bg-paper p-6 text-sm text-ink/62">
+                  아직 공개 여행이 없습니다.
+                </div>
+              ) : null}
+            </div>
+          </section>
         </section>
       </div>
     );
@@ -183,8 +285,7 @@ export function HomeDashboard() {
                 {today.format("YYYY년 MM월 DD일")}
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-ink/72 md:text-lg">
-                {getActivityCopy(todayJournals.length)} 빠르게 시작하고, 저장한 내용은
-                다시 읽기 좋은 문서처럼 남겨두세요.
+                {getActivityCopy(todayJournals.length)} 오늘 남길 한 가지부터 시작하세요.
               </p>
             </div>
 
@@ -193,10 +294,8 @@ export function HomeDashboard() {
                 href="/journals/new"
                 className="rounded-[24px] border border-coral/15 bg-coral px-5 py-5 text-white transition hover:opacity-92"
               >
-                <p className="text-sm font-semibold">새 기록 작성</p>
-                <p className="mt-2 text-sm text-white/82">
-                  템플릿을 고르고 바로 시작
-                </p>
+                <p className="text-sm font-semibold">새 기록</p>
+                <p className="mt-2 text-sm text-white/82">바로 시작</p>
               </Link>
               {canManageJournalTemplate(accessMode) ? (
                 <Link
@@ -204,7 +303,7 @@ export function HomeDashboard() {
                   className="rounded-[24px] border border-line/10 bg-surface px-5 py-5 transition hover:border-coral/35 hover:bg-soft"
                 >
                   <p className="text-sm font-semibold">템플릿 만들기</p>
-                  <p className="mt-2 text-sm text-ink/62">새 질문 구조 추가</p>
+                  <p className="mt-2 text-sm text-ink/62">새 질문 추가</p>
                 </Link>
               ) : (
                 <div className="rounded-[24px] border border-line/10 bg-surface px-5 py-5">
@@ -217,27 +316,21 @@ export function HomeDashboard() {
                 className="rounded-[24px] border border-line/10 bg-surface px-5 py-5 transition hover:border-coral/35 hover:bg-soft"
               >
                 <p className="text-sm font-semibold">여행 지도</p>
-                <p className="mt-2 text-sm text-ink/62">
-                  방문 도시와 이동 경로 보기
-                </p>
+                <p className="mt-2 text-sm text-ink/62">방문 흐름 보기</p>
               </Link>
               <Link
                 href="/routines"
                 className="rounded-[24px] border border-line/10 bg-surface px-5 py-5 transition hover:border-coral/35 hover:bg-soft"
               >
                 <p className="text-sm font-semibold">루틴 관리</p>
-                <p className="mt-2 text-sm text-ink/62">
-                  텔레그램 리마인더 만들기
-                </p>
+                <p className="mt-2 text-sm text-ink/62">리마인더 보기</p>
               </Link>
               <Link
                 href="/stocks"
                 className="rounded-[24px] border border-line/10 bg-surface px-5 py-5 transition hover:border-coral/35 hover:bg-soft"
               >
                 <p className="text-sm font-semibold">주식 기록</p>
-                <p className="mt-2 text-sm text-ink/62">
-                  스냅샷과 매매일지 허브로 이동
-                </p>
+                <p className="mt-2 text-sm text-ink/62">스냅샷과 매매일지</p>
               </Link>
             </div>
           </div>

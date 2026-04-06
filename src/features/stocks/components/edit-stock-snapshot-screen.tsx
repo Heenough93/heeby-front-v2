@@ -38,10 +38,7 @@ export function EditStockSnapshotScreen({
 
   if (!snapshot || !initialValues) {
     return (
-      <AppShell
-        title="스냅샷을 찾을 수 없습니다."
-        description="잘못된 경로이거나 이미 삭제된 스냅샷입니다."
-      >
+      <AppShell title="스냅샷을 찾을 수 없습니다.">
         <div className="rounded-[28px] border border-dashed border-line/15 bg-surface p-10 text-center shadow-card">
           <p className="text-lg font-semibold">편집할 스냅샷이 없습니다.</p>
         </div>
@@ -64,11 +61,7 @@ export function EditStockSnapshotScreen({
   };
 
   return (
-    <AppShell
-      title="시총 스냅샷 수정"
-      description="저장된 주차 기록을 다시 열어 순위, 종목, 메모를 조정합니다."
-      actions={<ListBackAction href={`/stocks/snapshots?scope=${snapshot.marketScope}`} />}
-    >
+    <AppShell title="시총 스냅샷 수정" actions={<ListBackAction href={`/stocks/snapshots?scope=${snapshot.marketScope}`} />}>
       <StockSnapshotEditor
         value={initialValues}
         onSubmit={handleSubmit}

@@ -24,11 +24,7 @@ export function NewTravelTripScreen() {
   };
 
   return (
-    <AppShell
-      title="새 여행"
-      description="여행 이름과 공개 범위를 먼저 정한 뒤, 저장 후 방문지를 이어서 추가합니다."
-      actions={<ListBackAction href="/travel" />}
-    >
+    <AppShell title="새 여행" actions={<ListBackAction href="/travel" />}>
       <TravelTripForm onSubmit={handleSubmit} submitLabel="여행 저장" />
     </AppShell>
   );

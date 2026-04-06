@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
-import { canManageTravel, getVisibilityLabel } from "@/features/access/lib/access-policy";
+import { getVisibilityLabel } from "@/features/access/lib/access-policy";
 import {
   getAccessMode,
   useAccessStore
@@ -76,16 +76,8 @@ export function TravelArchiveList() {
     });
   }, [search, selectedVisibility, sortBy, trips, visits]);
 
-  const canManage = canManageTravel(accessMode);
-
   return (
     <section className="grid gap-6">
-      {accessMode === "guest" ? (
-        <div className="rounded-[24px] border border-line/10 bg-paper p-5 text-sm leading-6 text-ink/62">
-          공개로 설정한 여행만 보입니다. 공개 여행은 상세에서 방문 순서와 이동 흐름을 그대로 볼 수 있습니다.
-        </div>
-      ) : null}
-
       <div className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
         <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
           <label className="grid gap-2">
@@ -137,9 +129,10 @@ export function TravelArchiveList() {
           const previewVisit = tripVisits.at(-1);
 
           return (
-            <article
+            <Link
               key={trip.id}
-              className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card"
+              href={`/travel/${trip.id}`}
+              className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card transition hover:-translate-y-0.5 hover:border-coral/30"
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -150,23 +143,6 @@ export function TravelArchiveList() {
                     방문지 {tripVisits.length}개
                   </span>
                   <span className="text-xs text-ink/45">{getTripPeriodLabel(tripVisits)}</span>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <Link
-                    href={`/travel/${trip.id}`}
-                    className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
-                  >
-                    상세 보기
-                  </Link>
-                  {canManage ? (
-                    <Link
-                      href={`/travel/${trip.id}/edit`}
-                      className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-                    >
-                      수정
-                    </Link>
-                  ) : null}
                 </div>
               </div>
 
@@ -188,7 +164,7 @@ export function TravelArchiveList() {
                   ) : null}
                 </div>
               ) : null}
-            </article>
+            </Link>
           );
         })}
       </div>
@@ -201,7 +177,7 @@ export function TravelArchiveList() {
           <p className="mt-2 text-sm text-ink/60">
             {search
               ? "검색어를 바꾸거나 공개 범위 필터를 조정해보세요."
-              : canManage
+              : accessMode !== "guest"
                 ? "새 여행을 만들고 방문지를 쌓아보세요."
                 : "공개 여행이 생기면 이곳에서 바로 볼 수 있습니다."}
           </p>

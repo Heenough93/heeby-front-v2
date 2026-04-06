@@ -71,11 +71,6 @@ export function NewStockSnapshotScreen({
   return (
     <AppShell
       title="새 시총 스냅샷"
-      description={
-        sourceSnapshot
-          ? `${sourceSnapshot.weekKey} 스냅샷을 복사한 뒤, 이번 주 순위를 다시 정리하고 한 줄 총평을 남깁니다.`
-          : "기본값으로 지난 스냅샷을 불러온 뒤, 이번 주 순서를 다시 정리하고 한 줄 총평을 남깁니다."
-      }
       actions={<ListBackAction href={`/stocks/snapshots?scope=${initialScope}`} />}
     >
       <StockSnapshotEditor

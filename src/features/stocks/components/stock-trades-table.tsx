@@ -477,10 +477,7 @@ export function StockTradesTable({
       <div className="w-full rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-              Position Table
-            </p>
-            <h2 className="mt-2 text-2xl font-bold">통합 매매일지</h2>
+            <h2 className="text-2xl font-bold">포지션 목록</h2>
             {lastRefreshAt ? (
               <p className="mt-2 text-sm text-ink/58">
                 마지막 현재가 갱신 {formatRefreshDate(lastRefreshAt)}
@@ -709,7 +706,7 @@ export function StockTradesTable({
           <div className="mt-6 rounded-[24px] border border-dashed border-line/15 bg-paper p-8 text-center">
             <p className="text-lg font-semibold">조건에 맞는 거래가 없습니다.</p>
             <p className="mt-2 text-sm text-ink/60">
-              필터를 조정하거나 새 거래를 추가해보세요.
+              필터를 바꾸거나 새 거래를 등록해보세요.
             </p>
           </div>
         ) : null}
@@ -720,10 +717,7 @@ export function StockTradesTable({
           <div className="mx-auto w-full max-w-5xl rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-                  Edit Position
-                </p>
-                <h2 className="mt-2 text-2xl font-bold">매매일지 수정</h2>
+                <h2 className="text-2xl font-bold">거래 수정</h2>
               </div>
               <button
                 type="button"

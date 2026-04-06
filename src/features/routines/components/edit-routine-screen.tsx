@@ -19,10 +19,7 @@ export function EditRoutineScreen({ routineId }: EditRoutineScreenProps) {
 
   if (!routine) {
     return (
-      <AppShell
-        title="루틴 수정"
-        description="수정할 루틴을 찾을 수 없습니다."
-      >
+      <AppShell title="루틴 수정">
         <section className="rounded-[28px] border border-line/10 bg-surface p-8 shadow-card">
           <p className="text-lg font-semibold">루틴을 찾을 수 없습니다.</p>
           <Link
@@ -54,11 +51,7 @@ export function EditRoutineScreen({ routineId }: EditRoutineScreenProps) {
   };
 
   return (
-    <AppShell
-      title="루틴 수정"
-      description="반복 방식과 메시지를 다시 조정해 텔레그램 리마인더를 관리합니다."
-      actions={<ListBackAction href="/routines" />}
-    >
+    <AppShell title="루틴 수정" actions={<ListBackAction href="/routines" />}>
       <RoutineForm
         routine={routine}
         onSubmit={handleSubmit}

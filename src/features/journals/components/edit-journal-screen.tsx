@@ -16,10 +16,7 @@ export function EditJournalScreen({ journalId }: EditJournalScreenProps) {
 
   if (!journal) {
     return (
-      <AppShell
-        title="기록 수정"
-        description="수정할 기록을 찾을 수 없습니다."
-      >
+      <AppShell title="기록 수정">
         <section className="rounded-[28px] border border-line/10 bg-surface p-8 shadow-card">
           <p className="text-lg font-semibold">기록을 찾을 수 없습니다.</p>
           <Link
@@ -34,11 +31,7 @@ export function EditJournalScreen({ journalId }: EditJournalScreenProps) {
   }
 
   return (
-    <AppShell
-      title="기록 수정"
-      description="기록 제목, 템플릿 선택, 질문별 답변을 다시 수정할 수 있습니다."
-      actions={<ListBackAction href="/journals" />}
-    >
+    <AppShell title="기록 수정" actions={<ListBackAction href="/journals" />}>
       <JournalForm
         mode="edit"
         journalId={journal.id}

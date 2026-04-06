@@ -24,11 +24,7 @@ export function NewRoutineScreen() {
   };
 
   return (
-    <AppShell
-      title="새 루틴"
-      description="반복 시간과 텔레그램 메시지를 저장해 개인 리마인더를 만듭니다."
-      actions={<ListBackAction href="/routines" />}
-    >
+    <AppShell title="새 루틴" actions={<ListBackAction href="/routines" />}>
       <RoutineForm onSubmit={handleSubmit} submitLabel="루틴 저장" />
     </AppShell>
   );

@@ -90,18 +90,12 @@ export function TravelTripDetail({ tripId }: TravelTripDetailProps) {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Link
-              href="/travel"
-              className="rounded-full border border-line/10 bg-surface px-5 py-3 text-sm font-semibold text-ink transition hover:border-coral/40 hover:bg-soft"
-            >
-              여행 아카이브
-            </Link>
             {canManage ? (
               <Link
                 href={`/travel/${trip.id}/edit`}
                 className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
               >
-                여행 수정
+                수정
               </Link>
             ) : null}
           </div>

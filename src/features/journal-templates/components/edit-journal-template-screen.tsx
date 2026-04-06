@@ -20,10 +20,7 @@ export function EditJournalTemplateScreen({
 
   if (!journalTemplate) {
     return (
-      <AppShell
-        title="템플릿 수정"
-        description="수정할 템플릿을 찾을 수 없습니다."
-      >
+      <AppShell title="템플릿 수정">
         <section className="rounded-[28px] border border-line/10 bg-surface p-8 shadow-card">
           <p className="text-lg font-semibold">템플릿을 찾을 수 없습니다.</p>
           <Link
@@ -38,11 +35,7 @@ export function EditJournalTemplateScreen({
   }
 
   return (
-    <AppShell
-      title="템플릿 수정"
-      description="기존 질문 구조를 수정해 템플릿을 다시 다듬습니다."
-      actions={<ListBackAction href="/templates" />}
-    >
+    <AppShell title="템플릿 수정" actions={<ListBackAction href="/templates" />}>
       <JournalTemplateForm
         mode="edit"
         journalTemplateId={journalTemplate.id}

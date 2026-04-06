@@ -30,7 +30,6 @@ export function StockTradesScreen() {
   return (
     <AppShell
       title="통합 매매일지"
-      description="여러 계좌의 보유 포지션과 매도 완료 기록을 월, 계좌, 계좌 성격, 보유 상태 조건으로 다시 읽습니다."
       actions={
         canManage ? (
           <button
@@ -38,7 +37,7 @@ export function StockTradesScreen() {
             onClick={() => setIsCreateOpen(true)}
             className="inline-flex rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
-            새 거래 추가
+            새 거래
           </button>
         ) : undefined
       }
@@ -51,9 +50,6 @@ export function StockTradesScreen() {
             <div className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-                    New Trades
-                  </p>
                   <h2 className="mt-2 text-2xl font-bold">새 거래 추가</h2>
                 </div>
                 <button

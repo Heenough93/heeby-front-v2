@@ -23,7 +23,13 @@ type SiteChromeProps = {
   children: React.ReactNode;
 };
 
-const navItems = [
+type NavigationItem = {
+  href: string;
+  label: string;
+  feature: keyof typeof import("@/features/access/lib/access-policy").featurePolicies;
+};
+
+const navItems: NavigationItem[] = [
   {
     href: "/",
     label: "홈",
@@ -54,16 +60,28 @@ const navItems = [
     label: "템플릿",
     feature: "journalTemplateAdmin"
   }
-] as const;
+] ;
 
 export function SiteChrome({ children }: SiteChromeProps) {
   const pathname = usePathname();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const accessMode = useAccessStore(getAccessMode);
+  const canAccessCurrentPage = canAccessPath(accessMode, pathname);
+  const showContactButton = accessMode === "guest";
   const visibleNavItems = navItems.filter((item) =>
     canAccessFeature(accessMode, item.feature)
   );
-  const canAccessCurrentPage = canAccessPath(accessMode, pathname);
+  const headerNavItems = showContactButton
+    ? [
+        ...visibleNavItems.slice(0, 3),
+        {
+          href: "/contact",
+          label: "문의",
+          feature: "contact" as const
+        },
+        ...visibleNavItems.slice(3)
+      ]
+    : visibleNavItems;
 
   useEffect(() => {
     setIsMobileNavOpen(false);
@@ -115,7 +133,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
           <div className="hidden min-w-0 flex-1 justify-center lg:flex">
             <HeaderNavigation
               pathname={pathname}
-              visibleNavItems={visibleNavItems}
+              visibleNavItems={headerNavItems}
             />
           </div>
 
@@ -169,7 +187,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
 
           <NavigationPanel
             pathname={pathname}
-            visibleNavItems={visibleNavItems}
+            visibleNavItems={headerNavItems}
           />
         </div>
       </div>
@@ -213,8 +231,6 @@ export function SiteChrome({ children }: SiteChromeProps) {
     </div>
   );
 }
-
-type NavigationItem = (typeof navItems)[number];
 
 type NavigationPanelProps = {
   pathname: string;

@@ -90,7 +90,7 @@ export function StockArchiveList() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="주차, 제목, 주요 종목으로 검색"
+            placeholder="주차, 제목, 종목"
             className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral focus:bg-surface"
           />
         </label>
@@ -158,7 +158,7 @@ export function StockArchiveList() {
 
               <h2 className="mt-4 text-xl font-semibold">{snapshot.title}</h2>
               <p className="mt-2 text-sm leading-6 text-ink/64">
-                상위 종목: {leadStocks || "아직 종목이 없습니다."}
+                {leadStocks ? `상위 종목: ${leadStocks}` : "등록된 종목이 없습니다."}
               </p>
               {summaryBadges.length || outs.length ? (
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -196,7 +196,7 @@ export function StockArchiveList() {
           <p className="mt-2 text-sm text-ink/60">
             {search
               ? "검색어를 바꾸거나 다른 주차를 확인해보세요."
-              : "지난주 순위를 불러와 이번 주 시총 관찰을 기록해보세요."}
+              : "지난 스냅샷을 불러오거나 새로 시작해보세요."}
           </p>
         </div>
       ) : null}

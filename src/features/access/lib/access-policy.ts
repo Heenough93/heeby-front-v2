@@ -19,6 +19,11 @@ export const featurePolicies = {
     member: true,
     admin: true
   },
+  contact: {
+    guest: true,
+    member: true,
+    admin: true
+  },
   travelArchive: {
     guest: true,
     member: true,

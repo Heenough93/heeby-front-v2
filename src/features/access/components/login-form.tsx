@@ -58,7 +58,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
       if (!response.ok) {
         setError(
           payload.code === "missing_credentials"
-            ? `${payload.message ?? "로그인 계정이 설정되지 않았습니다."} 서버를 다시 시작했는지 확인하세요.`
+            ? payload.message ?? "로그인 계정이 준비되지 않았습니다."
             : payload.message ?? "로그인에 실패했습니다."
         );
         return;
@@ -107,16 +107,6 @@ export function LoginForm({ nextPath }: LoginFormProps) {
       onSubmit={handleSubmit}
       className="grid gap-6 rounded-[28px] border border-line/10 bg-surface p-6 shadow-card md:p-8"
     >
-      <div className="grid gap-2">
-        <h2 className="text-2xl font-bold">로그인</h2>
-        <p className="text-sm leading-6 text-ink/62">
-          .env.local에 설정한 이메일과 비밀번호로 로그인합니다.
-        </p>
-        <p className="text-sm leading-6 text-ink/55">
-          로그인 상태는 이 브라우저에 유지되며, 새로고침이나 직접 URL 접근에도 그대로 사용됩니다.
-        </p>
-      </div>
-
       <label className="grid gap-2">
         <span className="text-sm font-semibold text-ink/75">이메일</span>
         <input

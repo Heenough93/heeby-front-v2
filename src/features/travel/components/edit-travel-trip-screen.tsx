@@ -76,10 +76,7 @@ export function EditTravelTripScreen({ tripId }: EditTravelTripScreenProps) {
 
   if (!trip) {
     return (
-      <AppShell
-        title="여행 수정"
-        description="수정할 여행을 찾을 수 없습니다."
-      >
+      <AppShell title="여행 수정">
         <section className="rounded-[28px] border border-line/10 bg-surface p-8 shadow-card">
           <p className="text-lg font-semibold">여행을 찾을 수 없습니다.</p>
           <Link
@@ -142,11 +139,7 @@ export function EditTravelTripScreen({ tripId }: EditTravelTripScreenProps) {
   };
 
   return (
-    <AppShell
-      title="여행 수정"
-      description="여행 정보와 공개 범위를 수정하고, 같은 화면에서 방문지를 계속 관리합니다."
-      actions={<ListBackAction href="/travel" />}
-    >
+    <AppShell title="여행 수정" actions={<ListBackAction href="/travel" />}>
       <div className="grid gap-6">
         <section className="rounded-[30px] border border-line/10 bg-surface p-6 shadow-card md:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">

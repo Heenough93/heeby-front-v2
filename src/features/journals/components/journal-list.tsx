@@ -72,12 +72,6 @@ export function JournalList() {
 
   return (
     <section className="grid gap-6">
-      {accessMode === "guest" ? (
-        <div className="rounded-[24px] border border-line/10 bg-paper p-5 text-sm leading-6 text-ink/62">
-          공개로 설정한 기록만 보입니다. 공개 기록은 상세에서 전체 내용을 그대로 볼 수 있습니다.
-        </div>
-      ) : null}
-
       <div className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
         <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
           <label className="grid gap-2">
