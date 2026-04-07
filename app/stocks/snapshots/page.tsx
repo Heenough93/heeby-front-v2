@@ -1,4 +1,4 @@
-import { StockArchiveList } from "@/features/stocks/components/stock-archive-list";
+import { StockArchiveList } from "@/features/stocks/components/snapshots/stock-archive-list";
 import { StockPageActions } from "@/features/stocks/components/stock-page-actions";
 import { AppShell } from "@/shared/components/layout/app-shell";
 

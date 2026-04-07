@@ -1,9 +1,9 @@
 import { z } from "zod";
+import { stockMarketValues } from "@/features/stocks/lib/shared/stock-core-types";
 import {
-  stockMarketValues,
   stockTradeAccountTypeValues,
   stockTradePositionStatusValues
-} from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/trades/stock-trade-types";
 
 export const stockTradeDraftRowSchema = z.object({
   id: z.string(),

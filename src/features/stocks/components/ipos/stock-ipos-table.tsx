@@ -1,18 +1,21 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
-import { stockIpoBatchSchema } from "@/features/stocks/lib/stock-ipo-schema";
+import { stockIpoBatchSchema } from "@/features/stocks/lib/ipos/stock-ipo-schema";
 import {
   getIpoMonthKey,
   getIpoProfit,
   getIpoSettlementAmount,
   getIpoSharePrice
-} from "@/features/stocks/lib/stock-ipo-utils";
+} from "@/features/stocks/lib/ipos/stock-ipo-utils";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import { AlertDialog } from "@/shared/components/feedback/alert-dialog";
 import { useToastStore } from "@/stores/ui/use-toast-store";
-import type { StockIpoDraftRow, StockIpoEntry } from "@/features/stocks/lib/stock-types";
-import { formatTradeCurrency } from "@/features/stocks/lib/stock-trade-utils";
+import type {
+  StockIpoDraftRow,
+  StockIpoEntry
+} from "@/features/stocks/lib/ipos/stock-ipo-types";
+import { formatTradeCurrency } from "@/features/stocks/lib/trades/stock-trade-utils";
 import { getOwnerScopeLabel, type OwnerScope } from "@/types/domain";
 
 type IpoSortKey = "latest" | "oldest" | "profit-desc" | "profit-asc";

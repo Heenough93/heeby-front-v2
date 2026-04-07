@@ -1,12 +1,12 @@
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
+import type { StockMarket } from "@/features/stocks/lib/shared/stock-core-types";
 import type {
-  StockMarket,
   StockTradeAccountType,
   StockTradeDraftRow,
   StockTradeEntry,
   StockTradePositionStatus
-} from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/trades/stock-trade-types";
 
 export function createEmptyTradeRow(
   date = dayjs().format("YYYY-MM-DD"),

@@ -9,13 +9,6 @@ import type { Journal } from "@/features/journals/lib/journal-types";
 import { useJournalStore } from "@/features/journals/store/journal-store";
 import type { Routine } from "@/features/routines/lib/routine-types";
 import { useRoutineStore } from "@/features/routines/store/routine-store";
-import type {
-  StockIpoEntry,
-  Stock,
-  StockSnapshot,
-  StockSnapshotItem,
-  StockTradeEntry
-} from "@/features/stocks/lib/stock-types";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import type { TravelTrip, TravelVisit } from "@/features/travel/lib/travel-types";
 import { useTravelStore } from "@/features/travel/store/travel-store";
@@ -23,12 +16,19 @@ import type { Announcement } from "@/stores/ui/use-announcement-store";
 import { useAnnouncementStore } from "@/stores/ui/use-announcement-store";
 import { useFeatureFlagStore } from "@/stores/app/use-feature-flag-store";
 import { routineChannelTypes, routineRepeatTypes } from "@/features/routines/lib/routine-types";
+import type { Stock } from "@/features/stocks/lib/shared/stock-core-types";
+import { stockMarketValues } from "@/features/stocks/lib/shared/stock-core-types";
+import type {
+  StockSnapshot,
+  StockSnapshotItem
+} from "@/features/stocks/lib/snapshots/stock-snapshot-types";
+import { stockSnapshotScopeValues } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
+import type { StockTradeEntry } from "@/features/stocks/lib/trades/stock-trade-types";
 import {
-  stockMarketValues,
-  stockSnapshotScopeValues,
   stockTradeAccountTypeValues,
   stockTradePositionStatusValues
-} from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/trades/stock-trade-types";
+import type { StockIpoEntry } from "@/features/stocks/lib/ipos/stock-ipo-types";
 import { contentVisibilityValues, ownerScopeValues, themeValues } from "@/types/domain";
 
 export const ADMIN_BACKUP_VERSION = 1;

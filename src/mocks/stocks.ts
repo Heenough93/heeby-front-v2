@@ -1,8 +1,8 @@
+import type { Stock } from "@/features/stocks/lib/shared/stock-core-types";
 import type {
-  Stock,
   StockSnapshot,
   StockSnapshotItem
-} from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 
 export const stocks: Stock[] = [
   {

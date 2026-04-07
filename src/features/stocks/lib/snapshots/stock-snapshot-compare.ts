@@ -1,7 +1,5 @@
-import type {
-  Stock,
-  StockSnapshotItem
-} from "@/features/stocks/lib/stock-types";
+import type { Stock } from "@/features/stocks/lib/shared/stock-core-types";
+import type { StockSnapshotItem } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 
 export type StockSnapshotChange =
   | { type: "same"; label: "유지" }

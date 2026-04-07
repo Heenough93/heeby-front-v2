@@ -4,37 +4,41 @@ import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import type { Stock } from "@/features/stocks/lib/shared/stock-core-types";
 import {
   stockSnapshotEditorSchema,
   type StockSnapshotEditorSchemaValues
-} from "@/features/stocks/lib/stock-snapshot-schema";
-import { normalizeTicker } from "@/features/stocks/lib/stock-snapshot-utils";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-schema";
+import type {
+  StockSnapshot,
+  StockSnapshotEditorValues,
+  StockSnapshotItem
+} from "@/features/stocks/lib/snapshots/stock-snapshot-types";
+import { normalizeTicker } from "@/features/stocks/lib/snapshots/stock-snapshot-utils";
 import {
   stockTradeBatchSchema,
   type StockTradeBatchValues
-} from "@/features/stocks/lib/stock-trade-schema";
+} from "@/features/stocks/lib/trades/stock-trade-schema";
+import type {
+  StockTradeDraftRow,
+  StockTradeEntry
+} from "@/features/stocks/lib/trades/stock-trade-types";
 import {
   stockIpoBatchSchema,
   type StockIpoBatchValues
-} from "@/features/stocks/lib/stock-ipo-schema";
+} from "@/features/stocks/lib/ipos/stock-ipo-schema";
+import type {
+  StockIpoDraftRow,
+  StockIpoEntry
+} from "@/features/stocks/lib/ipos/stock-ipo-types";
 import {
   createEmptyTradeRow,
   sortTradeEntries
-} from "@/features/stocks/lib/stock-trade-utils";
+} from "@/features/stocks/lib/trades/stock-trade-utils";
 import {
   createEmptyIpoRow,
   sortIpoEntries
-} from "@/features/stocks/lib/stock-ipo-utils";
-import type {
-  Stock,
-  StockIpoDraftRow,
-  StockIpoEntry,
-  StockSnapshot,
-  StockSnapshotEditorValues,
-  StockSnapshotItem,
-  StockTradeDraftRow,
-  StockTradeEntry
-} from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/ipos/stock-ipo-utils";
 import {
   stockSnapshotItems as initialStockSnapshotItems,
   stockSnapshots as initialStockSnapshots,

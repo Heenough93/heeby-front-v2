@@ -1,4 +1,4 @@
-import { EditStockSnapshotScreen } from "@/features/stocks/components/edit-stock-snapshot-screen";
+import { EditStockSnapshotScreen } from "@/features/stocks/components/snapshots/edit-stock-snapshot-screen";
 
 type EditStockSnapshotRoutePageProps = {
   params: {

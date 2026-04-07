@@ -1,14 +1,13 @@
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
+import type { Stock, StockMarket } from "@/features/stocks/lib/shared/stock-core-types";
 import type {
-  Stock,
-  StockMarket,
   StockSnapshot,
   StockSnapshotDraftItem,
-  StockSnapshotScope,
   StockSnapshotEditorValues,
-  StockSnapshotItem
-} from "@/features/stocks/lib/stock-types";
+  StockSnapshotItem,
+  StockSnapshotScope
+} from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 
 export function getIsoWeekKey(input = dayjs()) {
   const date = input.toDate();

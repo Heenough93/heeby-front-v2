@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getStockSnapshotChanges,
   getStockSnapshotOuts
-} from "@/features/stocks/lib/stock-snapshot-compare";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-compare";
 import {
   stockSnapshotItems,
   stockSnapshots,

@@ -10,20 +10,21 @@ import {
 import {
   getStockSnapshotChanges,
   getStockSnapshotOuts
-} from "@/features/stocks/lib/stock-snapshot-compare";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-compare";
 import {
   formatSnapshotUpdatedAt,
   getStockMarketLabel,
   getStockSnapshotScopeLabel
-} from "@/features/stocks/lib/stock-snapshot-utils";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-utils";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
+import type { StockSnapshotItem } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 
 type StockSnapshotDetailProps = {
   snapshotId: string;
 };
 
-const emptySnapshotItems: import("@/features/stocks/lib/stock-types").StockSnapshotItem[] = [];
+const emptySnapshotItems: StockSnapshotItem[] = [];
 
 export function StockSnapshotDetail({ snapshotId }: StockSnapshotDetailProps) {
   const router = useRouter();

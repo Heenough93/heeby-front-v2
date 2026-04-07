@@ -2,17 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { stockSnapshotDraftItemSchema } from "@/features/stocks/lib/stock-snapshot-schema";
+import { stockSnapshotDraftItemSchema } from "@/features/stocks/lib/snapshots/stock-snapshot-schema";
 import {
   cloneDraftItem,
   createDefaultStockSnapshotValues,
   getStockSnapshotScopeLabel,
   moveItem
-} from "@/features/stocks/lib/stock-snapshot-utils";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-utils";
 import type {
   StockSnapshotDraftItem,
   StockSnapshotEditorValues
-} from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 
 type StockSnapshotEditorProps = {
   value: StockSnapshotEditorValues;

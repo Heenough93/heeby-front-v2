@@ -3,26 +3,25 @@
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/shared/components/layout/app-shell";
+import { StockTradeBatchForm } from "@/features/stocks/components/trades/stock-trade-batch-form";
+import { StockTradesTable } from "@/features/stocks/components/trades/stock-trades-table";
 import { canManageStock } from "@/features/access/lib/access-policy";
-import { getAccessMode, useAccessStore } from "@/features/access/store/access-store";
-import { StockIpoForm } from "@/features/stocks/components/stock-ipo-form";
-import { StockIposTable } from "@/features/stocks/components/stock-ipos-table";
-import type { OwnerScope } from "@/types/domain";
+import {
+  getAccessMode,
+  useAccessStore
+} from "@/features/access/store/access-store";
+import type { StockSnapshotScope } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 
-export function StockIposScreen() {
+export function StockTradesScreen() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const accessMode = useAccessStore(getAccessMode);
   const canManage = canManageStock(accessMode);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const scopeFilter = (searchParams.get("scope") === "yumja"
-    ? "yumja"
-    : searchParams.get("scope") === "heeby"
-      ? "heeby"
-      : "all") as OwnerScope | "all";
+  const scopeFilter = (searchParams.get("scope") === "US" ? "US" : "KR") as StockSnapshotScope;
 
-  const setScopeFilter = (scope: OwnerScope | "all") => {
+  const setScopeFilter = (scope: StockSnapshotScope) => {
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set("scope", scope);
     router.replace(`${pathname}?${nextParams.toString()}`);
@@ -30,7 +29,7 @@ export function StockIposScreen() {
 
   return (
     <AppShell
-      title="공모주 청약 및 매도"
+      title="통합 매매일지"
       actions={
         canManage ? (
           <button
@@ -38,19 +37,21 @@ export function StockIposScreen() {
             onClick={() => setIsCreateOpen(true)}
             className="inline-flex rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
-            새 공모주
+            새 거래
           </button>
         ) : undefined
       }
     >
-      <StockIposTable scopeFilter={scopeFilter} onScopeChange={setScopeFilter} />
+      <StockTradesTable scopeFilter={scopeFilter} onScopeChange={setScopeFilter} />
 
       {isCreateOpen ? (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/35 px-5 py-6">
           <div className="mx-auto w-full max-w-6xl">
             <div className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-2xl font-bold">새 공모주</h2>
+                <div>
+                  <h2 className="mt-2 text-2xl font-bold">새 거래 추가</h2>
+                </div>
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
@@ -61,10 +62,10 @@ export function StockIposScreen() {
               </div>
 
               <div className="mt-6">
-                <StockIpoForm
+                <StockTradeBatchForm
                   inline
-                  submitLabel="공모주 저장"
-                  initialOwnerScope={scopeFilter === "all" ? "yumja" : scopeFilter}
+                  submitLabel="거래 저장"
+                  initialScope={scopeFilter}
                   onSubmitted={() => setIsCreateOpen(false)}
                 />
               </div>

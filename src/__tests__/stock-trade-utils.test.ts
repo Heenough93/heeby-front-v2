@@ -6,7 +6,7 @@ import {
   getTradeBuyAmount,
   getTradeMonthKey,
   getTradePositionStatusLabel
-} from "@/features/stocks/lib/stock-trade-utils";
+} from "@/features/stocks/lib/trades/stock-trade-utils";
 
 describe("stock trade utils", () => {
   it("creates a blank draft row with defaults", () => {

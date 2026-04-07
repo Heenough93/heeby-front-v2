@@ -1,9 +1,9 @@
 import { z } from "zod";
+import { stockMarketValues } from "@/features/stocks/lib/shared/stock-core-types";
 import {
   stockSnapshotScopeValues,
-  stockMarketValues,
   type StockSnapshotEditorValues
-} from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 
 export const stockSnapshotDraftItemSchema = z.object({
   id: z.string(),

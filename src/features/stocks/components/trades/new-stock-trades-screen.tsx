@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/shared/components/layout/app-shell";
-import { StockTradeBatchForm } from "@/features/stocks/components/stock-trade-batch-form";
+import { StockTradeBatchForm } from "@/features/stocks/components/trades/stock-trade-batch-form";
 
 export function NewStockTradesScreen() {
   const router = useRouter();

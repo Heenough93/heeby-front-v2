@@ -1,4 +1,4 @@
-import type { StockTradeEntry } from "@/features/stocks/lib/stock-types";
+import type { StockTradeEntry } from "@/features/stocks/lib/trades/stock-trade-types";
 
 export const stockTradeEntries: StockTradeEntry[] = [
   {

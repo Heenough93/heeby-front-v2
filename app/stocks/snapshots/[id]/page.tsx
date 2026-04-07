@@ -1,5 +1,5 @@
-import { StockSnapshotDetail } from "@/features/stocks/components/stock-snapshot-detail";
-import { StockSnapshotPageActions } from "@/features/stocks/components/stock-snapshot-page-actions";
+import { StockSnapshotDetail } from "@/features/stocks/components/snapshots/stock-snapshot-detail";
+import { StockSnapshotPageActions } from "@/features/stocks/components/snapshots/stock-snapshot-page-actions";
 import { AppShell } from "@/shared/components/layout/app-shell";
 
 type StockSnapshotRoutePageProps = {

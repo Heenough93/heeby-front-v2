@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/shared/components/layout/app-shell";
 import { ListBackAction } from "@/shared/components/layout/list-back-action";
-import { StockSnapshotEditor } from "@/features/stocks/components/stock-snapshot-editor";
-import { createDraftFromSnapshot } from "@/features/stocks/lib/stock-snapshot-utils";
+import { StockSnapshotEditor } from "@/features/stocks/components/snapshots/stock-snapshot-editor";
+import { createDraftFromSnapshot } from "@/features/stocks/lib/snapshots/stock-snapshot-utils";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 

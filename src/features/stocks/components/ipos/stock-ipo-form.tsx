@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { stockIpoBatchSchema } from "@/features/stocks/lib/stock-ipo-schema";
-import { createEmptyIpoRow } from "@/features/stocks/lib/stock-ipo-utils";
-import type { StockIpoDraftRow } from "@/features/stocks/lib/stock-types";
+import { stockIpoBatchSchema } from "@/features/stocks/lib/ipos/stock-ipo-schema";
+import { createEmptyIpoRow } from "@/features/stocks/lib/ipos/stock-ipo-utils";
+import type { StockIpoDraftRow } from "@/features/stocks/lib/ipos/stock-ipo-types";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 import { getOwnerScopeLabel, ownerScopeValues, type OwnerScope } from "@/types/domain";

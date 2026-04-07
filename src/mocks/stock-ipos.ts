@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import type { StockIpoEntry } from "@/features/stocks/lib/stock-types";
+import type { StockIpoEntry } from "@/features/stocks/lib/ipos/stock-ipo-types";
 
 const createdAt = dayjs("2026-04-01T09:00:00+09:00").toISOString();
 

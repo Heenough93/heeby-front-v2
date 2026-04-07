@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { stockTradeBatchSchema } from "@/features/stocks/lib/stock-trade-schema";
-import { createEmptyTradeRow } from "@/features/stocks/lib/stock-trade-utils";
+import { stockTradeBatchSchema } from "@/features/stocks/lib/trades/stock-trade-schema";
+import { createEmptyTradeRow } from "@/features/stocks/lib/trades/stock-trade-utils";
 import type {
-  StockSnapshotScope,
   StockTradeAccountType,
   StockTradeDraftRow
-} from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/trades/stock-trade-types";
+import type { StockSnapshotScope } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 

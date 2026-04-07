@@ -1,5 +1,5 @@
-import type { StockSnapshotScope } from "@/features/stocks/lib/stock-types";
-import { NewStockSnapshotScreen } from "@/features/stocks/components/new-stock-snapshot-screen";
+import type { StockSnapshotScope } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
+import { NewStockSnapshotScreen } from "@/features/stocks/components/snapshots/new-stock-snapshot-screen";
 
 type NewStockSnapshotRoutePageProps = {
   searchParams?: {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
-import { stockTradeBatchSchema } from "@/features/stocks/lib/stock-trade-schema";
+import { stockTradeBatchSchema } from "@/features/stocks/lib/trades/stock-trade-schema";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import {
   getTradeCurrencyUnit,
@@ -18,15 +18,15 @@ import {
   getTradeReferencePrice,
   getTradeScope,
   getTradeSellAmountKrw
-} from "@/features/stocks/lib/stock-trade-utils";
+} from "@/features/stocks/lib/trades/stock-trade-utils";
 import { AlertDialog } from "@/shared/components/feedback/alert-dialog";
 import type {
   StockTradeAccountType,
   StockTradeDraftRow,
   StockTradeEntry,
-  StockSnapshotScope,
   StockTradePositionStatus
-} from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/trades/stock-trade-types";
+import type { StockSnapshotScope } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 
 type TradeSortKey = "latest" | "oldest" | "buy-desc" | "buy-asc" | "profit-desc" | "profit-asc";

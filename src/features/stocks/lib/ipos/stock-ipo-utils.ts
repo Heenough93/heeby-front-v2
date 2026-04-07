@@ -1,6 +1,9 @@
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
-import type { StockIpoDraftRow, StockIpoEntry } from "@/features/stocks/lib/stock-types";
+import type {
+  StockIpoDraftRow,
+  StockIpoEntry
+} from "@/features/stocks/lib/ipos/stock-ipo-types";
 
 export function createEmptyIpoRow(date = dayjs().format("YYYY-MM-DD")): StockIpoDraftRow {
   return {

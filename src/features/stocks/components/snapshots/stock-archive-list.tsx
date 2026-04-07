@@ -6,13 +6,13 @@ import { useMemo, useState } from "react";
 import {
   getStockSnapshotChanges,
   getStockSnapshotOuts
-} from "@/features/stocks/lib/stock-snapshot-compare";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-compare";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import {
   formatSnapshotUpdatedAt,
   getStockSnapshotScopeLabel
-} from "@/features/stocks/lib/stock-snapshot-utils";
-import type { StockSnapshotScope } from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-utils";
+import type { StockSnapshotScope } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 
 export function StockArchiveList() {
   const router = useRouter();

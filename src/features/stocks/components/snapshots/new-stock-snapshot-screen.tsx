@@ -4,12 +4,12 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/shared/components/layout/app-shell";
 import { ListBackAction } from "@/shared/components/layout/list-back-action";
-import { StockSnapshotEditor } from "@/features/stocks/components/stock-snapshot-editor";
+import { StockSnapshotEditor } from "@/features/stocks/components/snapshots/stock-snapshot-editor";
 import {
   createDraftFromLatestSnapshot,
   createDraftFromSourceSnapshot
-} from "@/features/stocks/lib/stock-snapshot-utils";
-import type { StockSnapshotScope } from "@/features/stocks/lib/stock-types";
+} from "@/features/stocks/lib/snapshots/stock-snapshot-utils";
+import type { StockSnapshotScope } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 
