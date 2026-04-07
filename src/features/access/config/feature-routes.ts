@@ -6,8 +6,8 @@ export const featureRoutePatterns = {
   travelArchive: ["/travel", /^\/travel\/[^/]+$/],
   routineEditor: ["/routines/new", /^\/routines\/[^/]+\/edit$/],
   routineArchive: ["/routines", /^\/routines\/[^/]+$/],
-  stockEditor: ["/stocks/new", "/stocks/snapshots/new", "/stocks/trades/new", /^\/stocks\/trades\/[^/]+\/edit$/, /^\/stocks\/snapshots\/[^/]+\/edit$/, /^\/stocks\/[^/]+\/edit$/],
-  stockArchive: ["/stocks", "/stocks/snapshots", "/stocks/trades", /^\/stocks\/snapshots\/[^/]+$/, /^\/stocks\/[^/]+$/],
+  stockEditor: ["/stocks/new", "/stocks/snapshots/new", "/stocks/trades/new", "/stocks/ipos/new", /^\/stocks\/trades\/[^/]+\/edit$/, /^\/stocks\/snapshots\/[^/]+\/edit$/, /^\/stocks\/[^/]+\/edit$/],
+  stockArchive: ["/stocks", "/stocks/snapshots", "/stocks/trades", "/stocks/ipos", /^\/stocks\/snapshots\/[^/]+$/, /^\/stocks\/[^/]+$/],
   journalTemplateAdmin: ["/templates", /^\/templates\/.+/],
   journalEditor: ["/journals/new", /^\/journals\/.+\/edit$/],
   journalArchive: ["/journals", /^\/journals\/.+/]

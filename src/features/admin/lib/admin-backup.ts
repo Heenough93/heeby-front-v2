@@ -10,6 +10,7 @@ import { useJournalStore } from "@/features/journals/store/journal-store";
 import type { Routine } from "@/features/routines/lib/routine-types";
 import { useRoutineStore } from "@/features/routines/store/routine-store";
 import type {
+  StockIpoEntry,
   Stock,
   StockSnapshot,
   StockSnapshotItem,
@@ -28,7 +29,7 @@ import {
   stockTradeAccountTypeValues,
   stockTradePositionStatusValues
 } from "@/features/stocks/lib/stock-types";
-import { contentVisibilityValues, themeValues } from "@/types/domain";
+import { contentVisibilityValues, ownerScopeValues, themeValues } from "@/types/domain";
 
 export const ADMIN_BACKUP_VERSION = 1;
 
@@ -52,6 +53,7 @@ export type AdminBackupData = {
   stockSnapshots: StockSnapshot[];
   stockSnapshotItems: StockSnapshotItem[];
   stockTradeEntries: StockTradeEntry[];
+  stockIpoEntries: StockIpoEntry[];
   announcements: Announcement[];
   featureFlags: BackupFeatureFlags;
   access: BackupAccessState;
@@ -198,6 +200,22 @@ const stockTradeEntrySchema = baseEntitySchema.extend({
   }
 });
 
+const stockIpoEntrySchema = baseEntitySchema.extend({
+  ownerScope: z.enum(ownerScopeValues),
+  stockName: z.string().min(1),
+  brokerage: z.string().min(1),
+  subscribedAt: localDateSchema,
+  deposit: z.number().min(0),
+  allocatedQuantity: z.number().min(0),
+  refundedAt: localDateSchema.optional(),
+  refundAmount: z.number().min(0).optional(),
+  subscriptionFee: z.number().min(0).optional(),
+  listedAt: localDateSchema.optional(),
+  sellAmount: z.number().min(0).optional(),
+  settledAt: localDateSchema.optional(),
+  taxAndFee: z.number().min(0).optional()
+});
+
 const announcementSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
@@ -222,6 +240,7 @@ const backupSchema = z.object({
   stockSnapshots: z.array(stockSnapshotSchema),
   stockSnapshotItems: z.array(stockSnapshotItemSchema),
   stockTradeEntries: z.array(stockTradeEntrySchema),
+  stockIpoEntries: z.array(stockIpoEntrySchema),
   announcements: z.array(announcementSchema),
   featureFlags: z.object({
     showTravelWidget: z.boolean(),
@@ -256,6 +275,7 @@ export function createAdminBackup(): AdminBackupData {
     stockSnapshots: stockState.snapshots,
     stockSnapshotItems: stockState.snapshotItems,
     stockTradeEntries: stockState.tradeEntries,
+    stockIpoEntries: stockState.ipoEntries,
     announcements: announcementState.announcements,
     featureFlags: featureFlagState.flags,
     access: {
@@ -317,7 +337,8 @@ export function applyAdminBackup(backup: AdminBackupData) {
     stocks: backup.stockMasters,
     snapshots: backup.stockSnapshots,
     snapshotItems: backup.stockSnapshotItems,
-    tradeEntries: backup.stockTradeEntries
+    tradeEntries: backup.stockTradeEntries,
+    ipoEntries: backup.stockIpoEntries
   });
   useAnnouncementStore.setState({
     announcements: backup.announcements

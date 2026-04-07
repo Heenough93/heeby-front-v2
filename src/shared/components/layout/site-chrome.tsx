@@ -315,6 +315,19 @@ function HeaderNavigation({
                   >
                     매매일지
                   </Link>
+
+                  <Link
+                    href="/stocks/ipos"
+                    onClick={() => setIsStockMenuOpen(false)}
+                    className={cn(
+                      "rounded-[18px] border px-3 py-3 text-sm font-semibold transition",
+                      pathname.startsWith("/stocks/ipos")
+                        ? "border-coral/35 bg-soft text-ink"
+                        : "border-line/10 bg-surface text-ink hover:border-coral/30 hover:bg-soft"
+                    )}
+                  >
+                    공모주
+                  </Link>
                 </div>
               ) : null}
             </div>
@@ -407,6 +420,18 @@ function NavigationPanel({
                       )}
                     >
                       <p className="text-sm font-semibold text-ink">매매일지</p>
+                    </Link>
+
+                    <Link
+                      href="/stocks/ipos"
+                      className={cn(
+                        "rounded-[18px] border px-3 py-3 transition",
+                        pathname.startsWith("/stocks/ipos")
+                          ? "border-coral/35 bg-paper"
+                          : "border-line/10 bg-surface hover:border-coral/30 hover:bg-soft"
+                      )}
+                    >
+                      <p className="text-sm font-semibold text-ink">공모주</p>
                     </Link>
                   </div>
                 ) : null}
