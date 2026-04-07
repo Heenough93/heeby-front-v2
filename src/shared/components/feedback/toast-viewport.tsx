@@ -29,7 +29,7 @@ export function ToastViewport() {
   }, [removeToast, toasts]);
 
   return (
-    <div className="pointer-events-none fixed left-1/2 top-5 z-[60] flex w-[min(92vw,420px)] -translate-x-1/2 flex-col gap-3">
+    <div className="pointer-events-none fixed left-1/2 top-20 z-[60] flex w-[min(92vw,420px)] -translate-x-1/2 flex-col gap-3 md:top-24">
       {toasts.map((toast) => (
         <div
           key={toast.id}
