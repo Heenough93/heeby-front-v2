@@ -73,6 +73,7 @@ export function AnnouncementModal({
           {announcement.primaryActionLabel && announcement.primaryActionHref ? (
             <Link
               href={announcement.primaryActionHref}
+              onClick={onClose}
               className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
             >
               {announcement.primaryActionLabel}

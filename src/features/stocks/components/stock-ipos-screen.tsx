@@ -16,11 +16,11 @@ export function StockIposScreen() {
   const accessMode = useAccessStore(getAccessMode);
   const canManage = canManageStock(accessMode);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const scopeFilter = (searchParams.get("scope") === "heeby"
-    ? "heeby"
-    : searchParams.get("scope") === "all"
-      ? "all"
-      : "yumja") as OwnerScope | "all";
+  const scopeFilter = (searchParams.get("scope") === "yumja"
+    ? "yumja"
+    : searchParams.get("scope") === "heeby"
+      ? "heeby"
+      : "all") as OwnerScope | "all";
 
   const setScopeFilter = (scope: OwnerScope | "all") => {
     const nextParams = new URLSearchParams(searchParams.toString());
