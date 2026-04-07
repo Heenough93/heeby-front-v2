@@ -13,6 +13,7 @@ import { AccessControl } from "@/features/access/components/access-control";
 import { AnnouncementHost } from "@/shared/components/feedback/announcement-host";
 import { ToastViewport } from "@/shared/components/feedback/toast-viewport";
 import { AccessGateNotice } from "@/features/access/components/access-gate-notice";
+import { ScrollToTopButton } from "@/shared/components/layout/scroll-to-top-button";
 import { ThemeToggle } from "@/shared/components/layout/theme-toggle";
 import {
   getAccessMode,
@@ -224,6 +225,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
         </div>
       </footer>
 
+      <ScrollToTopButton />
       <AnnouncementHost />
       <ToastViewport />
     </div>
