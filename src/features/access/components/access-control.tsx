@@ -31,12 +31,6 @@ export function AccessControl() {
 
   return (
     <div className="relative flex items-center gap-2">
-      {accessMode === "admin" ? (
-        <span className="hidden rounded-full border border-coral/25 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral md:inline-flex">
-          어드민 사용 중
-        </span>
-      ) : null}
-
       {accessMode === "member" ? (
         <button
           type="button"

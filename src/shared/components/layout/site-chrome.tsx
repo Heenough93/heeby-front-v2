@@ -138,9 +138,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden md:block">
-              <AccessControl />
-            </div>
+            <AccessControl />
             <ThemeToggle />
           </div>
         </div>
