@@ -3,6 +3,11 @@
 import { z } from "zod";
 import type { AccessStore } from "@/features/access/store/access-store";
 import { useAccessStore } from "@/features/access/store/access-store";
+import type {
+  AssetSnapshot,
+  AssetSnapshotItem
+} from "@/features/assets/lib/asset-snapshot-types";
+import { useAssetStore } from "@/features/assets/store/asset-store";
 import type { JournalTemplate } from "@/features/journal-templates/lib/journal-template-types";
 import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
 import type { Journal } from "@/features/journals/lib/journal-types";
@@ -49,6 +54,8 @@ export type AdminBackupData = {
   routines: Routine[];
   travelTrips: TravelTrip[];
   travelVisits: TravelVisit[];
+  assetSnapshots: AssetSnapshot[];
+  assetSnapshotItems: AssetSnapshotItem[];
   stockMasters: Stock[];
   stockSnapshots: StockSnapshot[];
   stockSnapshotItems: StockSnapshotItem[];
@@ -138,6 +145,23 @@ const travelVisitSchema = baseEntitySchema.extend({
   startedAt: localDateSchema,
   endedAt: localDateSchema.optional(),
   note: z.string().optional()
+});
+
+const assetSnapshotSchema = baseEntitySchema.extend({
+  title: z.string().min(1),
+  monthKey: z.string().regex(/^\d{4}-\d{2}$/),
+  memo: z.string().optional(),
+  sourceSnapshotId: z.string().optional()
+});
+
+const assetSnapshotItemSchema = baseEntitySchema.extend({
+  snapshotId: z.string().min(1),
+  ownerScope: z.enum(ownerScopeValues),
+  majorType: z.enum(["deposit", "securities", "insurance", "other", "cash"]),
+  institution: z.string().min(1),
+  label: z.string().min(1),
+  category: z.enum(["cash", "invest", "retirement"]),
+  amount: z.number().min(0)
 });
 
 const stockSchema = baseEntitySchema.extend({
@@ -236,6 +260,8 @@ const backupSchema = z.object({
   routines: z.array(routineSchema),
   travelTrips: z.array(travelTripSchema),
   travelVisits: z.array(travelVisitSchema),
+  assetSnapshots: z.array(assetSnapshotSchema),
+  assetSnapshotItems: z.array(assetSnapshotItemSchema),
   stockMasters: z.array(stockSchema),
   stockSnapshots: z.array(stockSnapshotSchema),
   stockSnapshotItems: z.array(stockSnapshotItemSchema),
@@ -257,6 +283,7 @@ export function createAdminBackup(): AdminBackupData {
   const journalTemplateState = useJournalTemplateStore.getState();
   const routineState = useRoutineStore.getState();
   const travelState = useTravelStore.getState();
+  const assetState = useAssetStore.getState();
   const stockState = useStockStore.getState();
   const announcementState = useAnnouncementStore.getState();
   const featureFlagState = useFeatureFlagStore.getState();
@@ -271,6 +298,8 @@ export function createAdminBackup(): AdminBackupData {
     routines: routineState.routines,
     travelTrips: travelState.trips,
     travelVisits: travelState.visits,
+    assetSnapshots: assetState.snapshots,
+    assetSnapshotItems: assetState.snapshotItems,
     stockMasters: stockState.stocks,
     stockSnapshots: stockState.snapshots,
     stockSnapshotItems: stockState.snapshotItems,
@@ -332,6 +361,10 @@ export function applyAdminBackup(backup: AdminBackupData) {
   useTravelStore.setState({
     trips: backup.travelTrips,
     visits: backup.travelVisits
+  });
+  useAssetStore.setState({
+    snapshots: backup.assetSnapshots,
+    snapshotItems: backup.assetSnapshotItems
   });
   useStockStore.setState({
     stocks: backup.stockMasters,

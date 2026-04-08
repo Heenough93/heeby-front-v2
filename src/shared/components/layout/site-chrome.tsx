@@ -52,6 +52,11 @@ const navItems: NavigationItem[] = [
     feature: "routineArchive"
   },
   {
+    href: "/assets",
+    label: "자산",
+    feature: "assetArchive"
+  },
+  {
     href: "/stocks",
     label: "주식",
     feature: "stockArchive"
@@ -241,13 +246,23 @@ function HeaderNavigation({
   pathname,
   visibleNavItems
 }: NavigationPanelProps) {
+  const [isAssetMenuOpen, setIsAssetMenuOpen] = useState(
+    pathname.startsWith("/assets")
+  );
   const [isStockMenuOpen, setIsStockMenuOpen] = useState(
     pathname.startsWith("/stocks")
   );
+  const assetMenuRef = useRef<HTMLDivElement | null>(null);
   const stockMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
+      if (
+        assetMenuRef.current &&
+        !assetMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsAssetMenuOpen(false);
+      }
       if (
           stockMenuRef.current &&
           !stockMenuRef.current.contains(event.target as Node)
@@ -267,6 +282,60 @@ function HeaderNavigation({
   return (
     <nav className="flex items-center gap-2">
       {visibleNavItems.map((item) => {
+        if (item.href === "/assets") {
+          const isParentActive = pathname.startsWith("/assets");
+
+          return (
+            <div key={item.href} className="relative" ref={assetMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsAssetMenuOpen((current) => !current)}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition",
+                  isParentActive
+                    ? "border-coral/35 bg-coral/10 text-ink"
+                    : "border-line/10 bg-surface text-ink hover:border-coral/30 hover:bg-soft"
+                )}
+              >
+                <span>{item.label}</span>
+                <span className="text-xs text-ink/50">
+                  {isAssetMenuOpen ? "−" : "+"}
+                </span>
+              </button>
+
+              {isAssetMenuOpen ? (
+                <div className="absolute left-1/2 top-full z-30 mt-3 grid min-w-[12rem] -translate-x-1/2 gap-2 rounded-[24px] border border-line/10 bg-paper p-3 shadow-card">
+                  <Link
+                    href="/assets/flow"
+                    onClick={() => setIsAssetMenuOpen(false)}
+                    className={cn(
+                      "rounded-[18px] border px-3 py-3 text-sm font-semibold transition",
+                      pathname.startsWith("/assets/flow")
+                        ? "border-coral/35 bg-soft text-ink"
+                        : "border-line/10 bg-surface text-ink hover:border-coral/30 hover:bg-soft"
+                    )}
+                  >
+                    현금흐름
+                  </Link>
+
+                  <Link
+                    href="/assets/snapshots"
+                    onClick={() => setIsAssetMenuOpen(false)}
+                    className={cn(
+                      "rounded-[18px] border px-3 py-3 text-sm font-semibold transition",
+                      pathname.startsWith("/assets/snapshots") || pathname.startsWith("/assets/charts")
+                        ? "border-coral/35 bg-soft text-ink"
+                        : "border-line/10 bg-surface text-ink hover:border-coral/30 hover:bg-soft"
+                    )}
+                  >
+                    자산기록
+                  </Link>
+                </div>
+              ) : null}
+            </div>
+          );
+        }
+
         if (item.href === "/stocks") {
           const isParentActive = pathname.startsWith("/stocks");
 
@@ -362,6 +431,9 @@ function NavigationPanel({
   pathname,
   visibleNavItems
 }: NavigationPanelProps) {
+  const [isAssetMenuOpen, setIsAssetMenuOpen] = useState(
+    pathname.startsWith("/assets")
+  );
   const [isStockMenuOpen, setIsStockMenuOpen] = useState(
     pathname.startsWith("/stocks")
   );
@@ -370,6 +442,63 @@ function NavigationPanel({
     <section className="rounded-[28px] border border-line/10 bg-surface p-5 shadow-card">
       <nav className="grid gap-2">
         {visibleNavItems.map((item) => {
+          if (item.href === "/assets") {
+            const isParentActive = pathname.startsWith("/assets");
+
+            return (
+              <div
+                key={item.href}
+                className={cn(
+                  "rounded-[22px] border transition",
+                  isParentActive
+                    ? "border-coral/35 bg-coral/10"
+                    : "border-line/10 bg-paper"
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsAssetMenuOpen((current) => !current)}
+                  className="flex w-full items-start justify-between gap-3 px-4 py-4 text-left"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{item.label}</p>
+                  </div>
+                  <span className="text-sm text-ink/48">
+                    {isAssetMenuOpen ? "−" : "+"}
+                  </span>
+                </button>
+
+                {isAssetMenuOpen ? (
+                  <div className="grid gap-2 border-t border-line/10 px-3 pb-3 pt-2">
+                    <Link
+                      href="/assets/flow"
+                      className={cn(
+                        "rounded-[18px] border px-3 py-3 transition",
+                        pathname.startsWith("/assets/flow")
+                          ? "border-coral/35 bg-paper"
+                          : "border-line/10 bg-surface hover:border-coral/30 hover:bg-soft"
+                      )}
+                    >
+                      <p className="text-sm font-semibold text-ink">현금흐름</p>
+                    </Link>
+
+                    <Link
+                      href="/assets/snapshots"
+                      className={cn(
+                        "rounded-[18px] border px-3 py-3 transition",
+                        pathname.startsWith("/assets/snapshots") || pathname.startsWith("/assets/charts")
+                          ? "border-coral/35 bg-paper"
+                          : "border-line/10 bg-surface hover:border-coral/30 hover:bg-soft"
+                      )}
+                    >
+                      <p className="text-sm font-semibold text-ink">자산기록</p>
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
+            );
+          }
+
           if (item.href === "/stocks") {
             const isParentActive = pathname.startsWith("/stocks");
 
