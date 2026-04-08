@@ -22,7 +22,7 @@ export function AccessControl() {
     return (
       <Link
         href="/login"
-        className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+        className="shrink-0 whitespace-nowrap rounded-full bg-coral px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90 sm:px-4 sm:text-sm"
       >
         로그인
       </Link>
@@ -30,7 +30,7 @@ export function AccessControl() {
   }
 
   return (
-    <div className="relative flex items-center gap-2">
+    <div className="relative flex shrink-0 items-center gap-1.5 sm:gap-2">
       {accessMode === "member" ? (
         <button
           type="button"
@@ -38,7 +38,7 @@ export function AccessControl() {
             setIsOpen((current) => !current);
             setError("");
           }}
-          className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          className="shrink-0 whitespace-nowrap rounded-full bg-coral px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90 sm:px-4 sm:text-sm"
         >
           어드민
         </button>
@@ -52,7 +52,7 @@ export function AccessControl() {
               variant: "info"
             });
           }}
-          className="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
+          className="shrink-0 whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100 sm:px-4 sm:text-sm"
         >
           어드민 해제
         </button>
@@ -67,7 +67,7 @@ export function AccessControl() {
             variant: "info"
           });
         }}
-        className="rounded-full border border-line/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+        className="shrink-0 whitespace-nowrap rounded-full border border-line/10 bg-surface px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft sm:px-4 sm:text-sm"
       >
         로그아웃
       </button>
