@@ -145,7 +145,7 @@ function CategoryBarChart({ rows }: { rows: AssetChartRow[] }) {
           현금
         </span>
         <span className="inline-flex items-center gap-2 text-ink/70">
-          <span className="h-3 w-3 rounded-full bg-teal" />
+          <span className="h-3 w-3 rounded-full bg-sky-500" />
           투자
         </span>
         <span className="inline-flex items-center gap-2 text-ink/70">
@@ -187,7 +187,7 @@ function CategoryBarChart({ rows }: { rows: AssetChartRow[] }) {
             const baseX = slotStart + Math.max((slotWidth - groupWidth) / 2, 0);
             const bars = [
               { key: "cash", value: row.cash, className: "fill-coral" },
-              { key: "invest", value: row.invest, className: "fill-teal" },
+              { key: "invest", value: row.invest, className: "fill-sky-500" },
               { key: "retirement", value: row.retirement, className: "fill-sand" }
             ];
 
@@ -268,7 +268,7 @@ function AssetChangeBarChart({ rows }: { rows: AssetChartRow[] }) {
           현금
         </span>
         <span className="inline-flex items-center gap-2 text-ink/70">
-          <span className="h-3 w-3 rounded-full bg-teal" />
+          <span className="h-3 w-3 rounded-full bg-sky-500" />
           투자
         </span>
         <span className="inline-flex items-center gap-2 text-ink/70">
@@ -310,7 +310,7 @@ function AssetChangeBarChart({ rows }: { rows: AssetChartRow[] }) {
             const baseX = slotStart + Math.max((slotWidth - groupWidth) / 2, 0);
             const bars = [
               { key: "cash", value: row.cash, className: "fill-coral" },
-              { key: "invest", value: row.invest, className: "fill-teal" },
+              { key: "invest", value: row.invest, className: "fill-sky-500" },
               { key: "retirement", value: row.retirement, className: "fill-sand" }
             ];
 
@@ -414,42 +414,49 @@ export function AssetChartsScreen() {
 
         <div className="min-w-0 rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
           <h2 className="text-2xl font-bold">월별 자산 요약</h2>
-          <div className="mt-6 min-w-0 overflow-x-auto rounded-[22px] border border-line/10 bg-paper">
+          <div className="mt-6 min-w-0 overflow-x-auto rounded-[22px] border-2 border-line/30 bg-paper shadow-card">
             <table
-              className={`divide-y divide-line/10 text-sm ${
-                shouldFillChartWidth(filteredRows.length) ? "table-fixed w-full" : ""
-              }`}
+              className="w-full border-collapse table-fixed text-sm"
               style={
                 shouldFillChartWidth(filteredRows.length)
                   ? undefined
-                  : { width: `${getChartWidth(filteredRows.length)}px` }
+                  : { width: `${120 + filteredRows.length * 160}px` }
               }
             >
-              <thead className="bg-surface/70 text-left text-ink/58">
+              <thead className="bg-surface text-ink/62">
                 <tr>
-                  <th className="px-4 py-3 font-medium">구분</th>
+                  <th
+                    className="whitespace-nowrap border-b-2 border-r border-line/25 px-4 py-2.5 text-center text-[13px] font-medium leading-none"
+                    style={{ width: "120px" }}
+                  >
+                    구분
+                  </th>
                   {filteredRows.map((row) => (
-                    <th key={row.monthKey} className="px-4 py-3 text-right font-medium">
+                    <th
+                      key={row.monthKey}
+                      className="whitespace-nowrap border-b-2 border-line/25 px-4 py-2.5 text-center text-[13px] font-medium leading-none"
+                      style={{ width: "160px" }}
+                    >
                       {row.monthKey}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line/10">
+              <tbody>
                 {[
                   { label: "총", getValue: (row: AssetChartRow) => row.total, strong: true },
                   { label: "현금", getValue: (row: AssetChartRow) => row.cash },
                   { label: "투자", getValue: (row: AssetChartRow) => row.invest },
                   { label: "노후", getValue: (row: AssetChartRow) => row.retirement }
                 ].map((summaryRow) => (
-                  <tr key={summaryRow.label}>
-                    <th className="px-4 py-3 text-left font-semibold text-ink">
+                  <tr key={summaryRow.label} className="odd:bg-paper even:bg-surface/35">
+                    <th className="whitespace-nowrap border-r border-t border-line/25 px-4 py-2.5 text-center text-[13px] font-semibold leading-none text-ink">
                       {summaryRow.label}
                     </th>
                     {filteredRows.map((row) => (
                       <td
                         key={`${summaryRow.label}-${row.monthKey}`}
-                        className={`px-4 py-3 text-right ${
+                        className={`whitespace-nowrap border-l border-t border-line/25 px-4 py-2.5 text-right text-[13px] leading-none ${
                           summaryRow.strong ? "font-semibold text-ink" : "text-ink/72"
                         }`}
                       >
