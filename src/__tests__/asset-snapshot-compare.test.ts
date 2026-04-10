@@ -3,9 +3,10 @@ import {
   getAssetSnapshotChanges,
   getAssetSnapshotOuts
 } from "@/features/assets/lib/asset-snapshot-compare";
+import type { AssetSnapshotItem } from "@/features/assets/lib/asset-snapshot-types";
 
 describe("asset snapshot compare", () => {
-  const previousItems = [
+  const previousItems: AssetSnapshotItem[] = [
     {
       id: "1",
       snapshotId: "prev",
@@ -30,9 +31,9 @@ describe("asset snapshot compare", () => {
       createdAt: "",
       updatedAt: ""
     }
-  ] as const;
+  ];
 
-  const currentItems = [
+  const currentItems: AssetSnapshotItem[] = [
     {
       id: "3",
       snapshotId: "curr",
@@ -57,25 +58,82 @@ describe("asset snapshot compare", () => {
       createdAt: "",
       updatedAt: ""
     }
-  ] as const;
+  ];
 
   it("calculates new and changed amounts", () => {
     const changes = getAssetSnapshotChanges({
-      currentItems: [...currentItems],
-      previousItems: [...previousItems]
+      currentItems,
+      previousItems
     });
 
     expect(changes[0]?.change.type).toBe("up");
     expect(changes[1]?.change.type).toBe("new");
   });
 
+  it("keeps same amounts and detects down changes", () => {
+    const changes = getAssetSnapshotChanges({
+      currentItems: [
+        {
+          ...previousItems[0],
+          id: "same",
+          snapshotId: "curr"
+        },
+        {
+          ...previousItems[1],
+          id: "down",
+          snapshotId: "curr",
+          amount: 1500000
+        }
+      ],
+      previousItems
+    });
+
+    expect(changes[0]?.change).toEqual({ type: "same", label: "유지" });
+    expect(changes[1]?.change.type).toBe("down");
+    expect(changes[1]?.change.label).toBe("-500,000원");
+  });
+
+  it("treats owner scope as part of the comparison key", () => {
+    const changes = getAssetSnapshotChanges({
+      currentItems: [
+        {
+          ...previousItems[0],
+          id: "owner-scope",
+          snapshotId: "curr",
+          ownerScope: "heeby"
+        }
+      ],
+      previousItems
+    });
+
+    expect(changes[0]?.change).toEqual({ type: "new", label: "NEW" });
+  });
+
+  it("marks every item as new when there is no previous snapshot", () => {
+    const changes = getAssetSnapshotChanges({
+      currentItems,
+      previousItems: undefined
+    });
+
+    expect(changes.every((entry) => entry.change.type === "new")).toBe(true);
+  });
+
   it("finds removed items", () => {
     const outs = getAssetSnapshotOuts({
-      currentItems: [...currentItems],
-      previousItems: [...previousItems]
+      currentItems,
+      previousItems
     });
 
     expect(outs).toHaveLength(1);
     expect(outs[0]?.label).toBe("국내주식");
+  });
+
+  it("returns no outs when there is no previous snapshot", () => {
+    const outs = getAssetSnapshotOuts({
+      currentItems,
+      previousItems: undefined
+    });
+
+    expect(outs).toEqual([]);
   });
 });
