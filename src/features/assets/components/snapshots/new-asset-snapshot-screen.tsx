@@ -14,10 +14,12 @@ import { useToastStore } from "@/stores/ui/use-toast-store";
 
 type NewAssetSnapshotScreenProps = {
   sourceSnapshotId?: string;
+  presetMonthKey?: string;
 };
 
 export function NewAssetSnapshotScreen({
-  sourceSnapshotId
+  sourceSnapshotId,
+  presetMonthKey
 }: NewAssetSnapshotScreenProps) {
   const router = useRouter();
   const getSnapshotById = useAssetStore((state) => state.getSnapshotById);
@@ -30,18 +32,36 @@ export function NewAssetSnapshotScreen({
     : undefined;
 
   const initialValues = useMemo(() => {
+    const withPresetMonthKey = <T extends ReturnType<typeof createDraftFromLatestAssetSnapshot>>(
+      values: T
+    ) => {
+      if (!presetMonthKey) {
+        return values;
+      }
+
+      return {
+        ...values,
+        monthKey: presetMonthKey,
+        title: `${presetMonthKey} 자산 스냅샷`
+      };
+    };
+
     if (sourceSnapshot) {
-      return createDraftFromSourceAssetSnapshot({
-        sourceSnapshot,
-        items: getSnapshotItems(sourceSnapshot.id)
-      });
+      return withPresetMonthKey(
+        createDraftFromSourceAssetSnapshot({
+          sourceSnapshot,
+          items: getSnapshotItems(sourceSnapshot.id)
+        })
+      );
     }
 
-    return createDraftFromLatestAssetSnapshot({
-      latestSnapshot,
-      items: latestSnapshot ? getSnapshotItems(latestSnapshot.id) : []
-    });
-  }, [getSnapshotItems, latestSnapshot, sourceSnapshot]);
+    return withPresetMonthKey(
+      createDraftFromLatestAssetSnapshot({
+        latestSnapshot,
+        items: latestSnapshot ? getSnapshotItems(latestSnapshot.id) : []
+      })
+    );
+  }, [getSnapshotItems, latestSnapshot, presetMonthKey, sourceSnapshot]);
 
   const handleSubmit = (values: Parameters<typeof addSnapshot>[0]) => {
     const nextSnapshot = addSnapshot(values);

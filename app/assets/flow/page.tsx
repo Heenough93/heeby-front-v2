@@ -1,5 +1,5 @@
-import { AssetFlowScreen } from "@/features/assets/components/asset-flow-screen";
+import { redirect } from "next/navigation";
 
 export default function AssetFlowRoutePage() {
-  return <AssetFlowScreen />;
+  redirect("/assets/money-flow");
 }

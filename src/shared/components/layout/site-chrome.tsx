@@ -306,16 +306,16 @@ function HeaderNavigation({
               {isAssetMenuOpen ? (
                 <div className="absolute left-1/2 top-full z-30 mt-3 grid min-w-[12rem] -translate-x-1/2 gap-2 rounded-[24px] border border-line/10 bg-paper p-3 shadow-card">
                   <Link
-                    href="/assets/flow"
+                    href="/assets/money-flow"
                     onClick={() => setIsAssetMenuOpen(false)}
                     className={cn(
                       "rounded-[18px] border px-3 py-3 text-sm font-semibold transition",
-                      pathname.startsWith("/assets/flow")
+                      pathname.startsWith("/assets/flow") || pathname.startsWith("/assets/money-flow")
                         ? "border-coral/35 bg-soft text-ink"
                         : "border-line/10 bg-surface text-ink hover:border-coral/30 hover:bg-soft"
                     )}
                   >
-                    현금흐름
+                    현금 흐름
                   </Link>
 
                   <Link
@@ -471,15 +471,15 @@ function NavigationPanel({
                 {isAssetMenuOpen ? (
                   <div className="grid gap-2 border-t border-line/10 px-3 pb-3 pt-2">
                     <Link
-                      href="/assets/flow"
+                      href="/assets/money-flow"
                       className={cn(
                         "rounded-[18px] border px-3 py-3 transition",
-                        pathname.startsWith("/assets/flow")
+                        pathname.startsWith("/assets/flow") || pathname.startsWith("/assets/money-flow")
                           ? "border-coral/35 bg-paper"
                           : "border-line/10 bg-surface hover:border-coral/30 hover:bg-soft"
                       )}
                     >
-                      <p className="text-sm font-semibold text-ink">현금흐름</p>
+                      <p className="text-sm font-semibold text-ink">현금 흐름</p>
                     </Link>
 
                     <Link

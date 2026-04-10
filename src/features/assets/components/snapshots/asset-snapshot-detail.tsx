@@ -22,6 +22,7 @@ import {
   getAssetSnapshotTotalAmount
 } from "@/features/assets/lib/asset-snapshot-utils";
 import { useAssetStore } from "@/features/assets/store/asset-store";
+import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
 import { useToastStore } from "@/stores/ui/use-toast-store";
 import type { AssetSnapshotItem } from "@/features/assets/lib/asset-snapshot-types";
 
@@ -38,6 +39,7 @@ export function AssetSnapshotDetail({ snapshotId }: AssetSnapshotDetailProps) {
   const getSnapshotItems = useAssetStore((state) => state.getSnapshotItems);
   const snapshots = useAssetStore((state) => state.snapshots);
   const removeSnapshot = useAssetStore((state) => state.removeSnapshot);
+  const moneyFlowMonthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
   const showToast = useToastStore((state) => state.showToast);
   const snapshot = getSnapshotById(snapshotId);
   const currentItems = getSnapshotItems(snapshotId);
@@ -68,6 +70,12 @@ export function AssetSnapshotDetail({ snapshotId }: AssetSnapshotDetailProps) {
   const heebyChanges = changes.filter((entry) => entry.item.ownerScope === "heeby");
   const yumjaOuts = outs.filter((item) => item.ownerScope === "yumja");
   const heebyOuts = outs.filter((item) => item.ownerScope === "heeby");
+  const currentMonthFlowEntries = moneyFlowMonthlyEntries.filter(
+    (entry) => entry.monthKey === snapshot.monthKey
+  );
+  const hasMoneyFlowStarted = currentMonthFlowEntries.length > 0;
+  const isMoneyFlowComplete =
+    hasMoneyFlowStarted && currentMonthFlowEntries.every((entry) => entry.isChecked);
 
   return (
     <section className="grid gap-6">
@@ -155,6 +163,12 @@ export function AssetSnapshotDetail({ snapshotId }: AssetSnapshotDetailProps) {
         <SummaryCard label="희비 총합" value={formatAssetAmount(ownerTotals.heeby)} />
       </div>
 
+      <MoneyFlowConnectionCard
+        monthKey={snapshot.monthKey}
+        hasMoneyFlowStarted={hasMoneyFlowStarted}
+        isMoneyFlowComplete={isMoneyFlowComplete}
+      />
+
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <OwnerSection
           title="윰자"
@@ -172,6 +186,70 @@ export function AssetSnapshotDetail({ snapshotId }: AssetSnapshotDetailProps) {
           changes={heebyChanges}
           outs={heebyOuts}
         />
+      </div>
+    </section>
+  );
+}
+
+function MoneyFlowConnectionCard({
+  monthKey,
+  hasMoneyFlowStarted,
+  isMoneyFlowComplete
+}: {
+  monthKey: string;
+  hasMoneyFlowStarted: boolean;
+  isMoneyFlowComplete: boolean;
+}) {
+  return (
+    <section className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-coral">현금 흐름 연결</p>
+          <h2 className="mt-2 text-2xl font-bold">
+            {hasMoneyFlowStarted
+              ? isMoneyFlowComplete
+                ? "이번 달 현금 흐름 체크가 완료되었습니다."
+                : "이번 달 현금 흐름이 진행 중입니다."
+              : "이번 달 현금 흐름이 아직 시작되지 않았습니다."}
+          </h2>
+          <p className="mt-2 text-sm text-ink/62">
+            {hasMoneyFlowStarted
+              ? isMoneyFlowComplete
+                ? `${monthKey} 자산기록과 현금 흐름이 모두 연결되어 월간 점검이 닫혔습니다.`
+                : `${monthKey} 자산기록은 저장되어 있지만 현금 흐름 체크가 아직 남아 있습니다.`
+              : `${monthKey} 자산기록은 먼저 저장됐지만 현금 흐름 월간 체크는 아직 없습니다.`}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <span
+            className={
+              hasMoneyFlowStarted
+                ? isMoneyFlowComplete
+                  ? "rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700"
+                  : "rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-700"
+                : "rounded-full bg-paper px-4 py-2 text-sm font-semibold text-ink/62"
+            }
+          >
+            {hasMoneyFlowStarted
+              ? isMoneyFlowComplete
+                ? "월간 체크 완료"
+                : "월간 체크 진행 중"
+              : "월간 체크 시작 전"}
+          </span>
+          <Link
+            href="/assets/money-flow"
+            className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+          >
+            현금 흐름 보기
+          </Link>
+          <Link
+            href="/assets/money-flow/monthly"
+            className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            월간 체크 보기
+          </Link>
+        </div>
       </div>
     </section>
   );
