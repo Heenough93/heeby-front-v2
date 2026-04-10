@@ -55,7 +55,7 @@ export function NewStockSnapshotScreen({
         marketScope: initialScope
       });
     },
-    [getSnapshotById, getSnapshotItems, initialScope, latestSnapshot, sourceSnapshot, stocks]
+    [getSnapshotItems, initialScope, latestSnapshot, sourceSnapshot, stocks]
   );
 
   const handleSubmit = (values: Parameters<typeof addSnapshot>[0]) => {

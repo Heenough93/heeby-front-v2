@@ -20,7 +20,6 @@ export function NewAssetSnapshotScreen({
   sourceSnapshotId
 }: NewAssetSnapshotScreenProps) {
   const router = useRouter();
-  const snapshots = useAssetStore((state) => state.snapshots);
   const getSnapshotById = useAssetStore((state) => state.getSnapshotById);
   const getSnapshotItems = useAssetStore((state) => state.getSnapshotItems);
   const addSnapshot = useAssetStore((state) => state.addSnapshot);
@@ -42,7 +41,7 @@ export function NewAssetSnapshotScreen({
       latestSnapshot,
       items: latestSnapshot ? getSnapshotItems(latestSnapshot.id) : []
     });
-  }, [getSnapshotItems, latestSnapshot, snapshots, sourceSnapshot]);
+  }, [getSnapshotItems, latestSnapshot, sourceSnapshot]);
 
   const handleSubmit = (values: Parameters<typeof addSnapshot>[0]) => {
     const nextSnapshot = addSnapshot(values);
