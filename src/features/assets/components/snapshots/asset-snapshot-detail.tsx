@@ -159,8 +159,8 @@ export function AssetSnapshotDetail({ snapshotId }: AssetSnapshotDetailProps) {
 
       <div className="grid gap-4 md:grid-cols-3">
         <SummaryCard label="전체 총합" value={formatAssetAmount(getAssetSnapshotTotalAmount(currentItems))} />
-        <SummaryCard label="윰자 총합" value={formatAssetAmount(ownerTotals.yumja)} />
-        <SummaryCard label="희비 총합" value={formatAssetAmount(ownerTotals.heeby)} />
+        <SummaryCard label={`${getOwnerScopeLabel("yumja")} 총합`} value={formatAssetAmount(ownerTotals.yumja)} />
+        <SummaryCard label={`${getOwnerScopeLabel("heeby")} 총합`} value={formatAssetAmount(ownerTotals.heeby)} />
       </div>
 
       <MoneyFlowConnectionCard
@@ -171,7 +171,7 @@ export function AssetSnapshotDetail({ snapshotId }: AssetSnapshotDetailProps) {
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <OwnerSection
-          title="윰자"
+          title={getOwnerScopeLabel("yumja")}
           cash={breakdown.yumja.cash}
           invest={breakdown.yumja.invest}
           retirement={breakdown.yumja.retirement}
@@ -179,7 +179,7 @@ export function AssetSnapshotDetail({ snapshotId }: AssetSnapshotDetailProps) {
           outs={yumjaOuts}
         />
         <OwnerSection
-          title="희비"
+          title={getOwnerScopeLabel("heeby")}
           cash={breakdown.heeby.cash}
           invest={breakdown.heeby.invest}
           retirement={breakdown.heeby.retirement}

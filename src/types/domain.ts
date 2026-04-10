@@ -7,5 +7,5 @@ export type ContentVisibility = (typeof contentVisibilityValues)[number];
 export type OwnerScope = (typeof ownerScopeValues)[number];
 
 export function getOwnerScopeLabel(scope: OwnerScope) {
-  return scope === "yumja" ? "윰자" : "희비";
+  return scope === "yumja" ? "윰자" : "히비";
 }

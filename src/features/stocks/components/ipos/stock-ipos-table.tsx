@@ -253,9 +253,12 @@ export function StockIposTable({
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <SummaryCard label="전체 / 윰자 / 희비" value={`${totalCount} / ${yumjaCount} / ${heebyCount}`} />
-        <SummaryCard label="윰자 총 수익" value={`${formatTradeCurrency(yumjaProfit)} 원`} />
-        <SummaryCard label="희비 총 수익" value={`${formatTradeCurrency(heebyProfit)} 원`} />
+        <SummaryCard
+          label={`전체 / ${getOwnerScopeLabel("yumja")} / ${getOwnerScopeLabel("heeby")}`}
+          value={`${totalCount} / ${yumjaCount} / ${heebyCount}`}
+        />
+        <SummaryCard label={`${getOwnerScopeLabel("yumja")} 총 수익`} value={`${formatTradeCurrency(yumjaProfit)} 원`} />
+        <SummaryCard label={`${getOwnerScopeLabel("heeby")} 총 수익`} value={`${formatTradeCurrency(heebyProfit)} 원`} />
       </div>
 
       <div className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
