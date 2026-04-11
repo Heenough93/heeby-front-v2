@@ -10,6 +10,7 @@ export type Journal = {
   title: string;
   theme: Theme;
   journalTemplateId: string;
+  journalTemplateNameSnapshot?: string;
   answers: JournalAnswer[];
   visibility: ContentVisibility;
   createdAt: string;

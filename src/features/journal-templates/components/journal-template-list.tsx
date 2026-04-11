@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { AlertDialog } from "@/shared/components/feedback/alert-dialog";
 import { getVisibilityLabel } from "@/features/access/lib/access-policy";
 import { useJournalTemplateStore } from "@/features/journal-templates/store/journal-template-store";
+import { useJournalStore } from "@/features/journals/store/journal-store";
 import { themes } from "@/constants/themes";
 import type { Theme } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ export function JournalTemplateList() {
   const removeJournalTemplate = useJournalTemplateStore(
     (state) => state.removeJournalTemplate
   );
+  const journals = useJournalStore((state) => state.journals);
   const showToast = useToastStore((state) => state.showToast);
   const [selectedTheme, setSelectedTheme] = useState<ThemeFilter>("전체");
   const [search, setSearch] = useState("");
@@ -67,6 +69,12 @@ export function JournalTemplateList() {
   const pendingDeleteJournalTemplate = journalTemplates.find(
     (journalTemplate) => journalTemplate.id === pendingDeleteJournalTemplateId
   );
+  const pendingDeleteJournalCount = pendingDeleteJournalTemplate
+    ? journals.filter(
+        (journal) => journal.journalTemplateId === pendingDeleteJournalTemplate.id
+      ).length
+    : 0;
+  const canDeletePendingJournalTemplate = pendingDeleteJournalCount === 0;
 
   return (
     <section className="grid gap-6">
@@ -182,13 +190,26 @@ export function JournalTemplateList() {
 
       <AlertDialog
         open={Boolean(pendingDeleteJournalTemplate)}
-        title="이 템플릿을 삭제할까요?"
-        description="삭제하면 이 브라우저에 저장된 템플릿 목록에서 제거됩니다."
-        confirmLabel="템플릿 삭제"
-        variant="danger"
+        title={
+          canDeletePendingJournalTemplate
+            ? "이 템플릿을 삭제할까요?"
+            : "사용 중인 템플릿은 삭제할 수 없습니다."
+        }
+        description={
+          canDeletePendingJournalTemplate
+            ? "삭제하면 이 브라우저에 저장된 템플릿 목록에서 제거됩니다."
+            : `이 템플릿을 사용하는 기록이 ${pendingDeleteJournalCount}개 있습니다. 기존 기록과의 연결을 유지하기 위해 먼저 해당 기록을 다른 템플릿으로 수정해야 합니다.`
+        }
+        confirmLabel={canDeletePendingJournalTemplate ? "템플릿 삭제" : "확인"}
+        variant={canDeletePendingJournalTemplate ? "danger" : "default"}
         onClose={() => setPendingDeleteJournalTemplateId(null)}
         onConfirm={() => {
           if (!pendingDeleteJournalTemplate) {
+            return;
+          }
+
+          if (!canDeletePendingJournalTemplate) {
+            setPendingDeleteJournalTemplateId(null);
             return;
           }
 

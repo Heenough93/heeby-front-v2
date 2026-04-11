@@ -47,7 +47,7 @@ export function JournalList() {
           const content = [
             journal.title,
             journal.theme,
-            journalTemplate?.name ?? "",
+            journalTemplate?.name ?? journal.journalTemplateNameSnapshot ?? "",
             ...journal.answers.map((item) => `${item.question} ${item.answer}`)
           ]
             .join(" ")
@@ -146,7 +146,7 @@ export function JournalList() {
                   </span>
                 </div>
                 <span className="text-sm text-ink/55">
-                  {journalTemplate?.name ?? "알 수 없는 템플릿"}
+                  {journalTemplate?.name ?? journal.journalTemplateNameSnapshot ?? "알 수 없는 템플릿"}
                 </span>
               </div>
 

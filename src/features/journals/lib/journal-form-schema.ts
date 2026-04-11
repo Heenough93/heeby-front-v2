@@ -11,6 +11,7 @@ export const journalFormSchema = z.object({
     errorMap: () => ({ message: "주제를 선택해주세요." })
   }),
   journalTemplateId: z.string().trim().min(1, "템플릿을 선택해주세요."),
+  journalTemplateNameSnapshot: z.string().trim().optional(),
   visibility: z.enum(contentVisibilityValues, {
     errorMap: () => ({ message: "공개 범위를 선택해주세요." })
   }),

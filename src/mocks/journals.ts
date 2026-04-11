@@ -8,6 +8,7 @@ export const journals: Journal[] = [
     title: "React Query 학습 메모",
     theme: "개발",
     journalTemplateId: journalTemplates[0].id,
+    journalTemplateNameSnapshot: journalTemplates[0].name,
     visibility: "private",
     answers: [
       { question: "오늘 한 작업", answer: "queryClient와 provider 구조 정리" },
@@ -23,6 +24,7 @@ export const journals: Journal[] = [
     title: "무한 스크롤 버그 복기",
     theme: "개발",
     journalTemplateId: journalTemplates[1].id,
+    journalTemplateNameSnapshot: journalTemplates[1].name,
     visibility: "private",
     answers: [
       { question: "발생 증상", answer: "스크롤 하단에서 같은 요청이 반복 호출되었다." },
@@ -38,6 +40,7 @@ export const journals: Journal[] = [
     title: "타입 가드 정리",
     theme: "개발",
     journalTemplateId: journalTemplates[2].id,
+    journalTemplateNameSnapshot: journalTemplates[2].name,
     visibility: "public",
     answers: [
       { question: "무엇을 학습했는지", answer: "TypeScript 사용자 정의 타입 가드와 narrowing 패턴을 정리했다." },
@@ -53,6 +56,7 @@ export const journals: Journal[] = [
     title: "주간 업무 회고",
     theme: "업무",
     journalTemplateId: journalTemplates[3].id,
+    journalTemplateNameSnapshot: journalTemplates[3].name,
     visibility: "private",
     answers: [
       { question: "오늘 한 일", answer: "신규 기능 스펙 문서를 정리하고 일정 리스크를 공유했다." },
@@ -68,6 +72,7 @@ export const journals: Journal[] = [
     title: "프로젝트 킥오프 메모",
     theme: "업무",
     journalTemplateId: journalTemplates[4].id,
+    journalTemplateNameSnapshot: journalTemplates[4].name,
     visibility: "private",
     answers: [
       { question: "회의 주제", answer: "Q2 프로젝트 킥오프 및 역할 분담" },
@@ -83,6 +88,7 @@ export const journals: Journal[] = [
     title: "도쿄 2일차 기록",
     theme: "여행",
     journalTemplateId: journalTemplates[5].id,
+    journalTemplateNameSnapshot: journalTemplates[5].name,
     visibility: "public",
     answers: [
       { question: "어디를 갔는지", answer: "시부야, 메이지신궁, 다이칸야마를 돌아다녔다." },
@@ -98,6 +104,7 @@ export const journals: Journal[] = [
     title: "연남동 카페 메모",
     theme: "여행",
     journalTemplateId: journalTemplates[6].id,
+    journalTemplateNameSnapshot: journalTemplates[6].name,
     visibility: "public",
     answers: [
       { question: "방문한 곳", answer: "연남동 골목에 있는 작은 로스터리 카페" },
@@ -113,6 +120,7 @@ export const journals: Journal[] = [
     title: "반도체 섹터 관찰 노트",
     theme: "주식",
     journalTemplateId: journalTemplates[7].id,
+    journalTemplateNameSnapshot: journalTemplates[7].name,
     visibility: "private",
     answers: [
       { question: "본 종목/섹터", answer: "반도체 장비주와 메모리 관련주 흐름을 체크했다." },
@@ -128,6 +136,7 @@ export const journals: Journal[] = [
     title: "손절 복기",
     theme: "주식",
     journalTemplateId: journalTemplates[8].id,
+    journalTemplateNameSnapshot: journalTemplates[8].name,
     visibility: "private",
     answers: [
       { question: "진입 근거", answer: "단기 반등 구간이라고 판단하고 분할 진입했다." },
@@ -143,6 +152,7 @@ export const journals: Journal[] = [
     title: "하체 운동 기록",
     theme: "운동",
     journalTemplateId: journalTemplates[9].id,
+    journalTemplateNameSnapshot: journalTemplates[9].name,
     visibility: "private",
     answers: [
       { question: "운동 종류", answer: "스쿼트, 레그프레스, 런지 위주로 진행했다." },
@@ -158,6 +168,7 @@ export const journals: Journal[] = [
     title: "한강 10km 러닝 로그",
     theme: "운동",
     journalTemplateId: journalTemplates[10].id,
+    journalTemplateNameSnapshot: journalTemplates[10].name,
     visibility: "public",
     answers: [
       { question: "코스", answer: "여의도 한강공원 왕복 코스" },

@@ -6,6 +6,7 @@ export function toJournalFormValues(journal: Journal): JournalFormValues {
     title: journal.title,
     theme: journal.theme,
     journalTemplateId: journal.journalTemplateId,
+    journalTemplateNameSnapshot: journal.journalTemplateNameSnapshot,
     visibility: journal.visibility,
     answers: journal.answers.map((item) => ({
       question: item.question,

@@ -82,6 +82,7 @@ const journalSchema = baseEntitySchema.extend({
   title: z.string().min(1),
   theme: z.enum(themeValues),
   journalTemplateId: z.string().min(1),
+  journalTemplateNameSnapshot: z.string().optional(),
   visibility: z.enum(contentVisibilityValues),
   answers: z.array(
     z.object({

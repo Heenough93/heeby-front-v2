@@ -35,6 +35,7 @@ export const useJournalStore = create<JournalStore>()(
           title: values.title.trim(),
           theme: values.theme,
           journalTemplateId: values.journalTemplateId,
+          journalTemplateNameSnapshot: values.journalTemplateNameSnapshot?.trim(),
           visibility: values.visibility,
           answers: values.answers.map((item) => ({
             question: item.question.trim(),
@@ -62,6 +63,7 @@ export const useJournalStore = create<JournalStore>()(
           title: values.title.trim(),
           theme: values.theme,
           journalTemplateId: values.journalTemplateId,
+          journalTemplateNameSnapshot: values.journalTemplateNameSnapshot?.trim(),
           visibility: values.visibility,
           answers: values.answers.map((item) => ({
             question: item.question.trim(),

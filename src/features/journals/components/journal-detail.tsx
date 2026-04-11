@@ -141,7 +141,7 @@ export function JournalDetail({ journalId }: JournalDetailProps) {
             <div>
               <dt className="text-ink/45">템플릿</dt>
               <dd className="mt-1 font-semibold text-ink">
-                {journalTemplate?.name ?? "알 수 없는 템플릿"}
+                {journalTemplate?.name ?? journal.journalTemplateNameSnapshot ?? "알 수 없는 템플릿"}
               </dd>
             </div>
             <div>

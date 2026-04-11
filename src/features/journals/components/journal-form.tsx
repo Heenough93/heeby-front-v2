@@ -74,6 +74,7 @@ export function JournalForm({
         title: "",
         theme: initialTheme,
         journalTemplateId: initialJournalTemplate?.id ?? "",
+        journalTemplateNameSnapshot: initialJournalTemplate?.name,
         visibility: "private",
         answers: initialJournalTemplate
           ? buildAnswerFields(initialJournalTemplate.questions)
@@ -185,16 +186,21 @@ export function JournalForm({
   }, [answers, form, selectedJournalTemplate]);
 
   const submitJournal = (values: JournalFormValues) => {
+    const nextValues = {
+      ...values,
+      journalTemplateNameSnapshot:
+        selectedJournalTemplate?.name ?? values.journalTemplateNameSnapshot
+    };
     const nextJournal =
       mode === "edit" && journalId
-        ? updateJournal(journalId, values)
-        : addJournal(values);
+        ? updateJournal(journalId, nextValues)
+        : addJournal(nextValues);
 
     if (!nextJournal) {
       return;
     }
 
-    markJournalTemplateAsRecent(values.journalTemplateId);
+    markJournalTemplateAsRecent(nextValues.journalTemplateId);
     showToast({
       title: mode === "edit" ? "기록이 수정되었습니다." : "기록이 저장되었습니다.",
       variant: "success"
