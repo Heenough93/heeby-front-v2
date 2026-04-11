@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   buildMoneyFlowLineItems,
   formatMoneyFlowAmount,
@@ -25,6 +26,7 @@ import {
   MoneyFlowStartMonthEmptyState,
   SummaryCard
 } from "@/features/assets/components/money-flow/money-flow-shared";
+import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
 
 export function MoneyFlowDashboard({
   accounts,
@@ -37,6 +39,8 @@ export function MoneyFlowDashboard({
   monthlyEntries: MoneyFlowMonthlyEntry[];
   assetSnapshots: AssetSnapshot[];
 }) {
+  const router = useRouter();
+  const startMonthlyFlow = useMoneyFlowStore((state) => state.startMonthlyFlow);
   const currentMonthKey = getCurrentMoneyFlowMonthKey();
   const currentMonthEntries = sortMoneyFlowMonthlyEntries(monthlyEntries).filter(
     (entry) => entry.monthKey === currentMonthKey
@@ -54,7 +58,13 @@ export function MoneyFlowDashboard({
           isMonthlyComplete={false}
           hasCurrentMonthSnapshot={Boolean(currentMonthSnapshot)}
         />
-        <MoneyFlowStartMonthEmptyState monthKey={currentMonthKey} />
+        <MoneyFlowStartMonthEmptyState
+          monthKey={currentMonthKey}
+          onStart={() => {
+            startMonthlyFlow(currentMonthKey);
+            router.push("/assets/money-flow/monthly");
+          }}
+        />
         <MoneyFlowAssetRecordBridge
           monthKey={currentMonthKey}
           currentMonthSnapshot={currentMonthSnapshot}
