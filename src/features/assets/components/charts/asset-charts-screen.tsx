@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/shared/components/layout/app-shell";
 import { ListBackAction } from "@/shared/components/layout/list-back-action";
@@ -351,6 +352,58 @@ function AssetChangeBarChart({ rows }: { rows: AssetChartRow[] }) {
   );
 }
 
+function AssetChartsEmptyState() {
+  return (
+    <section className="rounded-[28px] border border-dashed border-line/15 bg-surface p-10 text-center shadow-card">
+      <p className="text-sm font-semibold text-coral">자산 차트</p>
+      <h2 className="mt-3 text-2xl font-bold">아직 차트를 만들 자산기록이 없습니다.</h2>
+      <p className="mt-3 text-sm leading-6 text-ink/62">
+        월별 자산 스냅샷을 먼저 저장하면 총자산, 현금, 투자, 노후 흐름을 차트로 확인할 수 있습니다.
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <Link
+          href="/assets/snapshots"
+          className="rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+        >
+          자산기록 목록
+        </Link>
+        <Link
+          href="/assets/snapshots/new"
+          className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+        >
+          새 스냅샷 만들기
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function AssetChartsSingleSnapshotNotice({ row }: { row: AssetChartRow }) {
+  return (
+    <section className="rounded-[28px] border border-amber-200 bg-amber-50/80 p-6 shadow-card">
+      <p className="text-sm font-semibold text-amber-800">비교 데이터 준비 중</p>
+      <h2 className="mt-2 text-2xl font-bold">추이는 다음 스냅샷부터 비교됩니다.</h2>
+      <p className="mt-2 text-sm leading-6 text-ink/68">
+        현재 {row.monthKey} 자산기록 1개만 있어 총자산과 카테고리 구성은 볼 수 있지만, 월별 증감은 아직 의미 있게 계산하기 어렵습니다.
+      </p>
+      <div className="mt-5 flex flex-wrap gap-2">
+        <Link
+          href="/assets/snapshots/new"
+          className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+        >
+          다음 스냅샷 만들기
+        </Link>
+        <Link
+          href="/assets/snapshots"
+          className="rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+        >
+          자산기록 목록
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export function AssetChartsScreen() {
   const snapshots = useAssetStore((state) => state.snapshots);
   const getSnapshotItems = useAssetStore((state) => state.getSnapshotItems);
@@ -391,6 +444,14 @@ export function AssetChartsScreen() {
     { value: "12m", label: "12개월" },
     { value: "all", label: "전체" }
   ];
+
+  if (chartRows.length === 0) {
+    return (
+      <AppShell title="자산 차트" actions={<ListBackAction href="/assets/snapshots" />}>
+        <AssetChartsEmptyState />
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell title="자산 차트" actions={<ListBackAction href="/assets/snapshots" />}>
@@ -486,9 +547,15 @@ export function AssetChartsScreen() {
 
         <div className="min-w-0 rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
           <h2 className="text-2xl font-bold">월별 현금 · 투자 · 노후 증감</h2>
-          <div className="min-w-0 overflow-x-auto">
-            <AssetChangeBarChart rows={filteredRows} />
-          </div>
+          {filteredRows.length < 2 ? (
+            <div className="mt-6">
+              <AssetChartsSingleSnapshotNotice row={filteredRows[0] ?? chartRows[0]} />
+            </div>
+          ) : (
+            <div className="min-w-0 overflow-x-auto">
+              <AssetChangeBarChart rows={filteredRows} />
+            </div>
+          )}
         </div>
       </section>
     </AppShell>
