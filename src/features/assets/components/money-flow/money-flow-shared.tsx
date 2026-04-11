@@ -72,6 +72,47 @@ export function Field({
   );
 }
 
+export function EmptyStateCard({
+  eyebrow,
+  title,
+  description,
+  children
+}: {
+  eyebrow?: string;
+  title: string;
+  description: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-[28px] border border-dashed border-line/15 bg-surface p-8 text-center shadow-card">
+      {eyebrow ? <p className="text-sm font-semibold text-coral">{eyebrow}</p> : null}
+      <h2 className={eyebrow ? "mt-3 text-2xl font-bold" : "text-2xl font-bold"}>{title}</h2>
+      <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-ink/62">{description}</p>
+      {children ? <div className="mt-6 flex flex-wrap justify-center gap-2">{children}</div> : null}
+    </section>
+  );
+}
+
+export function InlineNotice({
+  tone = "warning",
+  children
+}: {
+  tone?: "warning" | "muted";
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={
+        tone === "warning"
+          ? "mb-4 rounded-[22px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800"
+          : "mb-4 rounded-[22px] border border-line/10 bg-paper px-4 py-3 text-sm leading-6 text-ink/64"
+      }
+    >
+      {children}
+    </div>
+  );
+}
+
 export function MoneyFlowStartMonthEmptyState({
   monthKey,
   title = "이번 달 현금 흐름이 아직 시작되지 않았습니다.",

@@ -12,7 +12,11 @@ import {
   type MoneyFlowAccountRole
 } from "@/features/assets/lib/money-flow-types";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
-import { EditorCard, Field } from "@/features/assets/components/money-flow/money-flow-shared";
+import {
+  EditorCard,
+  EmptyStateCard,
+  Field
+} from "@/features/assets/components/money-flow/money-flow-shared";
 
 const defaultAccountInput: MoneyFlowAccountInput = {
   name: "",
@@ -150,6 +154,14 @@ export function MoneyFlowAccounts() {
       </EditorCard>
 
       <section className="grid gap-4">
+        {sortedAccounts.length === 0 ? (
+          <EmptyStateCard
+            eyebrow="통장 관리"
+            title="아직 등록된 통장이 없습니다."
+            description="급여계좌와 목적별 통장을 먼저 등록해야 배분 규칙과 월간 체크를 만들 수 있습니다. 실제 은행 계좌번호보다 돈의 역할을 기준으로 추가하세요."
+          />
+        ) : null}
+
         {sortedAccounts.map((account, index) => (
           <article key={account.id} className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
             <div className="flex flex-wrap items-start justify-between gap-4">

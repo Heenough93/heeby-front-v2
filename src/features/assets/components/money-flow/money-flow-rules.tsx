@@ -11,7 +11,12 @@ import type {
   MoneyFlowRuleType
 } from "@/features/assets/lib/money-flow-types";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
-import { EditorCard, Field } from "@/features/assets/components/money-flow/money-flow-shared";
+import {
+  EditorCard,
+  EmptyStateCard,
+  Field,
+  InlineNotice
+} from "@/features/assets/components/money-flow/money-flow-shared";
 
 const defaultRuleInput: MoneyFlowRuleInput = {
   fromAccountId: "",
@@ -33,6 +38,7 @@ export function MoneyFlowRules() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const sortedRules = sortMoneyFlowRules(rules);
   const activeAccounts = sortMoneyFlowAccounts(accounts).filter((account) => account.isActive);
+  const canCreateRule = activeAccounts.length >= 2;
   const hasRemainderRule = sortedRules.some(
     (rule) => rule.amountType === "remainder" && rule.id !== editingId
   );
@@ -48,7 +54,7 @@ export function MoneyFlowRules() {
   );
 
   const handleSubmit = () => {
-    if (!form.fromAccountId || !form.toAccountId) {
+    if (!canCreateRule || !form.fromAccountId || !form.toAccountId || form.fromAccountId === form.toAccountId) {
       return;
     }
 
@@ -76,16 +82,22 @@ export function MoneyFlowRules() {
         title={editingId ? "규칙 수정" : "규칙 추가"}
         description="여기서 자금 배분 순서를 고정하고, 나머지 화면은 실행 결과를 보여줍니다."
       >
+        {!canCreateRule ? (
+          <InlineNotice>
+            배분 규칙을 만들려면 활성 통장이 최소 2개 필요합니다. 먼저 통장 관리에서 급여계좌와 도착 계좌가 될 통장을 추가하세요.
+          </InlineNotice>
+        ) : null}
         {hasRemainderRule ? (
-          <div className="mb-4 rounded-[22px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <InlineNotice>
             잔여 규칙은 하나만 둘 수 있습니다. 기존 잔여 규칙을 수정하거나 삭제한 뒤 추가하세요.
-          </div>
+          </InlineNotice>
         ) : null}
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="출발 계좌">
             <select
               value={form.fromAccountId}
               onChange={(event) => setForm((current) => ({ ...current, fromAccountId: event.target.value }))}
+              disabled={!canCreateRule}
               className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
             >
               {activeAccounts.map((account) => (
@@ -99,6 +111,7 @@ export function MoneyFlowRules() {
             <select
               value={form.toAccountId}
               onChange={(event) => setForm((current) => ({ ...current, toAccountId: event.target.value }))}
+              disabled={!canCreateRule}
               className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
             >
               {activeAccounts.map((account) => (
@@ -117,6 +130,7 @@ export function MoneyFlowRules() {
                   amountType: event.target.value as MoneyFlowRuleType
                 }))
               }
+              disabled={!canCreateRule}
               className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
             >
               <option value="fixed">고정 금액</option>
@@ -135,6 +149,7 @@ export function MoneyFlowRules() {
                   amount: Number(event.target.value || 0)
                 }))
               }
+              disabled={!canCreateRule}
               className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
             />
           </Field>
@@ -143,8 +158,9 @@ export function MoneyFlowRules() {
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
+            disabled={!canCreateRule}
             onClick={handleSubmit}
-            className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
           >
             {editingId ? "규칙 저장" : "규칙 추가"}
           </button>
@@ -152,6 +168,18 @@ export function MoneyFlowRules() {
       </EditorCard>
 
       <section className="grid gap-4">
+        {sortedRules.length === 0 ? (
+          <EmptyStateCard
+            eyebrow="배분 규칙"
+            title="아직 등록된 배분 규칙이 없습니다."
+            description={
+              canCreateRule
+                ? "급여계좌에서 생활비, 고정지출, 카드결제, 여윳돈 통장으로 돈이 이동하는 순서를 추가하세요."
+                : "규칙을 만들기 전에 통장 관리에서 활성 통장을 최소 2개 등록해야 합니다."
+            }
+          />
+        ) : null}
+
         {sortedRules.map((rule, index) => {
           const fromAccount = accountById.get(rule.fromAccountId);
           const toAccount = accountById.get(rule.toAccountId);
