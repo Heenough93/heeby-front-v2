@@ -12,6 +12,11 @@ import type {
   MoneyFlowRuleInput
 } from "@/features/assets/lib/money-flow-types";
 import {
+  moneyFlowAccountInputSchema,
+  moneyFlowMonthlyEntryUpdateSchema,
+  moneyFlowRuleInputSchema
+} from "@/features/assets/lib/money-flow-schema";
+import {
   buildMonthlyEntriesFromRules,
   getCurrentMoneyFlowMonthKey,
   sortMoneyFlowAccounts,
@@ -79,6 +84,12 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
       monthlyEntries: sortMoneyFlowMonthlyEntries(initialMonthlyEntries),
       addAccount: (input) =>
         set((state) => {
+          const parsedInput = moneyFlowAccountInputSchema.safeParse(input);
+
+          if (!parsedInput.success) {
+            return { accounts: state.accounts };
+          }
+
           const now = dayjs().toISOString();
 
           return {
@@ -86,7 +97,7 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
               ...state.accounts,
               {
                 id: nanoid(),
-                ...input,
+                ...parsedInput.data,
                 createdAt: now,
                 updatedAt: now
               }
@@ -94,19 +105,27 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
           };
         }),
       updateAccount: (id, input) =>
-        set((state) => ({
-          accounts: sortMoneyFlowAccounts(
-            state.accounts.map((account) =>
-              account.id === id
-                ? {
-                    ...account,
-                    ...input,
-                    updatedAt: dayjs().toISOString()
-                  }
-                : account
+        set((state) => {
+          const parsedInput = moneyFlowAccountInputSchema.safeParse(input);
+
+          if (!parsedInput.success) {
+            return { accounts: state.accounts };
+          }
+
+          return {
+            accounts: sortMoneyFlowAccounts(
+              state.accounts.map((account) =>
+                account.id === id
+                  ? {
+                      ...account,
+                      ...parsedInput.data,
+                      updatedAt: dayjs().toISOString()
+                    }
+                  : account
+              )
             )
-          )
-        })),
+          };
+        }),
       deleteAccount: (id) =>
         set((state) => ({
           accounts: state.accounts.filter((account) => account.id !== id),
@@ -122,8 +141,14 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
         })),
       addRule: (input) =>
         set((state) => {
+          const parsedInput = moneyFlowRuleInputSchema.safeParse(input);
+
+          if (!parsedInput.success) {
+            return { rules: state.rules };
+          }
+
           if (
-            input.amountType === "remainder" &&
+            parsedInput.data.amountType === "remainder" &&
             state.rules.some((rule) => rule.amountType === "remainder" && rule.isActive)
           ) {
             return { rules: state.rules };
@@ -138,7 +163,7 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
               ...state.rules,
               {
                 id: nanoid(),
-                ...input,
+                ...parsedInput.data,
                 order: nextOrder,
                 createdAt: now,
                 updatedAt: now
@@ -148,8 +173,14 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
         }),
       updateRule: (id, input) =>
         set((state) => {
+          const parsedInput = moneyFlowRuleInputSchema.safeParse(input);
+
+          if (!parsedInput.success) {
+            return { rules: state.rules };
+          }
+
           if (
-            input.amountType === "remainder" &&
+            parsedInput.data.amountType === "remainder" &&
             state.rules.some(
               (rule) => rule.id !== id && rule.amountType === "remainder" && rule.isActive
             )
@@ -163,7 +194,7 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
                 rule.id === id
                   ? {
                       ...rule,
-                      ...input,
+                      ...parsedInput.data,
                       updatedAt: dayjs().toISOString()
                     }
                   : rule
@@ -205,25 +236,33 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
           return { rules: sortMoneyFlowRules(nextRules) };
         }),
       updateMonthlyEntry: (id, input) =>
-        set((state) => ({
-          monthlyEntries: sortMoneyFlowMonthlyEntries(
-            state.monthlyEntries.map((entry) =>
-              entry.id === id
-                ? {
-                    ...entry,
-                    ...input,
-                    checkedAt:
-                      input.isChecked === undefined
-                        ? entry.checkedAt
-                        : input.isChecked
-                          ? dayjs().toISOString()
-                          : undefined,
-                    updatedAt: dayjs().toISOString()
-                  }
-                : entry
+        set((state) => {
+          const parsedInput = moneyFlowMonthlyEntryUpdateSchema.safeParse(input);
+
+          if (!parsedInput.success) {
+            return { monthlyEntries: state.monthlyEntries };
+          }
+
+          return {
+            monthlyEntries: sortMoneyFlowMonthlyEntries(
+              state.monthlyEntries.map((entry) =>
+                entry.id === id
+                  ? {
+                      ...entry,
+                      ...parsedInput.data,
+                      checkedAt:
+                        parsedInput.data.isChecked === undefined
+                          ? entry.checkedAt
+                          : parsedInput.data.isChecked
+                            ? dayjs().toISOString()
+                            : undefined,
+                      updatedAt: dayjs().toISOString()
+                    }
+                  : entry
+              )
             )
-          )
-        })),
+          };
+        }),
       startMonthlyFlow: (monthKey = getCurrentMoneyFlowMonthKey()) =>
         set((state) => {
           if (state.monthlyEntries.some((entry) => entry.monthKey === monthKey)) {
