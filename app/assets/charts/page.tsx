@@ -1,4 +1,4 @@
-import { AssetChartsScreen } from "@/features/assets/components/asset-charts-screen";
+import { AssetChartsScreen } from "@/features/assets/components/charts/asset-charts-screen";
 
 export default function AssetChartsRoutePage() {
   return <AssetChartsScreen />;

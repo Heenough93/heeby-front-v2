@@ -1,0 +1,230 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import {
+  formatMoneyFlowAmount,
+  sortMoneyFlowAccounts,
+  sortMoneyFlowRules
+} from "@/features/assets/lib/money-flow-utils";
+import type {
+  MoneyFlowRuleInput,
+  MoneyFlowRuleType
+} from "@/features/assets/lib/money-flow-types";
+import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
+import { EditorCard, Field } from "@/features/assets/components/money-flow/money-flow-shared";
+
+const defaultRuleInput: MoneyFlowRuleInput = {
+  fromAccountId: "",
+  toAccountId: "",
+  amountType: "fixed",
+  amount: 0,
+  isActive: true,
+  note: ""
+};
+
+export function MoneyFlowRules() {
+  const accounts = useMoneyFlowStore((state) => state.accounts);
+  const rules = useMoneyFlowStore((state) => state.rules);
+  const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
+  const addRule = useMoneyFlowStore((state) => state.addRule);
+  const updateRule = useMoneyFlowStore((state) => state.updateRule);
+  const deleteRule = useMoneyFlowStore((state) => state.deleteRule);
+  const moveRule = useMoneyFlowStore((state) => state.moveRule);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const sortedRules = sortMoneyFlowRules(rules);
+  const activeAccounts = sortMoneyFlowAccounts(accounts).filter((account) => account.isActive);
+  const hasRemainderRule = sortedRules.some(
+    (rule) => rule.amountType === "remainder" && rule.id !== editingId
+  );
+  const [form, setForm] = useState<MoneyFlowRuleInput>(() => ({
+    ...defaultRuleInput,
+    fromAccountId: activeAccounts[0]?.id ?? "",
+    toAccountId: activeAccounts[1]?.id ?? activeAccounts[0]?.id ?? ""
+  }));
+
+  const accountById = useMemo(
+    () => new Map(accounts.map((account) => [account.id, account])),
+    [accounts]
+  );
+
+  const handleSubmit = () => {
+    if (!form.fromAccountId || !form.toAccountId) {
+      return;
+    }
+
+    if (form.amountType === "remainder" && hasRemainderRule) {
+      return;
+    }
+
+    if (editingId) {
+      updateRule(editingId, form);
+      setEditingId(null);
+    } else {
+      addRule(form);
+    }
+
+    setForm({
+      ...defaultRuleInput,
+      fromAccountId: activeAccounts[0]?.id ?? "",
+      toAccountId: activeAccounts[1]?.id ?? activeAccounts[0]?.id ?? ""
+    });
+  };
+
+  return (
+    <section className="grid gap-6">
+      <EditorCard
+        title={editingId ? "규칙 수정" : "규칙 추가"}
+        description="여기서 자금 배분 순서를 고정하고, 나머지 화면은 실행 결과를 보여줍니다."
+      >
+        {hasRemainderRule ? (
+          <div className="mb-4 rounded-[22px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            잔여 규칙은 하나만 둘 수 있습니다. 기존 잔여 규칙을 수정하거나 삭제한 뒤 추가하세요.
+          </div>
+        ) : null}
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="출발 계좌">
+            <select
+              value={form.fromAccountId}
+              onChange={(event) => setForm((current) => ({ ...current, fromAccountId: event.target.value }))}
+              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+            >
+              {activeAccounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="도착 계좌">
+            <select
+              value={form.toAccountId}
+              onChange={(event) => setForm((current) => ({ ...current, toAccountId: event.target.value }))}
+              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+            >
+              {activeAccounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="금액 방식">
+            <select
+              value={form.amountType}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  amountType: event.target.value as MoneyFlowRuleType
+                }))
+              }
+              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+            >
+              <option value="fixed">고정 금액</option>
+              <option value="remainder" disabled={hasRemainderRule}>
+                잔여
+              </option>
+            </select>
+          </Field>
+          <Field label="금액">
+            <input
+              type="number"
+              value={form.amount}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  amount: Number(event.target.value || 0)
+                }))
+              }
+              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+            />
+          </Field>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            {editingId ? "규칙 저장" : "규칙 추가"}
+          </button>
+        </div>
+      </EditorCard>
+
+      <section className="grid gap-4">
+        {sortedRules.map((rule, index) => {
+          const fromAccount = accountById.get(rule.fromAccountId);
+          const toAccount = accountById.get(rule.toAccountId);
+          const plannedAmount =
+            monthlyEntries.find((entry) => entry.ruleId === rule.id)?.plannedAmount ??
+            rule.amount;
+
+          return (
+            <article key={rule.id} className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
+                      {rule.order}차
+                    </span>
+                    <h2 className="text-xl font-semibold">
+                      {fromAccount?.name} → {toAccount?.name}
+                    </h2>
+                  </div>
+                  <p className="mt-3 text-sm text-ink/62">
+                    {rule.amountType === "remainder"
+                      ? "남은 금액 전체를 이동합니다."
+                      : `${formatMoneyFlowAmount(plannedAmount)} 배분`}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={index === 0}
+                    onClick={() => moveRule(rule.id, "up")}
+                    className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
+                  >
+                    위로
+                  </button>
+                  <button
+                    type="button"
+                    disabled={index === sortedRules.length - 1}
+                    onClick={() => moveRule(rule.id, "down")}
+                    className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
+                  >
+                    아래로
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingId(rule.id);
+                      setForm({
+                        fromAccountId: rule.fromAccountId,
+                        toAccountId: rule.toAccountId,
+                        amountType: rule.amountType,
+                        amount: rule.amount,
+                        isActive: rule.isActive,
+                        note: rule.note
+                      });
+                    }}
+                    className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
+                  >
+                    수정
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteRule(rule.id)}
+                    className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </section>
+    </section>
+  );
+}
