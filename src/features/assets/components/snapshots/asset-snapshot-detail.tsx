@@ -266,9 +266,9 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
 
 function SmallSummary({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[20px] border border-line/10 bg-paper p-4">
+    <div className="rounded-[18px] border border-line/10 bg-paper px-4 py-3">
       <p className="text-xs font-semibold text-ink/52">{label}</p>
-      <p className="mt-2 text-sm font-semibold">{value}</p>
+      <p className="mt-1.5 text-sm font-semibold">{value}</p>
     </div>
   );
 }
@@ -276,13 +276,13 @@ function SmallSummary({ label, value }: { label: string; value: string }) {
 function changeBadgeClassName(type: "same" | "new" | "up" | "down") {
   switch (type) {
     case "same":
-      return "rounded-full bg-paper px-4 py-2 text-sm font-semibold text-ink/62";
+      return "rounded-full bg-paper px-3 py-1.5 text-xs font-semibold text-ink/62";
     case "new":
-      return "rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white";
+      return "rounded-full bg-coral px-3 py-1.5 text-xs font-semibold text-white";
     case "up":
-      return "rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700";
+      return "rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700";
     case "down":
-      return "rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-700";
+      return "rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-700";
   }
 }
 
@@ -305,53 +305,69 @@ function OwnerSection({
   outs: AssetSnapshotItem[];
 }) {
   return (
-    <section className="grid gap-4">
-      <div className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
-        <h3 className="text-2xl font-bold">{title}</h3>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+    <section className="rounded-[28px] border border-line/10 bg-surface p-5 shadow-card md:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-coral">소유자별 자산</p>
+          <h3 className="mt-1 text-2xl font-bold">{title}</h3>
+        </div>
+        <span className="rounded-full bg-paper px-3 py-1.5 text-xs font-semibold text-ink/62">
+          항목 {changes.length}개
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
           <SmallSummary label="현금" value={formatAssetAmount(cash)} />
           <SmallSummary label="투자" value={formatAssetAmount(invest)} />
           <SmallSummary label="노후" value={formatAssetAmount(retirement)} />
-        </div>
       </div>
 
-      {changes.map(({ item, change }) => (
-        <article
-          key={item.id}
-          className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card"
-        >
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-xl font-semibold">{item.label}</h3>
-                <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink/68">
-                  {getAssetSnapshotMajorTypeLabel(item.majorType)}
-                </span>
-                <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink/68">
-                  {getAssetSnapshotCategoryLabel(item.category)}
-                </span>
-                <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink/68">
-                  {item.institution}
-                </span>
+      <div className="mt-5 grid gap-3">
+        {changes.map(({ item, change }) => (
+          <article
+            key={item.id}
+            className="rounded-[22px] border border-line/15 bg-paper px-4 py-3 shadow-sm"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-base font-semibold">{item.label}</h4>
+                  <span className="rounded-full bg-soft px-2.5 py-1 text-[11px] font-semibold text-ink/64">
+                    {item.institution}
+                  </span>
+                  <span className="rounded-full bg-soft px-2.5 py-1 text-[11px] font-semibold text-ink/64">
+                    {getAssetSnapshotMajorTypeLabel(item.majorType)}
+                  </span>
+                  <span className="rounded-full bg-soft px-2.5 py-1 text-[11px] font-semibold text-ink/64">
+                    {getAssetSnapshotCategoryLabel(item.category)}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm font-semibold text-ink">
+                  {formatAssetAmount(item.amount)}
+                </p>
               </div>
-              <p className="mt-3 text-sm text-ink/60">잔액 {formatAssetAmount(item.amount)}</p>
+              <span className={changeBadgeClassName(change.type)}>{change.label}</span>
             </div>
-            <span className={changeBadgeClassName(change.type)}>{change.label}</span>
-          </div>
-        </article>
-      ))}
+          </article>
+        ))}
+      </div>
 
       {outs.length ? (
-        <section className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-coral">
-            Out
-          </p>
-          <h3 className="mt-2 text-2xl font-bold">이번 달 제외된 항목</h3>
-          <div className="mt-5 grid gap-3">
+        <section className="mt-5 rounded-[24px] border border-line/10 bg-paper p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-coral">Out</p>
+              <h4 className="mt-1 text-lg font-bold">이번 달 제외된 항목</h4>
+            </div>
+            <span className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-ink/58">
+              {outs.length}개
+            </span>
+          </div>
+          <div className="mt-4 grid gap-2">
             {outs.map((item) => (
               <div
                 key={item.id}
-                className="rounded-[22px] border border-line/10 bg-paper p-4 text-sm text-ink/64"
+                className="rounded-[18px] border border-line/10 bg-surface px-4 py-3 text-sm text-ink/64"
               >
                 {item.institution} · {item.label}
               </div>
