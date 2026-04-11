@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { canManageAsset } from "@/features/access/lib/access-policy";
+import {
+  getAccessMode,
+  useAccessStore
+} from "@/features/access/store/access-store";
 import {
   formatAssetAmount,
   formatAssetSnapshotUpdatedAt,
@@ -10,9 +15,11 @@ import {
 import { useAssetStore } from "@/features/assets/store/asset-store";
 
 export function AssetArchiveList() {
+  const accessMode = useAccessStore(getAccessMode);
   const snapshots = useAssetStore((state) => state.snapshots);
   const getSnapshotItems = useAssetStore((state) => state.getSnapshotItems);
   const [search, setSearch] = useState("");
+  const canCreateSnapshot = canManageAsset(accessMode);
 
   const filteredSnapshots = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -89,8 +96,39 @@ export function AssetArchiveList() {
             {search ? "검색 결과가 없습니다." : "아직 저장된 자산 스냅샷이 없습니다."}
           </p>
           <p className="mt-2 text-sm text-ink/60">
-            {search ? "검색어를 바꾸거나 다른 월을 확인해보세요." : "지난달을 복사하거나 새로 시작해보세요."}
+            {search
+              ? "검색어를 바꾸거나 전체 목록으로 돌아가보세요."
+              : canCreateSnapshot
+                ? "첫 자산기록을 만들면 차트와 월별 비교를 바로 시작할 수 있습니다."
+                : "아직 확인할 수 있는 자산기록이 없습니다."}
           </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            {search ? (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+              >
+                검색어 초기화
+              </button>
+            ) : null}
+            {!search && canCreateSnapshot ? (
+              <Link
+                href="/assets/snapshots/new"
+                className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                새 스냅샷 만들기
+              </Link>
+            ) : null}
+            {!search ? (
+              <Link
+                href="/assets/charts"
+                className="rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+              >
+                차트 보기
+              </Link>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </section>
