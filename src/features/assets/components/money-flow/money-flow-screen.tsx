@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { AppShell } from "@/shared/components/layout/app-shell";
-import { ListBackAction } from "@/shared/components/layout/list-back-action";
 import { useAssetStore } from "@/features/assets/store/asset-store";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
 import { MoneyFlowDashboard } from "@/features/assets/components/money-flow/money-flow-dashboard";
@@ -30,10 +29,7 @@ export function MoneyFlowScreen({ section }: MoneyFlowScreenProps) {
   const assetSnapshots = useAssetStore((state) => state.snapshots);
 
   return (
-    <AppShell
-      title="현금 흐름"
-      actions={<ListBackAction href="/assets" />}
-    >
+    <AppShell title="현금 흐름">
       <MoneyFlowNavigation currentSection={section} />
 
       {section === "dashboard" ? (

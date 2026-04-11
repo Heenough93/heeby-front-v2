@@ -1,5 +1,10 @@
 "use client";
 
+import Link from "next/link";
+import {
+  formatMoneyFlowAmount,
+  getMoneyFlowStartMonthPreview
+} from "@/features/assets/lib/money-flow-utils";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
 
 export function SummaryCard({ label, value }: { label: string; value: string }) {
@@ -81,13 +86,57 @@ export function MoneyFlowStartMonthEmptyState({
   onStart?: () => void;
 }) {
   const startMonthlyFlow = useMoneyFlowStore((state) => state.startMonthlyFlow);
+  const accounts = useMoneyFlowStore((state) => state.accounts);
+  const rules = useMoneyFlowStore((state) => state.rules);
+  const preview = getMoneyFlowStartMonthPreview({ accounts, rules });
 
   return (
-    <section className="rounded-[28px] border border-dashed border-line/15 bg-surface p-10 text-center shadow-card">
-      <p className="text-sm font-semibold text-coral">{monthKey}</p>
-      <h2 className="mt-3 text-2xl font-bold">{title}</h2>
-      <p className="mt-3 text-sm leading-6 text-ink/62">{description}</p>
-      <div className="mt-6 flex justify-center">
+    <section className="rounded-[28px] border border-dashed border-line/15 bg-surface p-6 shadow-card md:p-10">
+      <div className="mx-auto max-w-3xl text-center">
+        <p className="text-sm font-semibold text-coral">{monthKey}</p>
+        <h2 className="mt-3 text-2xl font-bold">{title}</h2>
+        <p className="mt-3 text-sm leading-6 text-ink/62">{description}</p>
+      </div>
+
+      <div className="mt-7 grid gap-3 md:grid-cols-4">
+        <StartMonthPreviewCard
+          label="기준 급여"
+          value={formatMoneyFlowAmount(preview.salaryAmount)}
+          description="활성 급여 계좌 잔액 합계"
+        />
+        <StartMonthPreviewCard
+          label="생성 항목"
+          value={`${preview.expectedEntryCount}개`}
+          description="급여 확인 1개 + 활성 규칙"
+        />
+        <StartMonthPreviewCard
+          label="고정 배분"
+          value={formatMoneyFlowAmount(preview.fixedTotalAmount)}
+          description={`${preview.activeRuleCount}개 활성 규칙 기준`}
+        />
+        <StartMonthPreviewCard
+          label="잔여 규칙"
+          value={preview.hasRemainderRule ? "포함" : "없음"}
+          description="남은 돈을 여윳돈으로 보내는 규칙"
+        />
+      </div>
+
+      <div className="mt-6 rounded-[22px] border border-line/10 bg-paper px-5 py-4 text-sm leading-6 text-ink/64">
+        버튼을 누르면 현재 배분 규칙 기준으로 이번 달 월간 체크리스트가 생성됩니다. 금액은 생성 후 월간 체크 화면에서 실제 금액으로 수정할 수 있습니다.
+        {preview.activeRuleCount === 0 ? (
+          <span className="mt-2 block font-semibold text-amber-700">
+            활성 배분 규칙이 없습니다. 급여 확인 항목만 생성됩니다.
+          </span>
+        ) : null}
+      </div>
+
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <Link
+          href="/assets/money-flow/rules"
+          className="rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+        >
+          배분 규칙 확인
+        </Link>
         <button
           type="button"
           onClick={() => {
@@ -104,6 +153,24 @@ export function MoneyFlowStartMonthEmptyState({
         </button>
       </div>
     </section>
+  );
+}
+
+function StartMonthPreviewCard({
+  label,
+  value,
+  description
+}: {
+  label: string;
+  value: string;
+  description: string;
+}) {
+  return (
+    <article className="rounded-[22px] border border-line/10 bg-paper p-4">
+      <p className="text-xs font-semibold text-ink/52">{label}</p>
+      <p className="mt-2 text-xl font-bold">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-ink/52">{description}</p>
+    </article>
   );
 }
 

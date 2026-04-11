@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildMonthlyEntriesFromRules,
   getMoneyFlowDashboardSummary,
+  getMoneyFlowStartMonthPreview,
   getMoneyFlowStatusMessage
 } from "@/features/assets/lib/money-flow-utils";
 import type {
@@ -153,5 +154,15 @@ describe("money flow utils", () => {
       expectedSurplus: 620000
     });
     expect(getMoneyFlowStatusMessage(monthlyEntries)).toBe("생활비 이체 필요");
+  });
+
+  it("previews what the start month action will generate", () => {
+    expect(getMoneyFlowStartMonthPreview({ accounts, rules })).toEqual({
+      salaryAmount: 3000000,
+      activeRuleCount: 2,
+      expectedEntryCount: 3,
+      fixedTotalAmount: 800000,
+      hasRemainderRule: true
+    });
   });
 });

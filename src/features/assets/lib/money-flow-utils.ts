@@ -118,6 +118,28 @@ export function getMoneyFlowPlannedAmount(rule: MoneyFlowRule, monthlyEntries: M
   return monthlyEntries.find((entry) => entry.ruleId === rule.id)?.plannedAmount ?? rule.amount;
 }
 
+export function getMoneyFlowStartMonthPreview(params: {
+  accounts: MoneyFlowAccount[];
+  rules: MoneyFlowRule[];
+}) {
+  const salaryAmount = params.accounts
+    .filter((account) => account.role === "salary" && account.isActive)
+    .reduce((sum, account) => sum + account.currentBalance, 0);
+  const activeRules = sortMoneyFlowRules(params.rules).filter((rule) => rule.isActive);
+  const fixedTotalAmount = activeRules
+    .filter((rule) => rule.amountType === "fixed")
+    .reduce((sum, rule) => sum + rule.amount, 0);
+  const hasRemainderRule = activeRules.some((rule) => rule.amountType === "remainder");
+
+  return {
+    salaryAmount,
+    activeRuleCount: activeRules.length,
+    expectedEntryCount: activeRules.length + 1,
+    fixedTotalAmount,
+    hasRemainderRule
+  };
+}
+
 export function buildMonthlyEntriesFromRules(params: {
   monthKey: string;
   salaryAmount: number;
