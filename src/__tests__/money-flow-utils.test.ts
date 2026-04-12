@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildMonthlyEntriesFromRules,
+  getMoneyFlowAccountRoleLabel,
   getMoneyFlowDashboardSummary,
   getMoneyFlowStartMonthPreview,
   getMoneyFlowStatusMessage
@@ -81,6 +82,14 @@ const rules: MoneyFlowRule[] = [
 ];
 
 describe("money flow utils", () => {
+  it("labels the supported account roles", () => {
+    expect(getMoneyFlowAccountRoleLabel("investmentReady")).toBe("투자대기금");
+    expect(getMoneyFlowAccountRoleLabel("retirement")).toBe("노후");
+    expect(getMoneyFlowAccountRoleLabel("subscription")).toBe("청약");
+    expect(getMoneyFlowAccountRoleLabel("loanPayment")).toBe("대출상환");
+    expect(getMoneyFlowAccountRoleLabel("etc")).toBe("기타");
+  });
+
   it("builds monthly entries from active rules in rule order", () => {
     const entries = buildMonthlyEntriesFromRules({
       monthKey: "2026-05",

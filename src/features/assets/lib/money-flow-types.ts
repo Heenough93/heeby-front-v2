@@ -5,7 +5,12 @@ export const moneyFlowAccountRoleValues = [
   "cardPayment",
   "emergency",
   "surplus",
-  "saving"
+  "saving",
+  "investmentReady",
+  "retirement",
+  "subscription",
+  "loanPayment",
+  "etc"
 ] as const;
 
 export const moneyFlowRuleTypeValues = ["fixed", "remainder"] as const;

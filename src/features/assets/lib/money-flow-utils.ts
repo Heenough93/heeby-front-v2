@@ -30,6 +30,16 @@ export function getMoneyFlowAccountRoleLabel(role: MoneyFlowAccountRole) {
       return "여윳돈";
     case "saving":
       return "저축";
+    case "investmentReady":
+      return "투자대기금";
+    case "retirement":
+      return "노후";
+    case "subscription":
+      return "청약";
+    case "loanPayment":
+      return "대출상환";
+    case "etc":
+      return "기타";
   }
 }
 

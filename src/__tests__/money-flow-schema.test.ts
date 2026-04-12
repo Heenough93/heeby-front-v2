@@ -41,6 +41,25 @@ describe("money flow schema", () => {
     expect(parsed.note).toBe("월 생활비");
   });
 
+  it("accepts extended account roles for actual money buckets", () => {
+    expect(
+      moneyFlowAccountInputSchema.safeParse({
+        name: "투자대기금",
+        role: "investmentReady",
+        currentBalance: 1000000,
+        isActive: true
+      }).success
+    ).toBe(true);
+    expect(
+      moneyFlowAccountInputSchema.safeParse({
+        name: "대출상환",
+        role: "loanPayment",
+        currentBalance: 500000,
+        isActive: true
+      }).success
+    ).toBe(true);
+  });
+
   it("rejects blank account names and negative balances", () => {
     const parsed = moneyFlowAccountInputSchema.safeParse({
       name: " ",
