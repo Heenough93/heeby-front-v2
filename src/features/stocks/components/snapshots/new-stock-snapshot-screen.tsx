@@ -59,6 +59,22 @@ export function NewStockSnapshotScreen({
   );
 
   const handleSubmit = (values: Parameters<typeof addSnapshot>[0]) => {
+    const existingSnapshot = snapshots.find(
+      (snapshot) =>
+        snapshot.marketScope === values.marketScope &&
+        snapshot.weekKey === values.weekKey
+    );
+
+    if (existingSnapshot) {
+      showToast({
+        title: "이미 같은 시장과 주차의 스냅샷이 있습니다.",
+        description: "기존 스냅샷으로 이동합니다.",
+        variant: "info"
+      });
+      router.push(`/stocks/snapshots/${existingSnapshot.id}`);
+      return;
+    }
+
     const nextSnapshot = addSnapshot(values);
 
     showToast({
@@ -66,6 +82,23 @@ export function NewStockSnapshotScreen({
       variant: "success"
     });
     router.push(`/stocks/snapshots/${nextSnapshot.id}`);
+  };
+
+  const getLatestSnapshotDraft = (marketScope: StockSnapshotScope) => {
+    const latestSnapshotByScope = snapshots.find(
+      (snapshot) => snapshot.marketScope === marketScope
+    );
+
+    if (!latestSnapshotByScope) {
+      return undefined;
+    }
+
+    return createDraftFromLatestSnapshot({
+      latestSnapshot: latestSnapshotByScope,
+      items: getSnapshotItems(latestSnapshotByScope.id),
+      stocks,
+      marketScope
+    });
   };
 
   return (
@@ -77,6 +110,7 @@ export function NewStockSnapshotScreen({
         value={initialValues}
         onSubmit={handleSubmit}
         submitLabel="스냅샷 저장"
+        getLatestSnapshotDraft={getLatestSnapshotDraft}
       />
     </AppShell>
   );

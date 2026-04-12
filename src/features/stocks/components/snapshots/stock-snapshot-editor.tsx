@@ -2,22 +2,27 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
+import { AlertDialog } from "@/shared/components/feedback/alert-dialog";
 import { stockSnapshotDraftItemSchema } from "@/features/stocks/lib/snapshots/stock-snapshot-schema";
 import {
   cloneDraftItem,
-  createDefaultStockSnapshotValues,
+  createDefaultStockSnapshotValuesByScope,
+  createStockSnapshotTitle,
   getStockSnapshotScopeLabel,
+  getStockSnapshotWeekOptions,
   moveItem
 } from "@/features/stocks/lib/snapshots/stock-snapshot-utils";
 import type {
   StockSnapshotDraftItem,
-  StockSnapshotEditorValues
+  StockSnapshotEditorValues,
+  StockSnapshotScope
 } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 
 type StockSnapshotEditorProps = {
   value: StockSnapshotEditorValues;
   onSubmit: (values: StockSnapshotEditorValues) => void;
   submitLabel: string;
+  getLatestSnapshotDraft?: (marketScope: StockSnapshotScope) => StockSnapshotEditorValues | undefined;
 };
 
 type ModalState = {
@@ -29,10 +34,12 @@ type ModalState = {
 export function StockSnapshotEditor({
   value,
   onSubmit,
-  submitLabel
+  submitLabel,
+  getLatestSnapshotDraft
 }: StockSnapshotEditorProps) {
   const [draft, setDraft] = useState<StockSnapshotEditorValues>(value);
   const [formError, setFormError] = useState<string>();
+  const [isLoadLatestDialogOpen, setIsLoadLatestDialogOpen] = useState(false);
   const [modal, setModal] = useState<ModalState>({
     open: false,
     values: cloneDraftItem()
@@ -44,9 +51,14 @@ export function StockSnapshotEditor({
   }, [value]);
 
   const sortedItems = useMemo(() => draft.items, [draft.items]);
+  const weekOptions = useMemo(() => getStockSnapshotWeekOptions(), []);
+  const latestSnapshotDraft = useMemo(
+    () => getLatestSnapshotDraft?.(draft.marketScope),
+    [draft.marketScope, getLatestSnapshotDraft]
+  );
 
   const resetToBlank = () => {
-    setDraft(createDefaultStockSnapshotValues());
+    setDraft(createDefaultStockSnapshotValuesByScope(draft.marketScope));
     setFormError(undefined);
   };
 
@@ -149,6 +161,33 @@ export function StockSnapshotEditor({
     setDraggedItemId(null);
   };
 
+  const loadLatestList = () => {
+    if (!latestSnapshotDraft) {
+      return;
+    }
+
+    setDraft((current) => ({
+      ...current,
+      sourceSnapshotId: latestSnapshotDraft.sourceSnapshotId,
+      items: latestSnapshotDraft.items
+    }));
+    setFormError(undefined);
+    setIsLoadLatestDialogOpen(false);
+  };
+
+  const handleLoadLatestList = () => {
+    if (!latestSnapshotDraft) {
+      return;
+    }
+
+    if (draft.items.length > 0) {
+      setIsLoadLatestDialogOpen(true);
+      return;
+    }
+
+    loadLatestList();
+  };
+
   const handleSubmit = () => {
     if (draft.items.length === 0) {
       setFormError("최소 1개 종목을 추가해주세요.");
@@ -167,20 +206,16 @@ export function StockSnapshotEditor({
             <span className="text-sm font-semibold text-ink/75">스냅샷 제목</span>
             <input
               value={draft.title}
-              onChange={(event) =>
-                setDraft((current) => ({
-                  ...current,
-                  title: event.target.value
-                }))
-              }
+              readOnly
+              aria-readonly="true"
               className={inputClassName}
-              placeholder="예: 2026-W14 시총 스냅샷"
+              placeholder="예: 한국시장 - 04월 12일"
             />
           </label>
 
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-ink/75">주차</span>
-            <input
+            <select
               value={draft.weekKey}
               onChange={(event) =>
                 setDraft((current) => ({
@@ -189,8 +224,16 @@ export function StockSnapshotEditor({
                 }))
               }
               className={inputClassName}
-              placeholder="예: 2026-W14"
-            />
+            >
+              {weekOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+              {weekOptions.some((option) => option.value === draft.weekKey) ? null : (
+                <option value={draft.weekKey}>{draft.weekKey} (저장된 주차)</option>
+              )}
+            </select>
           </label>
         </div>
 
@@ -205,6 +248,7 @@ export function StockSnapshotEditor({
 
                   return {
                     ...current,
+                    title: createStockSnapshotTitle(nextScope),
                     marketScope: nextScope,
                     items: current.items.map((item) => ({
                       ...item,
@@ -252,8 +296,20 @@ export function StockSnapshotEditor({
           >
             빈 리스트로 시작
           </button>
+          {getLatestSnapshotDraft ? (
+            <button
+              type="button"
+              onClick={handleLoadLatestList}
+              disabled={!latestSnapshotDraft}
+              className="rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              최근 리스트 불러오기
+            </button>
+          ) : null}
           <p className="text-sm text-ink/58">
-            지난 스냅샷을 복사한 뒤 순서를 드래그하거나 위아래 버튼으로 조정합니다.
+            {getLatestSnapshotDraft && !latestSnapshotDraft
+              ? "현재 선택한 시장에 불러올 이전 스냅샷이 없습니다."
+              : "지난 스냅샷을 복사한 뒤 순서를 드래그하거나 위아래 버튼으로 조정합니다."}
           </p>
         </div>
       </section>
@@ -584,6 +640,15 @@ export function StockSnapshotEditor({
           </div>
         </div>
       ) : null}
+
+      <AlertDialog
+        open={isLoadLatestDialogOpen}
+        title="최근 리스트를 불러올까요?"
+        description="현재 작성 중인 종목 리스트가 최근 스냅샷의 리스트로 바뀝니다. 제목, 주차, 총평은 유지됩니다."
+        confirmLabel="불러오기"
+        onClose={() => setIsLoadLatestDialogOpen(false)}
+        onConfirm={loadLatestList}
+      />
     </div>
   );
 }

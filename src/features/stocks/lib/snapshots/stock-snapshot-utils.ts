@@ -1,12 +1,12 @@
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import type { Stock, StockMarket } from "@/features/stocks/lib/shared/stock-core-types";
-import type {
-  StockSnapshot,
-  StockSnapshotDraftItem,
-  StockSnapshotEditorValues,
-  StockSnapshotItem,
-  StockSnapshotScope
+import {
+  type StockSnapshot,
+  type StockSnapshotDraftItem,
+  type StockSnapshotEditorValues,
+  type StockSnapshotItem,
+  type StockSnapshotScope
 } from "@/features/stocks/lib/snapshots/stock-snapshot-types";
 
 export function getIsoWeekKey(input = dayjs()) {
@@ -26,6 +26,19 @@ export function getIsoWeekKey(input = dayjs()) {
   return `${utcDate.getUTCFullYear()}-W${String(weekNumber).padStart(2, "0")}`;
 }
 
+export function getStockSnapshotWeekOptions(input = dayjs()) {
+  return Array.from({ length: 7 }, (_, index) => {
+    const offset = index - 4;
+    const weekKey = getIsoWeekKey(input.add(offset, "week"));
+    const suffix = offset === 0 ? "이번 주" : offset < 0 ? `${Math.abs(offset)}주 전` : `${offset}주 후`;
+
+    return {
+      value: weekKey,
+      label: `${weekKey} (${suffix})`
+    };
+  });
+}
+
 export function createDefaultStockSnapshotValues(): StockSnapshotEditorValues {
   return createDefaultStockSnapshotValuesByScope("KR");
 }
@@ -36,12 +49,16 @@ export function createDefaultStockSnapshotValuesByScope(
   const weekKey = getIsoWeekKey();
 
   return {
-    title: `${weekKey} ${getStockSnapshotScopeLabel(marketScope)} 시총 스냅샷`,
+    title: createStockSnapshotTitle(marketScope),
     weekKey,
     marketScope,
     comment: "",
     items: []
   };
+}
+
+export function createStockSnapshotTitle(marketScope: StockSnapshotScope, input = dayjs()) {
+  return `${getStockSnapshotScopeLabel(marketScope)} - ${input.format("MM월 DD일")}`;
 }
 
 export function cloneDraftItem(
@@ -109,9 +126,7 @@ export function createDraftFromLatestSnapshot(params: {
       items: params.items,
       stocks: params.stocks
     }),
-    title: `${getIsoWeekKey()} ${getStockSnapshotScopeLabel(
-      params.latestSnapshot.marketScope
-    )} 시총 스냅샷`,
+    title: createStockSnapshotTitle(params.latestSnapshot.marketScope),
     weekKey: getIsoWeekKey(),
     sourceSnapshotId: params.latestSnapshot.id
   };
@@ -133,9 +148,7 @@ export function createDraftFromSourceSnapshot(params: {
       items: params.items,
       stocks: params.stocks
     }),
-    title: `${getIsoWeekKey()} ${getStockSnapshotScopeLabel(
-      params.sourceSnapshot.marketScope
-    )} 시총 스냅샷`,
+    title: createStockSnapshotTitle(params.sourceSnapshot.marketScope),
     weekKey: getIsoWeekKey(),
     sourceSnapshotId: params.sourceSnapshot.id
   };

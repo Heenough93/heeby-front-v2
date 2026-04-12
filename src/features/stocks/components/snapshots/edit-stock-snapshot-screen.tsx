@@ -18,6 +18,7 @@ export function EditStockSnapshotScreen({
 }: EditStockSnapshotScreenProps) {
   const router = useRouter();
   const stocks = useStockStore((state) => state.stocks);
+  const snapshots = useStockStore((state) => state.snapshots);
   const getSnapshotById = useStockStore((state) => state.getSnapshotById);
   const getSnapshotItems = useStockStore((state) => state.getSnapshotItems);
   const updateSnapshot = useStockStore((state) => state.updateSnapshot);
@@ -47,6 +48,23 @@ export function EditStockSnapshotScreen({
   }
 
   const handleSubmit = (values: Parameters<typeof updateSnapshot>[1]) => {
+    const existingSnapshot = snapshots.find(
+      (candidate) =>
+        candidate.id !== snapshotId &&
+        candidate.marketScope === values.marketScope &&
+        candidate.weekKey === values.weekKey
+    );
+
+    if (existingSnapshot) {
+      showToast({
+        title: "이미 같은 시장과 주차의 스냅샷이 있습니다.",
+        description: "기존 스냅샷으로 이동합니다.",
+        variant: "info"
+      });
+      router.push(`/stocks/snapshots/${existingSnapshot.id}`);
+      return;
+    }
+
     const nextSnapshot = updateSnapshot(snapshotId, values);
 
     if (!nextSnapshot) {
