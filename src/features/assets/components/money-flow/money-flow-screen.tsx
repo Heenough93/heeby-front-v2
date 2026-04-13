@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { AppShell } from "@/shared/components/layout/app-shell";
+import { canManageAsset } from "@/features/access/lib/access-policy";
+import {
+  getAccessMode,
+  useAccessStore
+} from "@/features/access/store/access-store";
 import { useAssetStore } from "@/features/assets/store/asset-store";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
 import { MoneyFlowDashboard } from "@/features/assets/components/money-flow/money-flow-dashboard";
@@ -23,6 +28,8 @@ const sectionMeta: Record<MoneyFlowSection, { title: string; href: string }> = {
 };
 
 export function MoneyFlowScreen({ section }: MoneyFlowScreenProps) {
+  const accessMode = useAccessStore(getAccessMode);
+  const canManage = canManageAsset(accessMode);
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const rules = useMoneyFlowStore((state) => state.rules);
   const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
@@ -38,11 +45,12 @@ export function MoneyFlowScreen({ section }: MoneyFlowScreenProps) {
           rules={rules}
           monthlyEntries={monthlyEntries}
           assetSnapshots={assetSnapshots}
+          canManage={canManage}
         />
       ) : null}
-      {section === "accounts" ? <MoneyFlowAccounts /> : null}
-      {section === "rules" ? <MoneyFlowRules /> : null}
-      {section === "monthly" ? <MoneyFlowMonthly /> : null}
+      {section === "accounts" ? <MoneyFlowAccounts canManage={canManage} /> : null}
+      {section === "rules" ? <MoneyFlowRules canManage={canManage} /> : null}
+      {section === "monthly" ? <MoneyFlowMonthly canManage={canManage} /> : null}
     </AppShell>
   );
 }

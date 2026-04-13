@@ -15,7 +15,8 @@ import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
 import {
   EditorCard,
   EmptyStateCard,
-  Field
+  Field,
+  InlineNotice
 } from "@/features/assets/components/money-flow/money-flow-shared";
 
 const defaultAccountInput: MoneyFlowAccountInput = {
@@ -28,7 +29,7 @@ const defaultAccountInput: MoneyFlowAccountInput = {
   note: ""
 };
 
-export function MoneyFlowAccounts() {
+export function MoneyFlowAccounts({ canManage }: { canManage: boolean }) {
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const addAccount = useMoneyFlowStore((state) => state.addAccount);
   const updateAccount = useMoneyFlowStore((state) => state.updateAccount);
@@ -39,6 +40,10 @@ export function MoneyFlowAccounts() {
   const sortedAccounts = sortMoneyFlowAccounts(accounts);
 
   const handleSubmit = () => {
+    if (!canManage) {
+      return;
+    }
+
     if (!form.name.trim()) {
       return;
     }
@@ -55,103 +60,107 @@ export function MoneyFlowAccounts() {
 
   return (
     <section className="grid gap-6">
-      <EditorCard
-        title={editingId ? "통장 수정" : "통장 추가"}
-        description="은행 계좌보다 돈의 역할 박스에 가깝게 관리합니다."
-      >
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="이름">
-            <input
-              value={form.name}
-              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-              placeholder="예: 생활비"
-              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
-            />
-          </Field>
-          <Field label="역할">
-            <select
-              value={form.role}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  role: event.target.value as MoneyFlowAccountRole
-                }))
-              }
-              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
-            >
-              {moneyFlowAccountRoleValues.map((role) => (
-                <option key={role} value={role}>
-                  {getMoneyFlowAccountRoleLabel(role)}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="은행명">
-            <input
-              value={form.bankName ?? ""}
-              onChange={(event) => setForm((current) => ({ ...current, bankName: event.target.value }))}
-              placeholder="예: 카카오뱅크"
-              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
-            />
-          </Field>
-          <Field label="현재 잔액">
-            <input
-              type="number"
-              value={form.currentBalance}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  currentBalance: Number(event.target.value || 0)
-                }))
-              }
-              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
-            />
-          </Field>
-          <Field label="목표 금액">
-            <input
-              type="number"
-              value={form.targetAmount ?? 0}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  targetAmount: Number(event.target.value || 0)
-                }))
-              }
-              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
-            />
-          </Field>
-          <Field label="메모">
-            <input
-              value={form.note ?? ""}
-              onChange={(event) => setForm((current) => ({ ...current, note: event.target.value }))}
-              placeholder="역할 메모"
-              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
-            />
-          </Field>
-        </div>
+      {!canManage ? (
+        <InlineNotice tone="muted">현재 권한에서는 통장 목록을 조회할 수만 있습니다.</InlineNotice>
+      ) : (
+        <EditorCard
+          title={editingId ? "통장 수정" : "통장 추가"}
+          description="은행 계좌보다 돈의 역할 박스에 가깝게 관리합니다."
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="이름">
+              <input
+                value={form.name}
+                onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                placeholder="예: 생활비"
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              />
+            </Field>
+            <Field label="역할">
+              <select
+                value={form.role}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    role: event.target.value as MoneyFlowAccountRole
+                  }))
+                }
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              >
+                {moneyFlowAccountRoleValues.map((role) => (
+                  <option key={role} value={role}>
+                    {getMoneyFlowAccountRoleLabel(role)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="은행명">
+              <input
+                value={form.bankName ?? ""}
+                onChange={(event) => setForm((current) => ({ ...current, bankName: event.target.value }))}
+                placeholder="예: 카카오뱅크"
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              />
+            </Field>
+            <Field label="현재 잔액">
+              <input
+                type="number"
+                value={form.currentBalance}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    currentBalance: Number(event.target.value || 0)
+                  }))
+                }
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              />
+            </Field>
+            <Field label="목표 금액">
+              <input
+                type="number"
+                value={form.targetAmount ?? 0}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    targetAmount: Number(event.target.value || 0)
+                  }))
+                }
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              />
+            </Field>
+            <Field label="메모">
+              <input
+                value={form.note ?? ""}
+                onChange={(event) => setForm((current) => ({ ...current, note: event.target.value }))}
+                placeholder="역할 메모"
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              />
+            </Field>
+          </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-          >
-            {editingId ? "통장 저장" : "통장 추가"}
-          </button>
-          {editingId ? (
+          <div className="mt-4 flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => {
-                setEditingId(null);
-                setForm(defaultAccountInput);
-              }}
-              className="rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+              onClick={handleSubmit}
+              className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
             >
-              취소
+              {editingId ? "통장 저장" : "통장 추가"}
             </button>
-          ) : null}
-        </div>
-      </EditorCard>
+            {editingId ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingId(null);
+                  setForm(defaultAccountInput);
+                }}
+                className="rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+              >
+                취소
+              </button>
+            ) : null}
+          </div>
+        </EditorCard>
+      )}
 
       <section className="grid gap-4">
         {sortedAccounts.length === 0 ? (
@@ -186,49 +195,51 @@ export function MoneyFlowAccounts() {
                 {account.bankName ? <p className="mt-1 text-sm text-ink/52">{account.bankName}</p> : null}
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  disabled={index === 0}
-                  onClick={() => moveAccount(account.id, "up")}
-                  className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
-                >
-                  위로
-                </button>
-                <button
-                  type="button"
-                  disabled={index === sortedAccounts.length - 1}
-                  onClick={() => moveAccount(account.id, "down")}
-                  className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
-                >
-                  아래로
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingId(account.id);
-                    setForm({
-                      name: account.name,
-                      role: account.role,
-                      bankName: account.bankName,
-                      currentBalance: account.currentBalance,
-                      targetAmount: account.targetAmount,
-                      isActive: account.isActive,
-                      note: account.note
-                    });
-                  }}
-                  className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
-                >
-                  수정
-                </button>
-                <button
-                  type="button"
-                  onClick={() => deleteAccount(account.id)}
-                  className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
-                >
-                  삭제
-                </button>
-              </div>
+              {canManage ? (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={index === 0}
+                    onClick={() => moveAccount(account.id, "up")}
+                    className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
+                  >
+                    위로
+                  </button>
+                  <button
+                    type="button"
+                    disabled={index === sortedAccounts.length - 1}
+                    onClick={() => moveAccount(account.id, "down")}
+                    className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
+                  >
+                    아래로
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingId(account.id);
+                      setForm({
+                        name: account.name,
+                        role: account.role,
+                        bankName: account.bankName,
+                        currentBalance: account.currentBalance,
+                        targetAmount: account.targetAmount,
+                        isActive: account.isActive,
+                        note: account.note
+                      });
+                    }}
+                    className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
+                  >
+                    수정
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteAccount(account.id)}
+                    className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                  >
+                    삭제
+                  </button>
+                </div>
+              ) : null}
             </div>
           </article>
         ))}

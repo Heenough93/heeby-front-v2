@@ -12,7 +12,7 @@ import {
   MoneyFlowStartMonthEmptyState
 } from "@/features/assets/components/money-flow/money-flow-shared";
 
-export function MoneyFlowMonthly() {
+export function MoneyFlowMonthly({ canManage }: { canManage: boolean }) {
   const startMonthlyFlow = useMoneyFlowStore((state) => state.startMonthlyFlow);
   const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
   const updateMonthlyEntry = useMoneyFlowStore((state) => state.updateMonthlyEntry);
@@ -28,6 +28,7 @@ export function MoneyFlowMonthly() {
         title="이번 달 월간 체크가 아직 시작되지 않았습니다."
         description="새 달 시작 버튼을 눌러 이번 달 급여 확인과 이체 체크리스트를 생성하세요."
         actionLabel={`${monthKey} 시작하기`}
+        canManage={canManage}
         onStart={() => startMonthlyFlow(monthKey)}
       />
     );
@@ -54,6 +55,7 @@ export function MoneyFlowMonthly() {
                   <input
                     type="checkbox"
                     checked={entry.isChecked}
+                    disabled={!canManage}
                     onChange={(event) =>
                       updateMonthlyEntry(entry.id, { isChecked: event.target.checked })
                     }
@@ -82,6 +84,7 @@ export function MoneyFlowMonthly() {
                 <input
                   type="number"
                   value={entry.actualAmount ?? 0}
+                  disabled={!canManage}
                   onChange={(event) =>
                     updateMonthlyEntry(entry.id, {
                       actualAmount: Number(event.target.value || 0)
@@ -93,6 +96,7 @@ export function MoneyFlowMonthly() {
               <Field label="메모">
                 <input
                   value={entry.memo ?? ""}
+                  disabled={!canManage}
                   onChange={(event) =>
                     updateMonthlyEntry(entry.id, { memo: event.target.value })
                   }

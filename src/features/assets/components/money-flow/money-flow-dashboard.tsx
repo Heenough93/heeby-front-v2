@@ -32,12 +32,14 @@ export function MoneyFlowDashboard({
   accounts,
   rules,
   monthlyEntries,
-  assetSnapshots
+  assetSnapshots,
+  canManage
 }: {
   accounts: MoneyFlowAccount[];
   rules: MoneyFlowRule[];
   monthlyEntries: MoneyFlowMonthlyEntry[];
   assetSnapshots: AssetSnapshot[];
+  canManage: boolean;
 }) {
   const router = useRouter();
   const startMonthlyFlow = useMoneyFlowStore((state) => state.startMonthlyFlow);
@@ -64,6 +66,7 @@ export function MoneyFlowDashboard({
             startMonthlyFlow(currentMonthKey);
             router.push("/assets/money-flow/monthly");
           }}
+          canManage={canManage}
         />
         <MoneyFlowAssetRecordBridge
           monthKey={currentMonthKey}
@@ -71,6 +74,7 @@ export function MoneyFlowDashboard({
           latestSnapshot={latestSnapshot}
           hasCurrentMonthFlow={false}
           isMonthlyComplete={false}
+          canManage={canManage}
         />
       </section>
     );
@@ -101,6 +105,7 @@ export function MoneyFlowDashboard({
         latestSnapshot={latestSnapshot}
         hasCurrentMonthFlow
         isMonthlyComplete={isMonthlyComplete}
+        canManage={canManage}
       />
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -309,13 +314,15 @@ function MoneyFlowAssetRecordBridge({
   currentMonthSnapshot,
   latestSnapshot,
   hasCurrentMonthFlow,
-  isMonthlyComplete
+  isMonthlyComplete,
+  canManage
 }: {
   monthKey: string;
   currentMonthSnapshot?: AssetSnapshot;
   latestSnapshot?: AssetSnapshot;
   hasCurrentMonthFlow: boolean;
   isMonthlyComplete: boolean;
+  canManage: boolean;
 }) {
   if (currentMonthSnapshot) {
     return (
@@ -401,16 +408,18 @@ function MoneyFlowAssetRecordBridge({
           >
             자산기록 목록
           </Link>
-          <Link
-            href={createHref}
-            className={
-              emphasizeCreateCta
-                ? "rounded-full bg-coral px-6 py-3.5 text-sm font-semibold text-white shadow-card transition hover:opacity-90"
-                : "rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-            }
-          >
-            이번 달 자산기록 만들기
-          </Link>
+          {canManage ? (
+            <Link
+              href={createHref}
+              className={
+                emphasizeCreateCta
+                  ? "rounded-full bg-coral px-6 py-3.5 text-sm font-semibold text-white shadow-card transition hover:opacity-90"
+                  : "rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+              }
+            >
+              이번 달 자산기록 만들기
+            </Link>
+          ) : null}
         </div>
       </div>
     </section>

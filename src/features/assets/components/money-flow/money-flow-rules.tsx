@@ -27,7 +27,7 @@ const defaultRuleInput: MoneyFlowRuleInput = {
   note: ""
 };
 
-export function MoneyFlowRules() {
+export function MoneyFlowRules({ canManage }: { canManage: boolean }) {
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const rules = useMoneyFlowStore((state) => state.rules);
   const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
@@ -54,6 +54,10 @@ export function MoneyFlowRules() {
   );
 
   const handleSubmit = () => {
+    if (!canManage) {
+      return;
+    }
+
     if (!canCreateRule || !form.fromAccountId || !form.toAccountId || form.fromAccountId === form.toAccountId) {
       return;
     }
@@ -78,94 +82,98 @@ export function MoneyFlowRules() {
 
   return (
     <section className="grid gap-6">
-      <EditorCard
-        title={editingId ? "규칙 수정" : "규칙 추가"}
-        description="여기서 자금 배분 순서를 고정하고, 나머지 화면은 실행 결과를 보여줍니다."
-      >
-        {!canCreateRule ? (
-          <InlineNotice>
-            배분 규칙을 만들려면 활성 통장이 최소 2개 필요합니다. 먼저 통장 관리에서 급여계좌와 도착 계좌가 될 통장을 추가하세요.
-          </InlineNotice>
-        ) : null}
-        {hasRemainderRule ? (
-          <InlineNotice>
-            잔여 규칙은 하나만 둘 수 있습니다. 기존 잔여 규칙을 수정하거나 삭제한 뒤 추가하세요.
-          </InlineNotice>
-        ) : null}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="출발 계좌">
-            <select
-              value={form.fromAccountId}
-              onChange={(event) => setForm((current) => ({ ...current, fromAccountId: event.target.value }))}
-              disabled={!canCreateRule}
-              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
-            >
-              {activeAccounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
+      {!canManage ? (
+        <InlineNotice tone="muted">현재 권한에서는 배분 규칙을 조회할 수만 있습니다.</InlineNotice>
+      ) : (
+        <EditorCard
+          title={editingId ? "규칙 수정" : "규칙 추가"}
+          description="여기서 자금 배분 순서를 고정하고, 나머지 화면은 실행 결과를 보여줍니다."
+        >
+          {!canCreateRule ? (
+            <InlineNotice>
+              배분 규칙을 만들려면 활성 통장이 최소 2개 필요합니다. 먼저 통장 관리에서 급여계좌와 도착 계좌가 될 통장을 추가하세요.
+            </InlineNotice>
+          ) : null}
+          {hasRemainderRule ? (
+            <InlineNotice>
+              잔여 규칙은 하나만 둘 수 있습니다. 기존 잔여 규칙을 수정하거나 삭제한 뒤 추가하세요.
+            </InlineNotice>
+          ) : null}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="출발 계좌">
+              <select
+                value={form.fromAccountId}
+                onChange={(event) => setForm((current) => ({ ...current, fromAccountId: event.target.value }))}
+                disabled={!canCreateRule}
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              >
+                {activeAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="도착 계좌">
+              <select
+                value={form.toAccountId}
+                onChange={(event) => setForm((current) => ({ ...current, toAccountId: event.target.value }))}
+                disabled={!canCreateRule}
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              >
+                {activeAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="금액 방식">
+              <select
+                value={form.amountType}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    amountType: event.target.value as MoneyFlowRuleType
+                  }))
+                }
+                disabled={!canCreateRule}
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              >
+                <option value="fixed">고정 금액</option>
+                <option value="remainder" disabled={hasRemainderRule}>
+                  잔여
                 </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="도착 계좌">
-            <select
-              value={form.toAccountId}
-              onChange={(event) => setForm((current) => ({ ...current, toAccountId: event.target.value }))}
-              disabled={!canCreateRule}
-              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
-            >
-              {activeAccounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="금액 방식">
-            <select
-              value={form.amountType}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  amountType: event.target.value as MoneyFlowRuleType
-                }))
-              }
-              disabled={!canCreateRule}
-              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
-            >
-              <option value="fixed">고정 금액</option>
-              <option value="remainder" disabled={hasRemainderRule}>
-                잔여
-              </option>
-            </select>
-          </Field>
-          <Field label="금액">
-            <input
-              type="number"
-              value={form.amount}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  amount: Number(event.target.value || 0)
-                }))
-              }
-              disabled={!canCreateRule}
-              className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
-            />
-          </Field>
-        </div>
+              </select>
+            </Field>
+            <Field label="금액">
+              <input
+                type="number"
+                value={form.amount}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    amount: Number(event.target.value || 0)
+                  }))
+                }
+                disabled={!canCreateRule}
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              />
+            </Field>
+          </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={!canCreateRule}
-            onClick={handleSubmit}
-            className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
-          >
-            {editingId ? "규칙 저장" : "규칙 추가"}
-          </button>
-        </div>
-      </EditorCard>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={!canCreateRule}
+              onClick={handleSubmit}
+              className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+            >
+              {editingId ? "규칙 저장" : "규칙 추가"}
+            </button>
+          </div>
+        </EditorCard>
+      )}
 
       <section className="grid gap-4">
         {sortedRules.length === 0 ? (
@@ -206,48 +214,50 @@ export function MoneyFlowRules() {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    disabled={index === 0}
-                    onClick={() => moveRule(rule.id, "up")}
-                    className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
-                  >
-                    위로
-                  </button>
-                  <button
-                    type="button"
-                    disabled={index === sortedRules.length - 1}
-                    onClick={() => moveRule(rule.id, "down")}
-                    className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
-                  >
-                    아래로
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingId(rule.id);
-                      setForm({
-                        fromAccountId: rule.fromAccountId,
-                        toAccountId: rule.toAccountId,
-                        amountType: rule.amountType,
-                        amount: rule.amount,
-                        isActive: rule.isActive,
-                        note: rule.note
-                      });
-                    }}
-                    className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
-                  >
-                    수정
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteRule(rule.id)}
-                    className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
-                  >
-                    삭제
-                  </button>
-                </div>
+                {canManage ? (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() => moveRule(rule.id, "up")}
+                      className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
+                    >
+                      위로
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === sortedRules.length - 1}
+                      onClick={() => moveRule(rule.id, "down")}
+                      className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
+                    >
+                      아래로
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingId(rule.id);
+                        setForm({
+                          fromAccountId: rule.fromAccountId,
+                          toAccountId: rule.toAccountId,
+                          amountType: rule.amountType,
+                          amount: rule.amount,
+                          isActive: rule.isActive,
+                          note: rule.note
+                        });
+                      }}
+                      className="rounded-full border border-line/10 bg-paper px-3 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
+                    >
+                      수정
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteRule(rule.id)}
+                      className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </article>
           );

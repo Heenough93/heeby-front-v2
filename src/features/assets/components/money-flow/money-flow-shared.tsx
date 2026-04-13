@@ -118,13 +118,15 @@ export function MoneyFlowStartMonthEmptyState({
   title = "이번 달 현금 흐름이 아직 시작되지 않았습니다.",
   description = "새 달 시작 버튼을 눌러 현재 배분 규칙 기준으로 이번 달 체크리스트를 생성하세요.",
   actionLabel,
-  onStart
+  onStart,
+  canManage = true
 }: {
   monthKey: string;
   title?: string;
   description?: string;
   actionLabel?: string;
   onStart?: () => void;
+  canManage?: boolean;
 }) {
   const startMonthlyFlow = useMoneyFlowStore((state) => state.startMonthlyFlow);
   const accounts = useMoneyFlowStore((state) => state.accounts);
@@ -163,7 +165,9 @@ export function MoneyFlowStartMonthEmptyState({
       </div>
 
       <div className="mt-6 rounded-[22px] border border-line/10 bg-paper px-5 py-4 text-sm leading-6 text-ink/64">
-        버튼을 누르면 현재 배분 규칙 기준으로 이번 달 월간 체크리스트가 생성됩니다. 금액은 생성 후 월간 체크 화면에서 실제 금액으로 수정할 수 있습니다.
+        {canManage
+          ? "버튼을 누르면 현재 배분 규칙 기준으로 이번 달 월간 체크리스트가 생성됩니다. 금액은 생성 후 월간 체크 화면에서 실제 금액으로 수정할 수 있습니다."
+          : "현재 권한에서는 이번 달 월간 체크리스트를 생성할 수 없습니다."}
         {preview.activeRuleCount === 0 ? (
           <span className="mt-2 block font-semibold text-amber-700">
             활성 배분 규칙이 없습니다. 급여 확인 항목만 생성됩니다.
@@ -178,20 +182,22 @@ export function MoneyFlowStartMonthEmptyState({
         >
           배분 규칙 확인
         </Link>
-        <button
-          type="button"
-          onClick={() => {
-            if (onStart) {
-              onStart();
-              return;
-            }
+        {canManage ? (
+          <button
+            type="button"
+            onClick={() => {
+              if (onStart) {
+                onStart();
+                return;
+              }
 
-            startMonthlyFlow(monthKey);
-          }}
-          className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-        >
-          {actionLabel ?? `${monthKey} 새 달 시작`}
-        </button>
+              startMonthlyFlow(monthKey);
+            }}
+            className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            {actionLabel ?? `${monthKey} 새 달 시작`}
+          </button>
+        ) : null}
       </div>
     </section>
   );
