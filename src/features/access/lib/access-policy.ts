@@ -9,6 +9,11 @@ type FeaturePolicy = {
 };
 
 export const featurePolicies = {
+  unknown: {
+    guest: false,
+    member: false,
+    admin: false
+  },
   home: {
     guest: true,
     member: true,
@@ -103,7 +108,7 @@ export function getFeatureKeyFromPath(pathname: string): FeatureKey {
     )
   );
 
-  return featureEntry?.[0] ?? "journalArchive";
+  return featureEntry?.[0] ?? "unknown";
 }
 
 export function canReadContent(
