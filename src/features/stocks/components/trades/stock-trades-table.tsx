@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import React, { Fragment, useMemo, useState } from "react";
 import { stockTradeBatchSchema } from "@/features/stocks/lib/trades/stock-trade-schema";
 import { useStockStore } from "@/features/stocks/store/stock-store";
 import {
