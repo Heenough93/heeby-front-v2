@@ -34,11 +34,13 @@ type TradeSortKey = "latest" | "oldest" | "buy-desc" | "buy-asc" | "profit-desc"
 type StockTradesTableProps = {
   scopeFilter: StockSnapshotScope;
   onScopeChange: (scope: StockSnapshotScope) => void;
+  canManage: boolean;
 };
 
 export function StockTradesTable({
   scopeFilter,
-  onScopeChange
+  onScopeChange,
+  canManage
 }: StockTradesTableProps) {
   const tradeEntries = useStockStore((state) => state.tradeEntries);
   const getTradeDraftRowById = useStockStore((state) => state.getTradeDraftRowById);
@@ -185,6 +187,10 @@ export function StockTradesTable({
   };
 
   const openEditModal = (entryId: string) => {
+    if (!canManage) {
+      return;
+    }
+
     const nextRow = getTradeDraftRowById(entryId);
 
     if (!nextRow) {
@@ -205,7 +211,7 @@ export function StockTradesTable({
   };
 
   const handleEditSubmit = () => {
-    if (!editingRow) {
+    if (!canManage || !editingRow) {
       return;
     }
 
@@ -231,6 +237,10 @@ export function StockTradesTable({
   };
 
   const handleRefreshPrices = async () => {
+    if (!canManage) {
+      return;
+    }
+
     const openEntries = tradeEntries.filter(
       (entry) =>
         entry.positionStatus === "open" && (entry.market === "KR" || entry.market === "US" || entry.market === "ETF")
@@ -485,14 +495,16 @@ export function StockTradesTable({
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={handleRefreshPrices}
-              disabled={isRefreshingPrices}
-              className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft disabled:cursor-wait disabled:opacity-60"
-            >
-              {isRefreshingPrices ? "현재가 갱신 중..." : "현재가 갱신"}
-            </button>
+            {canManage ? (
+              <button
+                type="button"
+                onClick={handleRefreshPrices}
+                disabled={isRefreshingPrices}
+                className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft disabled:cursor-wait disabled:opacity-60"
+              >
+                {isRefreshingPrices ? "현재가 갱신 중..." : "현재가 갱신"}
+              </button>
+            ) : null}
             <span className="rounded-full bg-paper px-4 py-2 text-sm font-semibold text-ink/68">
               포지션 {filteredEntries.length}건
             </span>
@@ -610,22 +622,24 @@ export function StockTradesTable({
                                 {entry.note ?? "메모가 없습니다."}
                               </p>
                             </div>
-                            <div className="mt-4 flex flex-wrap justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={() => openEditModal(entry.id)}
-                                className="rounded-full border border-line/10 bg-surface px-4 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
-                              >
-                                수정
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setPendingDeleteEntry(entry)}
-                                className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
-                              >
-                                삭제
-                              </button>
-                            </div>
+                            {canManage ? (
+                              <div className="mt-4 flex flex-wrap justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditModal(entry.id)}
+                                  className="rounded-full border border-line/10 bg-surface px-4 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
+                                >
+                                  수정
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setPendingDeleteEntry(entry)}
+                                  className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                                >
+                                  삭제
+                                </button>
+                              </div>
+                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -682,22 +696,24 @@ export function StockTradesTable({
                 </p>
               </div>
 
-              <div className="mt-4 flex flex-wrap justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => openEditModal(entry.id)}
-                  className="rounded-full border border-line/10 bg-surface px-4 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
-                >
-                  수정
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPendingDeleteEntry(entry)}
-                  className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
-                >
-                  삭제
-                </button>
-              </div>
+              {canManage ? (
+                <div className="mt-4 flex flex-wrap justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(entry.id)}
+                    className="rounded-full border border-line/10 bg-surface px-4 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
+                  >
+                    수정
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPendingDeleteEntry(entry)}
+                    className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                  >
+                    삭제
+                  </button>
+                </div>
+              ) : null}
             </article>
           ))}
         </div>
@@ -712,7 +728,7 @@ export function StockTradesTable({
         ) : null}
       </div>
 
-      {editingRow ? (
+      {canManage && editingRow ? (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/35 px-5 py-6">
           <div className="mx-auto w-full max-w-5xl rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -904,31 +920,33 @@ export function StockTradesTable({
         </div>
       ) : null}
 
-      <AlertDialog
-        open={Boolean(pendingDeleteEntry)}
-        title="거래를 삭제할까요?"
-        description={
-          pendingDeleteEntry
-            ? `${pendingDeleteEntry.tradedAt} ${pendingDeleteEntry.stockName} 기록을 삭제하면 이 브라우저의 로컬 기록에서 사라집니다.`
-            : ""
-        }
-        confirmLabel="거래 삭제"
-        variant="danger"
-        onClose={() => setPendingDeleteEntry(null)}
-        onConfirm={() => {
-          if (!pendingDeleteEntry) {
-            return;
+      {canManage ? (
+        <AlertDialog
+          open={Boolean(pendingDeleteEntry)}
+          title="거래를 삭제할까요?"
+          description={
+            pendingDeleteEntry
+              ? `${pendingDeleteEntry.tradedAt} ${pendingDeleteEntry.stockName} 기록을 삭제하면 이 브라우저의 로컬 기록에서 사라집니다.`
+              : ""
           }
+          confirmLabel="거래 삭제"
+          variant="danger"
+          onClose={() => setPendingDeleteEntry(null)}
+          onConfirm={() => {
+            if (!pendingDeleteEntry) {
+              return;
+            }
 
-          removeTradeEntry(pendingDeleteEntry.id);
-          setExpandedEntryId(null);
-          setPendingDeleteEntry(null);
-          showToast({
-            title: "거래를 삭제했습니다.",
-            variant: "success"
-          });
-        }}
-      />
+            removeTradeEntry(pendingDeleteEntry.id);
+            setExpandedEntryId(null);
+            setPendingDeleteEntry(null);
+            showToast({
+              title: "거래를 삭제했습니다.",
+              variant: "success"
+            });
+          }}
+        />
+      ) : null}
     </section>
   );
 }

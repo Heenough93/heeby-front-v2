@@ -42,7 +42,11 @@ export function StockTradesScreen() {
         ) : undefined
       }
     >
-      <StockTradesTable scopeFilter={scopeFilter} onScopeChange={setScopeFilter} />
+      <StockTradesTable
+        scopeFilter={scopeFilter}
+        onScopeChange={setScopeFilter}
+        canManage={canManage}
+      />
 
       {isCreateOpen ? (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/35 px-5 py-6">

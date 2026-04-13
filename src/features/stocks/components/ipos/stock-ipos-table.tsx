@@ -23,11 +23,13 @@ type IpoSortKey = "latest" | "oldest" | "profit-desc" | "profit-asc";
 type StockIposTableProps = {
   scopeFilter: OwnerScope | "all";
   onScopeChange: (scope: OwnerScope | "all") => void;
+  canManage: boolean;
 };
 
 export function StockIposTable({
   scopeFilter,
-  onScopeChange
+  onScopeChange,
+  canManage
 }: StockIposTableProps) {
   const ipoEntries = useStockStore((state) => state.ipoEntries);
   const getIpoDraftRowById = useStockStore((state) => state.getIpoDraftRowById);
@@ -112,6 +114,10 @@ export function StockIposTable({
   };
 
   const openEditModal = (entryId: string) => {
+    if (!canManage) {
+      return;
+    }
+
     const nextRow = getIpoDraftRowById(entryId);
 
     if (!nextRow) {
@@ -136,7 +142,7 @@ export function StockIposTable({
   };
 
   const handleEditSubmit = () => {
-    if (!editingRow) {
+    if (!canManage || !editingRow) {
       return;
     }
 
@@ -317,22 +323,24 @@ export function StockIposTable({
                               />
                             </div>
 
-                            <div className="mt-5 flex flex-wrap gap-2">
-                              <button
-                                type="button"
-                                onClick={() => openEditModal(entry.id)}
-                                className="rounded-full border border-line/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
-                              >
-                                수정
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setPendingDeleteEntry(entry)}
-                                className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100"
-                              >
-                                삭제
-                              </button>
-                            </div>
+                            {canManage ? (
+                              <div className="mt-5 flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditModal(entry.id)}
+                                  className="rounded-full border border-line/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+                                >
+                                  수정
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setPendingDeleteEntry(entry)}
+                                  className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100"
+                                >
+                                  삭제
+                                </button>
+                              </div>
+                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -379,22 +387,24 @@ export function StockIposTable({
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => openEditModal(entry.id)}
-                  className="rounded-full border border-line/10 bg-surface px-4 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
-                >
-                  수정
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPendingDeleteEntry(entry)}
-                  className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
-                >
-                  삭제
-                </button>
-              </div>
+              {canManage ? (
+                <div className="mt-4 flex flex-wrap justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(entry.id)}
+                    className="rounded-full border border-line/10 bg-surface px-4 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft"
+                  >
+                    수정
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPendingDeleteEntry(entry)}
+                    className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                  >
+                    삭제
+                  </button>
+                </div>
+              ) : null}
             </article>
           ))}
         </div>
@@ -407,7 +417,7 @@ export function StockIposTable({
         ) : null}
       </div>
 
-      {editingRow ? (
+      {canManage && editingRow ? (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/35 px-5 py-6">
           <div className="mx-auto w-full max-w-6xl rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -444,27 +454,29 @@ export function StockIposTable({
         </div>
       ) : null}
 
-      <AlertDialog
-        open={Boolean(pendingDeleteEntry)}
-        title="공모주 기록을 삭제할까요?"
-        description="삭제한 기록은 이 브라우저에서 다시 복구할 수 없습니다."
-        confirmLabel="삭제"
-        cancelLabel="취소"
-        variant="danger"
-        onClose={() => setPendingDeleteEntry(null)}
-        onConfirm={() => {
-          if (!pendingDeleteEntry) {
-            return;
-          }
+      {canManage ? (
+        <AlertDialog
+          open={Boolean(pendingDeleteEntry)}
+          title="공모주 기록을 삭제할까요?"
+          description="삭제한 기록은 이 브라우저에서 다시 복구할 수 없습니다."
+          confirmLabel="삭제"
+          cancelLabel="취소"
+          variant="danger"
+          onClose={() => setPendingDeleteEntry(null)}
+          onConfirm={() => {
+            if (!pendingDeleteEntry) {
+              return;
+            }
 
-          removeIpoEntry(pendingDeleteEntry.id);
-          showToast({
-            title: "공모주 기록을 삭제했습니다.",
-            variant: "success"
-          });
-          setPendingDeleteEntry(null);
-        }}
-      />
+            removeIpoEntry(pendingDeleteEntry.id);
+            showToast({
+              title: "공모주 기록을 삭제했습니다.",
+              variant: "success"
+            });
+            setPendingDeleteEntry(null);
+          }}
+        />
+      ) : null}
     </section>
   );
 }
