@@ -21,7 +21,6 @@ import type {
 import type { AssetSnapshot } from "@/features/assets/lib/asset-snapshot-types";
 import { formatAssetSnapshotUpdatedAt } from "@/features/assets/lib/asset-snapshot-utils";
 import {
-  FlowNode,
   getStatusBadgeClassName,
   MoneyFlowStartMonthEmptyState,
   SummaryCard
@@ -124,10 +123,13 @@ export function MoneyFlowDashboard({
       </section>
 
       <section className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-coral">흐름 보기</p>
             <h2 className="mt-2 text-2xl font-bold">자금 흐름 시각화</h2>
+            <p className="mt-2 text-sm leading-6 text-ink/62">
+              급여계좌에서 이번 달 돈이 어떤 목적지로 나뉘는지 한 번에 봅니다.
+            </p>
           </div>
           <Link
             href="/assets/money-flow/rules"
@@ -137,22 +139,88 @@ export function MoneyFlowDashboard({
           </Link>
         </div>
 
-        <div className="mt-6 grid gap-4">
-          {lineItems.map((item) => (
-            <div key={item.id} className="grid gap-3 md:grid-cols-[1fr_auto_1fr] md:items-center">
-              <FlowNode title={item.fromAccount?.name ?? "-"} tone="origin" />
-              <div className="flex flex-col items-center gap-2 text-sm font-semibold text-ink/62">
-                <span>{item.amountType === "remainder" ? "잔여" : formatMoneyFlowAmount(item.amount)}</span>
-                <span aria-hidden>↓</span>
+        {lineItems.length ? (
+          <div className="mt-6 grid gap-5 lg:grid-cols-[0.9fr_1.6fr] lg:items-start">
+            <section className="relative overflow-hidden rounded-[28px] border border-coral/25 bg-coral/10 p-6">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-coral">Start</p>
+              <h3 className="mt-3 text-2xl font-bold">
+                {lineItems[0]?.fromAccount?.name ?? "출발 계좌"}
+              </h3>
+              <p className="mt-2 text-sm font-semibold text-ink/58">
+                {lineItems[0]?.fromAccount
+                  ? getMoneyFlowAccountRoleLabel(lineItems[0].fromAccount.role)
+                  : "급여 기준"}
+              </p>
+              <p className="mt-6 text-3xl font-bold">
+                {formatMoneyFlowAmount(summary.salaryAmount)}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-ink/62">
+                이번 달 배분의 기준이 되는 금액입니다. 오른쪽 항목 순서대로 목적지 통장에 나눕니다.
+              </p>
+            </section>
+
+            <section className="relative rounded-[28px] border border-line/10 bg-paper p-4 md:p-5">
+              <div className="absolute left-7 top-10 hidden h-[calc(100%-5rem)] w-px bg-line/20 md:block" />
+              <div className="grid gap-3">
+                {lineItems.map((item, index) => (
+                  <article
+                    key={item.id}
+                    className={
+                      item.amountType === "remainder"
+                        ? "relative rounded-[24px] border border-coral/25 bg-coral/10 p-5 md:ml-8"
+                        : "relative rounded-[24px] border border-line/10 bg-surface p-5 md:ml-8"
+                    }
+                  >
+                    <div className="absolute -left-[2.7rem] top-6 hidden h-8 w-8 items-center justify-center rounded-full border border-line/10 bg-surface text-xs font-bold text-ink/58 shadow-card md:flex">
+                      {index + 1}
+                    </div>
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={
+                              item.amountType === "remainder"
+                                ? "rounded-full bg-coral px-3 py-1 text-xs font-semibold text-white"
+                                : "rounded-full bg-paper px-3 py-1 text-xs font-semibold text-ink/62"
+                            }
+                          >
+                            {item.amountType === "remainder" ? "잔여" : `${index + 1}차`}
+                          </span>
+                          <h3 className="text-lg font-semibold">
+                            {item.toAccount?.name ?? "도착 계좌"}
+                          </h3>
+                        </div>
+                        <p className="mt-2 text-sm text-ink/58">
+                          {item.toAccount
+                            ? getMoneyFlowAccountRoleLabel(item.toAccount.role)
+                            : "목적지"}
+                        </p>
+                      </div>
+                      <p
+                        className={
+                          item.amountType === "remainder"
+                            ? "text-right text-xl font-bold text-coral"
+                            : "text-right text-xl font-bold"
+                        }
+                      >
+                        {item.amountType === "remainder"
+                          ? "남은 돈 전부"
+                          : formatMoneyFlowAmount(item.amount)}
+                      </p>
+                    </div>
+                  </article>
+                ))}
               </div>
-              <FlowNode
-                title={item.toAccount?.name ?? "-"}
-                tone="target"
-                caption={item.amountType === "remainder" ? "잔여" : "고정 금액"}
-              />
-            </div>
-          ))}
-        </div>
+            </section>
+          </div>
+        ) : (
+          <div className="mt-6 rounded-[24px] border border-dashed border-line/15 bg-paper p-8 text-center">
+            <p className="text-lg font-semibold">아직 보여줄 배분 규칙이 없습니다.</p>
+            <p className="mt-2 text-sm text-ink/60">
+              배분 규칙을 만들면 급여계좌에서 각 통장으로 나뉘는 흐름이 여기에 표시됩니다.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
