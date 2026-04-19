@@ -17,6 +17,7 @@ const now = "2026-04-11T00:00:00.000Z";
 const accounts: MoneyFlowAccount[] = [
   {
     id: "salary",
+    ownerScope: "yumja",
     name: "급여계좌",
     role: "salary",
     currentBalance: 3000000,
@@ -26,6 +27,7 @@ const accounts: MoneyFlowAccount[] = [
   },
   {
     id: "living",
+    ownerScope: "yumja",
     name: "생활비",
     role: "living",
     currentBalance: 300000,
@@ -36,6 +38,7 @@ const accounts: MoneyFlowAccount[] = [
   },
   {
     id: "surplus",
+    ownerScope: "yumja",
     name: "여윳돈",
     role: "surplus",
     currentBalance: 620000,
@@ -48,6 +51,7 @@ const accounts: MoneyFlowAccount[] = [
 const rules: MoneyFlowRule[] = [
   {
     id: "surplus-rule",
+    ownerScope: "yumja",
     fromAccountId: "salary",
     toAccountId: "surplus",
     amountType: "remainder",
@@ -59,6 +63,7 @@ const rules: MoneyFlowRule[] = [
   },
   {
     id: "living-rule",
+    ownerScope: "yumja",
     fromAccountId: "salary",
     toAccountId: "living",
     amountType: "fixed",
@@ -70,6 +75,7 @@ const rules: MoneyFlowRule[] = [
   },
   {
     id: "inactive-rule",
+    ownerScope: "yumja",
     fromAccountId: "salary",
     toAccountId: "living",
     amountType: "fixed",
@@ -92,6 +98,7 @@ describe("money flow utils", () => {
 
   it("builds monthly entries from active rules in rule order", () => {
     const entries = buildMonthlyEntriesFromRules({
+      ownerScope: "yumja",
       monthKey: "2026-05",
       salaryAmount: 3000000,
       rules,
@@ -105,7 +112,8 @@ describe("money flow utils", () => {
       "여윳돈 이체"
     ]);
     expect(entries[0]).toMatchObject({
-      id: "2026-05-salary-check",
+      id: "yumja-2026-05-salary-check",
+      ownerScope: "yumja",
       plannedAmount: 3000000,
       actualAmount: 3000000,
       isChecked: false
@@ -126,6 +134,7 @@ describe("money flow utils", () => {
     const monthlyEntries: MoneyFlowMonthlyEntry[] = [
       {
         id: "salary-entry",
+        ownerScope: "yumja",
         monthKey: "2026-05",
         title: "급여 입금 확인",
         plannedAmount: 3000000,
@@ -136,6 +145,7 @@ describe("money flow utils", () => {
       },
       {
         id: "living-entry",
+        ownerScope: "yumja",
         monthKey: "2026-05",
         title: "생활비 이체",
         plannedAmount: 800000,
@@ -146,6 +156,7 @@ describe("money flow utils", () => {
       },
       {
         id: "surplus-entry",
+        ownerScope: "yumja",
         monthKey: "2026-05",
         title: "여윳돈 이체",
         plannedAmount: 2200000,

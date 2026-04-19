@@ -11,25 +11,33 @@ import {
   Field,
   MoneyFlowStartMonthEmptyState
 } from "@/features/assets/components/money-flow/money-flow-shared";
+import { getOwnerScopeLabel, type OwnerScope } from "@/types/domain";
 
-export function MoneyFlowMonthly({ canManage }: { canManage: boolean }) {
+export function MoneyFlowMonthly({
+  ownerScope,
+  canManage
+}: {
+  ownerScope: OwnerScope;
+  canManage: boolean;
+}) {
   const startMonthlyFlow = useMoneyFlowStore((state) => state.startMonthlyFlow);
   const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
   const updateMonthlyEntry = useMoneyFlowStore((state) => state.updateMonthlyEntry);
   const monthKey = getCurrentMoneyFlowMonthKey();
   const entries = sortMoneyFlowMonthlyEntries(monthlyEntries).filter(
-    (entry) => entry.monthKey === monthKey
+    (entry) => entry.ownerScope === ownerScope && entry.monthKey === monthKey
   );
 
   if (entries.length === 0) {
     return (
       <MoneyFlowStartMonthEmptyState
+        ownerScope={ownerScope}
         monthKey={monthKey}
         title="이번 달 월간 체크가 아직 시작되지 않았습니다."
-        description="새 달 시작 버튼을 눌러 이번 달 급여 확인과 이체 체크리스트를 생성하세요."
-        actionLabel={`${monthKey} 시작하기`}
+        description={`${getOwnerScopeLabel(ownerScope)}의 이번 달 급여 확인과 이체 체크리스트를 생성하세요.`}
+        actionLabel={`${monthKey} ${getOwnerScopeLabel(ownerScope)} 시작하기`}
         canManage={canManage}
-        onStart={() => startMonthlyFlow(monthKey)}
+        onStart={() => startMonthlyFlow(ownerScope, monthKey)}
       />
     );
   }
@@ -40,7 +48,9 @@ export function MoneyFlowMonthly({ canManage }: { canManage: boolean }) {
     <section className="grid gap-6">
       <section className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
         <p className="text-sm font-semibold text-coral">{monthKey}</p>
-        <h2 className="mt-2 text-2xl font-bold">이번 달 실행 체크</h2>
+        <h2 className="mt-2 text-2xl font-bold">
+          {getOwnerScopeLabel(ownerScope)} 이번 달 실행 체크
+        </h2>
         <p className="mt-2 text-sm text-ink/62">
           기록보다 실행 확인에 집중합니다. 월초에 돈을 이동하면서 체크하고, 월말에는 자산기록으로 결과를 남기면 됩니다.
         </p>

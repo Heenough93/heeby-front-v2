@@ -1,12 +1,55 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import React from "react";
 import {
   formatMoneyFlowAmount,
   getMoneyFlowStartMonthPreview
 } from "@/features/assets/lib/money-flow-utils";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
+import { getOwnerScopeLabel, ownerScopeValues, type OwnerScope } from "@/types/domain";
+
+export function getMoneyFlowHref(href: string, ownerScope: OwnerScope) {
+  return `${href}?owner=${ownerScope}`;
+}
+
+export function useMoneyFlowOwnerScope(): OwnerScope {
+  const searchParams = useSearchParams();
+  const owner = searchParams.get("owner");
+
+  return ownerScopeValues.includes(owner as OwnerScope) ? (owner as OwnerScope) : "yumja";
+}
+
+export function MoneyFlowOwnerSwitcher({ ownerScope }: { ownerScope: OwnerScope }) {
+  const pathname = usePathname();
+
+  return (
+    <section className="flex flex-wrap items-center justify-between gap-3 rounded-[28px] border border-line/10 bg-surface p-4 shadow-card">
+      <div>
+        <p className="text-sm font-semibold text-coral">관리 대상</p>
+        <p className="mt-1 text-sm text-ink/62">
+          현금 흐름은 윰자와 히비를 분리해서 관리합니다.
+        </p>
+      </div>
+      <div className="flex rounded-full border border-line/10 bg-paper p-1">
+        {ownerScopeValues.map((scope) => (
+          <Link
+            key={scope}
+            href={getMoneyFlowHref(pathname, scope)}
+            className={
+              ownerScope === scope
+                ? "rounded-full bg-coral px-5 py-2 text-sm font-semibold text-white"
+                : "rounded-full px-5 py-2 text-sm font-semibold text-ink/62 transition hover:bg-soft"
+            }
+          >
+            {getOwnerScopeLabel(scope)}
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
@@ -115,6 +158,7 @@ export function InlineNotice({
 }
 
 export function MoneyFlowStartMonthEmptyState({
+  ownerScope,
   monthKey,
   title = "이번 달 현금 흐름이 아직 시작되지 않았습니다.",
   description = "새 달 시작 버튼을 눌러 현재 배분 규칙 기준으로 이번 달 체크리스트를 생성하세요.",
@@ -122,6 +166,7 @@ export function MoneyFlowStartMonthEmptyState({
   onStart,
   canManage = true
 }: {
+  ownerScope: OwnerScope;
   monthKey: string;
   title?: string;
   description?: string;
@@ -132,7 +177,9 @@ export function MoneyFlowStartMonthEmptyState({
   const startMonthlyFlow = useMoneyFlowStore((state) => state.startMonthlyFlow);
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const rules = useMoneyFlowStore((state) => state.rules);
-  const preview = getMoneyFlowStartMonthPreview({ accounts, rules });
+  const scopedAccounts = accounts.filter((account) => account.ownerScope === ownerScope);
+  const scopedRules = rules.filter((rule) => rule.ownerScope === ownerScope);
+  const preview = getMoneyFlowStartMonthPreview({ accounts: scopedAccounts, rules: scopedRules });
 
   return (
     <section className="rounded-[28px] border border-dashed border-line/15 bg-surface p-6 shadow-card md:p-10">
@@ -178,7 +225,7 @@ export function MoneyFlowStartMonthEmptyState({
 
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <Link
-          href="/assets/money-flow/rules"
+          href={getMoneyFlowHref("/assets/money-flow/rules", ownerScope)}
           className="rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
         >
           배분 규칙 확인
@@ -192,7 +239,7 @@ export function MoneyFlowStartMonthEmptyState({
                 return;
               }
 
-              startMonthlyFlow(monthKey);
+              startMonthlyFlow(ownerScope, monthKey);
             }}
             className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >

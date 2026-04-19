@@ -49,14 +49,14 @@ describe("financial action guards", () => {
   });
 
   it("hides money flow account and rule write actions when management is disabled", () => {
-    const { rerender } = render(<MoneyFlowAccounts canManage={false} />);
+    const { rerender } = render(<MoneyFlowAccounts ownerScope="yumja" canManage={false} />);
 
     expect(screen.getByText("현재 권한에서는 통장 목록을 조회할 수만 있습니다.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "통장 추가" })).not.toBeInTheDocument();
     expect(screen.queryAllByRole("button", { name: "수정" })).toHaveLength(0);
     expect(screen.queryAllByRole("button", { name: "삭제" })).toHaveLength(0);
 
-    rerender(<MoneyFlowRules canManage={false} />);
+    rerender(<MoneyFlowRules ownerScope="yumja" canManage={false} />);
 
     expect(screen.getByText("현재 권한에서는 배분 규칙을 조회할 수만 있습니다.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "규칙 추가" })).not.toBeInTheDocument();

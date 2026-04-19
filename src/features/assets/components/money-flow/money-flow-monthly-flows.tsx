@@ -3,13 +3,22 @@
 import Link from "next/link";
 import { getCurrentMoneyFlowMonthKey } from "@/features/assets/lib/money-flow-utils";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
-import { EmptyStateCard } from "@/features/assets/components/money-flow/money-flow-shared";
+import {
+  EmptyStateCard,
+  getMoneyFlowHref
+} from "@/features/assets/components/money-flow/money-flow-shared";
+import { getOwnerScopeLabel, type OwnerScope } from "@/types/domain";
 
-export function MoneyFlowMonthlyFlows() {
+export function MoneyFlowMonthlyFlows({ ownerScope }: { ownerScope: OwnerScope }) {
   const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
   const groupedMonthKeys = Array.from(
-    new Set(monthlyEntries.map((entry) => entry.monthKey))
+    new Set(
+      monthlyEntries
+        .filter((entry) => entry.ownerScope === ownerScope)
+        .map((entry) => entry.monthKey)
+    )
   ).sort((a, b) => b.localeCompare(a));
+  const ownerLabel = getOwnerScopeLabel(ownerScope);
 
   if (groupedMonthKeys.length === 0) {
     return (
@@ -19,7 +28,7 @@ export function MoneyFlowMonthlyFlows() {
         description="앞으로는 매달 확정한 현금 흐름 다이어그램을 이 화면에 모아둘 예정입니다. 지금은 새 달 시작으로 생성한 월간 체크 기록을 기준으로 흐름 목록 자리를 먼저 마련합니다."
       >
         <Link
-          href="/assets/money-flow"
+          href={getMoneyFlowHref("/assets/money-flow", ownerScope)}
           className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
         >
           대시보드로 이동
@@ -34,14 +43,16 @@ export function MoneyFlowMonthlyFlows() {
         <p className="text-sm font-semibold text-coral">월간흐름</p>
         <h2 className="mt-2 text-2xl font-bold">월별 현금 흐름 보관함</h2>
         <p className="mt-2 text-sm leading-6 text-ink/62">
-          지금은 월간 체크가 시작된 달을 기준으로 보여줍니다. 다음 단계에서 윰자/히비별
+          지금은 {ownerLabel} 월간 체크가 시작된 달을 기준으로 보여줍니다. 다음 단계에서 윰자/히비별
           다이어그램 스냅샷을 저장하면 이 화면이 월간 흐름 아카이브가 됩니다.
         </p>
       </div>
 
       <div className="grid gap-3">
         {groupedMonthKeys.map((monthKey) => {
-          const entries = monthlyEntries.filter((entry) => entry.monthKey === monthKey);
+          const entries = monthlyEntries.filter(
+            (entry) => entry.ownerScope === ownerScope && entry.monthKey === monthKey
+          );
           const completedCount = entries.filter((entry) => entry.isChecked).length;
           const currentMonthKey = getCurrentMoneyFlowMonthKey();
 
@@ -52,7 +63,9 @@ export function MoneyFlowMonthlyFlows() {
             >
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-xl font-bold">{monthKey} 현금 흐름</h3>
+                  <h3 className="text-xl font-bold">
+                    {monthKey} {ownerLabel} 현금 흐름
+                  </h3>
                   {monthKey === currentMonthKey ? (
                     <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
                       이번 달
@@ -65,7 +78,7 @@ export function MoneyFlowMonthlyFlows() {
               </div>
 
               <Link
-                href="/assets/money-flow/monthly"
+                href={getMoneyFlowHref("/assets/money-flow/monthly", ownerScope)}
                 className="rounded-full border border-line/10 bg-paper px-5 py-3 text-center text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
               >
                 월간 체크 보기

@@ -17,17 +17,27 @@ import {
   Field,
   InlineNotice
 } from "@/features/assets/components/money-flow/money-flow-shared";
+import { getOwnerScopeLabel, type OwnerScope } from "@/types/domain";
 
-const defaultRuleInput: MoneyFlowRuleInput = {
-  fromAccountId: "",
-  toAccountId: "",
-  amountType: "fixed",
-  amount: 0,
-  isActive: true,
-  note: ""
-};
+function getDefaultRuleInput(ownerScope: OwnerScope): MoneyFlowRuleInput {
+  return {
+    ownerScope,
+    fromAccountId: "",
+    toAccountId: "",
+    amountType: "fixed",
+    amount: 0,
+    isActive: true,
+    note: ""
+  };
+}
 
-export function MoneyFlowRules({ canManage }: { canManage: boolean }) {
+export function MoneyFlowRules({
+  ownerScope,
+  canManage
+}: {
+  ownerScope: OwnerScope;
+  canManage: boolean;
+}) {
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const rules = useMoneyFlowStore((state) => state.rules);
   const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
@@ -36,21 +46,41 @@ export function MoneyFlowRules({ canManage }: { canManage: boolean }) {
   const deleteRule = useMoneyFlowStore((state) => state.deleteRule);
   const moveRule = useMoneyFlowStore((state) => state.moveRule);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const sortedRules = sortMoneyFlowRules(rules);
-  const activeAccounts = sortMoneyFlowAccounts(accounts).filter((account) => account.isActive);
-  const canCreateRule = activeAccounts.length >= 2;
-  const hasRemainderRule = sortedRules.some(
-    (rule) => rule.amountType === "remainder" && rule.id !== editingId
+  const scopedAccounts = accounts.filter((account) => account.ownerScope === ownerScope);
+  const scopedMonthlyEntries = monthlyEntries.filter(
+    (entry) => entry.ownerScope === ownerScope
   );
+  const sortedRules = sortMoneyFlowRules(
+    rules.filter((rule) => rule.ownerScope === ownerScope)
+  );
+  const activeAccounts = sortMoneyFlowAccounts(scopedAccounts).filter((account) => account.isActive);
+  const defaultFromAccountId = activeAccounts[0]?.id ?? "";
+  const defaultToAccountId = activeAccounts[1]?.id ?? activeAccounts[0]?.id ?? "";
+  const canCreateRule = activeAccounts.length >= 2;
   const [form, setForm] = useState<MoneyFlowRuleInput>(() => ({
-    ...defaultRuleInput,
-    fromAccountId: activeAccounts[0]?.id ?? "",
-    toAccountId: activeAccounts[1]?.id ?? activeAccounts[0]?.id ?? ""
+    ...getDefaultRuleInput(ownerScope),
+    fromAccountId: defaultFromAccountId,
+    toAccountId: defaultToAccountId
   }));
+  const hasRemainderRule = sortedRules.some(
+    (rule) =>
+      rule.amountType === "remainder" &&
+      rule.fromAccountId === form.fromAccountId &&
+      rule.id !== editingId
+  );
+
+  React.useEffect(() => {
+    setEditingId(null);
+    setForm({
+      ...getDefaultRuleInput(ownerScope),
+      fromAccountId: defaultFromAccountId,
+      toAccountId: defaultToAccountId
+    });
+  }, [ownerScope, defaultFromAccountId, defaultToAccountId]);
 
   const accountById = useMemo(
-    () => new Map(accounts.map((account) => [account.id, account])),
-    [accounts]
+    () => new Map(scopedAccounts.map((account) => [account.id, account])),
+    [scopedAccounts]
   );
 
   const handleSubmit = () => {
@@ -74,9 +104,9 @@ export function MoneyFlowRules({ canManage }: { canManage: boolean }) {
     }
 
     setForm({
-      ...defaultRuleInput,
-      fromAccountId: activeAccounts[0]?.id ?? "",
-      toAccountId: activeAccounts[1]?.id ?? activeAccounts[0]?.id ?? ""
+      ...getDefaultRuleInput(ownerScope),
+      fromAccountId: defaultFromAccountId,
+      toAccountId: defaultToAccountId
     });
   };
 
@@ -87,7 +117,7 @@ export function MoneyFlowRules({ canManage }: { canManage: boolean }) {
       ) : (
         <EditorCard
           title={editingId ? "규칙 수정" : "규칙 추가"}
-          description="여기서 자금 배분 순서를 고정하고, 나머지 화면은 실행 결과를 보여줍니다."
+          description={`${getOwnerScopeLabel(ownerScope)} 현금 흐름의 기본 배분 순서를 관리합니다.`}
         >
           {!canCreateRule ? (
             <InlineNotice>
@@ -192,7 +222,7 @@ export function MoneyFlowRules({ canManage }: { canManage: boolean }) {
           const fromAccount = accountById.get(rule.fromAccountId);
           const toAccount = accountById.get(rule.toAccountId);
           const plannedAmount =
-            monthlyEntries.find((entry) => entry.ruleId === rule.id)?.plannedAmount ??
+            scopedMonthlyEntries.find((entry) => entry.ruleId === rule.id)?.plannedAmount ??
             rule.amount;
 
           return (
@@ -237,6 +267,7 @@ export function MoneyFlowRules({ canManage }: { canManage: boolean }) {
                       onClick={() => {
                         setEditingId(rule.id);
                         setForm({
+                          ownerScope,
                           fromAccountId: rule.fromAccountId,
                           toAccountId: rule.toAccountId,
                           amountType: rule.amountType,

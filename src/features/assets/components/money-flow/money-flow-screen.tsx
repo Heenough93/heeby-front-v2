@@ -14,6 +14,12 @@ import { MoneyFlowAccounts } from "@/features/assets/components/money-flow/money
 import { MoneyFlowRules } from "@/features/assets/components/money-flow/money-flow-rules";
 import { MoneyFlowMonthly } from "@/features/assets/components/money-flow/money-flow-monthly";
 import { MoneyFlowMonthlyFlows } from "@/features/assets/components/money-flow/money-flow-monthly-flows";
+import {
+  getMoneyFlowHref,
+  MoneyFlowOwnerSwitcher,
+  useMoneyFlowOwnerScope
+} from "@/features/assets/components/money-flow/money-flow-shared";
+import type { OwnerScope } from "@/types/domain";
 
 type MoneyFlowSection = "dashboard" | "accounts" | "rules" | "monthly" | "monthlyFlows";
 
@@ -32,43 +38,61 @@ const sectionMeta: Record<MoneyFlowSection, { title: string; href: string }> = {
 export function MoneyFlowScreen({ section }: MoneyFlowScreenProps) {
   const accessMode = useAccessStore(getAccessMode);
   const canManage = canManageAsset(accessMode);
+  const ownerScope = useMoneyFlowOwnerScope();
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const rules = useMoneyFlowStore((state) => state.rules);
   const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
   const assetSnapshots = useAssetStore((state) => state.snapshots);
+  const scopedAccounts = accounts.filter((account) => account.ownerScope === ownerScope);
+  const scopedRules = rules.filter((rule) => rule.ownerScope === ownerScope);
+  const scopedMonthlyEntries = monthlyEntries.filter(
+    (entry) => entry.ownerScope === ownerScope
+  );
 
   return (
     <AppShell title="현금 흐름">
-      <MoneyFlowNavigation currentSection={section} />
+      <MoneyFlowOwnerSwitcher ownerScope={ownerScope} />
+      <MoneyFlowNavigation currentSection={section} ownerScope={ownerScope} />
 
       {section === "dashboard" ? (
         <MoneyFlowDashboard
-          accounts={accounts}
-          rules={rules}
-          monthlyEntries={monthlyEntries}
+          ownerScope={ownerScope}
+          accounts={scopedAccounts}
+          rules={scopedRules}
+          monthlyEntries={scopedMonthlyEntries}
           assetSnapshots={assetSnapshots}
           canManage={canManage}
         />
       ) : null}
-      {section === "accounts" ? <MoneyFlowAccounts canManage={canManage} /> : null}
-      {section === "rules" ? <MoneyFlowRules canManage={canManage} /> : null}
-      {section === "monthly" ? <MoneyFlowMonthly canManage={canManage} /> : null}
-      {section === "monthlyFlows" ? <MoneyFlowMonthlyFlows /> : null}
+      {section === "accounts" ? (
+        <MoneyFlowAccounts ownerScope={ownerScope} canManage={canManage} />
+      ) : null}
+      {section === "rules" ? (
+        <MoneyFlowRules ownerScope={ownerScope} canManage={canManage} />
+      ) : null}
+      {section === "monthly" ? (
+        <MoneyFlowMonthly ownerScope={ownerScope} canManage={canManage} />
+      ) : null}
+      {section === "monthlyFlows" ? (
+        <MoneyFlowMonthlyFlows ownerScope={ownerScope} />
+      ) : null}
     </AppShell>
   );
 }
 
 function MoneyFlowNavigation({
-  currentSection
+  currentSection,
+  ownerScope
 }: {
   currentSection: MoneyFlowSection;
+  ownerScope: OwnerScope;
 }) {
   return (
     <section className="grid gap-3 md:grid-cols-5">
       {Object.entries(sectionMeta).map(([key, item]) => (
         <Link
           key={key}
-          href={item.href}
+          href={getMoneyFlowHref(item.href, ownerScope)}
           className={
             currentSection === key
               ? "rounded-[24px] border border-coral/35 bg-coral/10 px-5 py-4 text-sm font-semibold text-ink shadow-card"

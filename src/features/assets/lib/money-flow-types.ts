@@ -20,6 +20,7 @@ export type MoneyFlowRuleType = (typeof moneyFlowRuleTypeValues)[number];
 
 export type MoneyFlowAccount = {
   id: string;
+  ownerScope: OwnerScope;
   name: string;
   role: MoneyFlowAccountRole;
   bankName?: string;
@@ -33,6 +34,7 @@ export type MoneyFlowAccount = {
 
 export type MoneyFlowRule = {
   id: string;
+  ownerScope: OwnerScope;
   fromAccountId: string;
   toAccountId: string;
   amountType: MoneyFlowRuleType;
@@ -46,6 +48,7 @@ export type MoneyFlowRule = {
 
 export type MoneyFlowMonthlyEntry = {
   id: string;
+  ownerScope: OwnerScope;
   monthKey: string;
   title: string;
   ruleId?: string;
@@ -59,6 +62,7 @@ export type MoneyFlowMonthlyEntry = {
 };
 
 export type MoneyFlowAccountInput = {
+  ownerScope: OwnerScope;
   name: string;
   role: MoneyFlowAccountRole;
   bankName?: string;
@@ -69,6 +73,7 @@ export type MoneyFlowAccountInput = {
 };
 
 export type MoneyFlowRuleInput = {
+  ownerScope: OwnerScope;
   fromAccountId: string;
   toAccountId: string;
   amountType: MoneyFlowRuleType;
@@ -76,3 +81,4 @@ export type MoneyFlowRuleInput = {
   isActive: boolean;
   note?: string;
 };
+import type { OwnerScope } from "@/types/domain";

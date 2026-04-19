@@ -5,6 +5,7 @@ import type {
   MoneyFlowMonthlyEntry,
   MoneyFlowRule
 } from "@/features/assets/lib/money-flow-types";
+import type { OwnerScope } from "@/types/domain";
 
 export function formatMoneyFlowAmount(amount: number) {
   return `${Math.round(amount).toLocaleString("ko-KR")}원`;
@@ -151,6 +152,7 @@ export function getMoneyFlowStartMonthPreview(params: {
 }
 
 export function buildMonthlyEntriesFromRules(params: {
+  ownerScope: OwnerScope;
   monthKey: string;
   salaryAmount: number;
   rules: MoneyFlowRule[];
@@ -163,7 +165,8 @@ export function buildMonthlyEntriesFromRules(params: {
 
   return [
     {
-      id: `${params.monthKey}-salary-check`,
+      id: `${params.ownerScope}-${params.monthKey}-salary-check`,
+      ownerScope: params.ownerScope,
       monthKey: params.monthKey,
       title: "급여 입금 확인",
       plannedAmount: params.salaryAmount,
@@ -177,6 +180,7 @@ export function buildMonthlyEntriesFromRules(params: {
 
       return {
         id: `${params.monthKey}-${rule.id}`,
+        ownerScope: params.ownerScope,
         monthKey: params.monthKey,
         title: getMoneyFlowMonthlyTitle(rule, toAccount?.name ?? "이체"),
         ruleId: rule.id,

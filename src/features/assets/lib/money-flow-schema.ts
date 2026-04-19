@@ -3,6 +3,7 @@ import {
   moneyFlowAccountRoleValues,
   moneyFlowRuleTypeValues
 } from "@/features/assets/lib/money-flow-types";
+import { ownerScopeValues } from "@/types/domain";
 
 const moneyFlowAmountSchema = z.number().finite().min(0, "금액은 0 이상이어야 합니다.");
 
@@ -14,6 +15,7 @@ const optionalMoneyFlowTextSchema = (max: number, message: string) =>
     .optional();
 
 export const moneyFlowAccountInputSchema = z.object({
+  ownerScope: z.enum(ownerScopeValues),
   name: z
     .string()
     .trim()
@@ -28,6 +30,7 @@ export const moneyFlowAccountInputSchema = z.object({
 });
 
 const moneyFlowRuleInputBaseSchema = z.object({
+  ownerScope: z.enum(ownerScopeValues),
   fromAccountId: z.string().trim().min(1, "출발 계좌를 선택해주세요."),
   toAccountId: z.string().trim().min(1, "도착 계좌를 선택해주세요."),
   amountType: z.enum(moneyFlowRuleTypeValues),
@@ -40,13 +43,13 @@ function refineMoneyFlowRuleAccounts(
   value: z.infer<typeof moneyFlowRuleInputBaseSchema>,
   context: z.RefinementCtx
 ) {
-    if (value.fromAccountId === value.toAccountId) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["toAccountId"],
-        message: "출발 계좌와 도착 계좌는 달라야 합니다."
-      });
-    }
+  if (value.fromAccountId === value.toAccountId) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["toAccountId"],
+      message: "출발 계좌와 도착 계좌는 달라야 합니다."
+    });
+  }
 }
 
 export const moneyFlowRuleInputSchema = moneyFlowRuleInputBaseSchema.superRefine(refineMoneyFlowRuleAccounts);
@@ -67,13 +70,24 @@ export const moneyFlowMonthlyEntryUpdateSchema = z.object({
 });
 
 export const moneyFlowRuleListSchema = z.array(moneyFlowRuleSchema).superRefine((rules, context) => {
-  const activeRemainderRules = rules.filter((rule) => rule.amountType === "remainder" && rule.isActive);
+  const activeRemainderKeys = new Set<string>();
 
-  if (activeRemainderRules.length > 1) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "활성 잔여 규칙은 하나만 둘 수 있습니다."
-    });
+  for (const rule of rules) {
+    if (rule.amountType !== "remainder" || !rule.isActive) {
+      continue;
+    }
+
+    const key = `${rule.ownerScope}:${rule.fromAccountId}`;
+
+    if (activeRemainderKeys.has(key)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "활성 잔여 규칙은 같은 소유자와 출발 계좌 기준으로 하나만 둘 수 있습니다."
+      });
+      return;
+    }
+
+    activeRemainderKeys.add(key);
   }
 });
 

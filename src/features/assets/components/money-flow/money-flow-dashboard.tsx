@@ -21,19 +21,23 @@ import type {
 import type { AssetSnapshot } from "@/features/assets/lib/asset-snapshot-types";
 import { formatAssetSnapshotUpdatedAt } from "@/features/assets/lib/asset-snapshot-utils";
 import {
+  getMoneyFlowHref,
   getStatusBadgeClassName,
   MoneyFlowStartMonthEmptyState,
   SummaryCard
 } from "@/features/assets/components/money-flow/money-flow-shared";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
+import { getOwnerScopeLabel, type OwnerScope } from "@/types/domain";
 
 export function MoneyFlowDashboard({
+  ownerScope,
   accounts,
   rules,
   monthlyEntries,
   assetSnapshots,
   canManage
 }: {
+  ownerScope: OwnerScope;
   accounts: MoneyFlowAccount[];
   rules: MoneyFlowRule[];
   monthlyEntries: MoneyFlowMonthlyEntry[];
@@ -50,6 +54,7 @@ export function MoneyFlowDashboard({
     (snapshot) => snapshot.monthKey === currentMonthKey
   );
   const latestSnapshot = assetSnapshots[0];
+  const ownerLabel = getOwnerScopeLabel(ownerScope);
 
   if (currentMonthEntries.length === 0) {
     return (
@@ -60,10 +65,11 @@ export function MoneyFlowDashboard({
           hasCurrentMonthSnapshot={Boolean(currentMonthSnapshot)}
         />
         <MoneyFlowStartMonthEmptyState
+          ownerScope={ownerScope}
           monthKey={currentMonthKey}
           onStart={() => {
-            startMonthlyFlow(currentMonthKey);
-            router.push("/assets/money-flow/monthly");
+            startMonthlyFlow(ownerScope, currentMonthKey);
+            router.push(getMoneyFlowHref("/assets/money-flow/monthly", ownerScope));
           }}
           canManage={canManage}
         />
@@ -128,11 +134,11 @@ export function MoneyFlowDashboard({
             <p className="text-sm font-semibold text-coral">흐름 보기</p>
             <h2 className="mt-2 text-2xl font-bold">자금 흐름 시각화</h2>
             <p className="mt-2 text-sm leading-6 text-ink/62">
-              급여계좌에서 이번 달 돈이 어떤 목적지로 나뉘는지 한 번에 봅니다.
+              {ownerLabel}의 이번 달 돈이 어떤 목적지로 나뉘는지 한 번에 봅니다.
             </p>
           </div>
           <Link
-            href="/assets/money-flow/rules"
+            href={getMoneyFlowHref("/assets/money-flow/rules", ownerScope)}
             className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
           >
             배분 규칙 보기
@@ -231,7 +237,7 @@ export function MoneyFlowDashboard({
               <h2 className="mt-2 text-2xl font-bold">계좌별 현재 잔액</h2>
             </div>
             <Link
-              href="/assets/money-flow/accounts"
+              href={getMoneyFlowHref("/assets/money-flow/accounts", ownerScope)}
               className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
             >
               통장 관리 보기
@@ -272,7 +278,7 @@ export function MoneyFlowDashboard({
               <h2 className="mt-2 text-2xl font-bold">이번 달 해야 할 체크리스트</h2>
             </div>
             <Link
-              href="/assets/money-flow/monthly"
+              href={getMoneyFlowHref("/assets/money-flow/monthly", ownerScope)}
               className="rounded-full border border-line/10 bg-paper px-4 py-2 text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
             >
               월간 체크 보기

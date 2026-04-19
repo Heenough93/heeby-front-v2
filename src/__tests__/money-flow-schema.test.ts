@@ -12,6 +12,7 @@ const now = "2026-04-11T00:00:00.000Z";
 function createRule(overrides: Partial<MoneyFlowRule> = {}): MoneyFlowRule {
   return {
     id: overrides.id ?? "rule-1",
+    ownerScope: overrides.ownerScope ?? "yumja",
     fromAccountId: overrides.fromAccountId ?? "salary",
     toAccountId: overrides.toAccountId ?? "living",
     amountType: overrides.amountType ?? "fixed",
@@ -28,6 +29,7 @@ describe("money flow schema", () => {
   it("trims account text fields and accepts non-negative amounts", () => {
     const parsed = moneyFlowAccountInputSchema.parse({
       name: " 생활비 ",
+      ownerScope: "yumja",
       role: "living",
       bankName: " 카카오뱅크 ",
       currentBalance: 300000,
@@ -45,6 +47,7 @@ describe("money flow schema", () => {
     expect(
       moneyFlowAccountInputSchema.safeParse({
         name: "투자대기금",
+        ownerScope: "yumja",
         role: "investmentReady",
         currentBalance: 1000000,
         isActive: true
@@ -53,6 +56,7 @@ describe("money flow schema", () => {
     expect(
       moneyFlowAccountInputSchema.safeParse({
         name: "대출상환",
+        ownerScope: "yumja",
         role: "loanPayment",
         currentBalance: 500000,
         isActive: true
@@ -63,6 +67,7 @@ describe("money flow schema", () => {
   it("rejects blank account names and negative balances", () => {
     const parsed = moneyFlowAccountInputSchema.safeParse({
       name: " ",
+      ownerScope: "yumja",
       role: "living",
       currentBalance: -1,
       isActive: true
@@ -74,6 +79,7 @@ describe("money flow schema", () => {
   it("rejects rules with the same source and destination account", () => {
     const parsed = moneyFlowRuleInputSchema.safeParse({
       fromAccountId: "salary",
+      ownerScope: "yumja",
       toAccountId: "salary",
       amountType: "fixed",
       amount: 100000,

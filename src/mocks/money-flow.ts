@@ -9,6 +9,7 @@ const now = "2026-04-10T09:00:00.000Z";
 export const moneyFlowAccounts: MoneyFlowAccount[] = [
   {
     id: "flow-account-salary",
+    ownerScope: "yumja",
     name: "급여계좌",
     role: "salary",
     bankName: "국민은행",
@@ -20,6 +21,7 @@ export const moneyFlowAccounts: MoneyFlowAccount[] = [
   },
   {
     id: "flow-account-living",
+    ownerScope: "yumja",
     name: "생활비",
     role: "living",
     bankName: "카카오뱅크",
@@ -31,6 +33,7 @@ export const moneyFlowAccounts: MoneyFlowAccount[] = [
   },
   {
     id: "flow-account-card",
+    ownerScope: "yumja",
     name: "카드결제",
     role: "cardPayment",
     bankName: "토스뱅크",
@@ -42,6 +45,7 @@ export const moneyFlowAccounts: MoneyFlowAccount[] = [
   },
   {
     id: "flow-account-fixed",
+    ownerScope: "yumja",
     name: "고정지출",
     role: "fixedExpense",
     bankName: "신한은행",
@@ -53,6 +57,7 @@ export const moneyFlowAccounts: MoneyFlowAccount[] = [
   },
   {
     id: "flow-account-emergency",
+    ownerScope: "yumja",
     name: "비상금",
     role: "emergency",
     bankName: "케이뱅크",
@@ -64,6 +69,7 @@ export const moneyFlowAccounts: MoneyFlowAccount[] = [
   },
   {
     id: "flow-account-surplus",
+    ownerScope: "yumja",
     name: "여윳돈",
     role: "surplus",
     bankName: "하나은행",
@@ -79,6 +85,7 @@ export const moneyFlowAccounts: MoneyFlowAccount[] = [
 export const moneyFlowRules: MoneyFlowRule[] = [
   {
     id: "flow-rule-living",
+    ownerScope: "yumja",
     fromAccountId: "flow-account-salary",
     toAccountId: "flow-account-living",
     amountType: "fixed",
@@ -90,6 +97,7 @@ export const moneyFlowRules: MoneyFlowRule[] = [
   },
   {
     id: "flow-rule-card",
+    ownerScope: "yumja",
     fromAccountId: "flow-account-salary",
     toAccountId: "flow-account-card",
     amountType: "fixed",
@@ -101,6 +109,7 @@ export const moneyFlowRules: MoneyFlowRule[] = [
   },
   {
     id: "flow-rule-fixed",
+    ownerScope: "yumja",
     fromAccountId: "flow-account-salary",
     toAccountId: "flow-account-fixed",
     amountType: "fixed",
@@ -112,6 +121,7 @@ export const moneyFlowRules: MoneyFlowRule[] = [
   },
   {
     id: "flow-rule-emergency",
+    ownerScope: "yumja",
     fromAccountId: "flow-account-salary",
     toAccountId: "flow-account-emergency",
     amountType: "fixed",
@@ -123,6 +133,7 @@ export const moneyFlowRules: MoneyFlowRule[] = [
   },
   {
     id: "flow-rule-surplus",
+    ownerScope: "yumja",
     fromAccountId: "flow-account-salary",
     toAccountId: "flow-account-surplus",
     amountType: "remainder",
@@ -138,6 +149,7 @@ export const moneyFlowRules: MoneyFlowRule[] = [
 export const moneyFlowMonthlyEntries: MoneyFlowMonthlyEntry[] = [
   {
     id: "flow-entry-salary",
+    ownerScope: "yumja",
     monthKey: "2026-04",
     title: "급여 입금 확인",
     plannedAmount: 3000000,
@@ -149,6 +161,7 @@ export const moneyFlowMonthlyEntries: MoneyFlowMonthlyEntry[] = [
   },
   {
     id: "flow-entry-living",
+    ownerScope: "yumja",
     monthKey: "2026-04",
     title: "생활비 이체",
     ruleId: "flow-rule-living",
@@ -161,6 +174,7 @@ export const moneyFlowMonthlyEntries: MoneyFlowMonthlyEntry[] = [
   },
   {
     id: "flow-entry-card",
+    ownerScope: "yumja",
     monthKey: "2026-04",
     title: "카드결제 충전",
     ruleId: "flow-rule-card",
@@ -172,6 +186,7 @@ export const moneyFlowMonthlyEntries: MoneyFlowMonthlyEntry[] = [
   },
   {
     id: "flow-entry-fixed",
+    ownerScope: "yumja",
     monthKey: "2026-04",
     title: "고정지출 이체",
     ruleId: "flow-rule-fixed",
@@ -184,6 +199,7 @@ export const moneyFlowMonthlyEntries: MoneyFlowMonthlyEntry[] = [
   },
   {
     id: "flow-entry-emergency",
+    ownerScope: "yumja",
     monthKey: "2026-04",
     title: "비상금 이체",
     ruleId: "flow-rule-emergency",
@@ -195,6 +211,7 @@ export const moneyFlowMonthlyEntries: MoneyFlowMonthlyEntry[] = [
   },
   {
     id: "flow-entry-surplus",
+    ownerScope: "yumja",
     monthKey: "2026-04",
     title: "여윳돈 이체",
     ruleId: "flow-rule-surplus",

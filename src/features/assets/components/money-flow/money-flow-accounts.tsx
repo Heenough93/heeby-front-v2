@@ -18,18 +18,29 @@ import {
   Field,
   InlineNotice
 } from "@/features/assets/components/money-flow/money-flow-shared";
+import { getOwnerScopeLabel, type OwnerScope } from "@/types/domain";
 
-const defaultAccountInput: MoneyFlowAccountInput = {
-  name: "",
-  role: "living",
-  bankName: "",
-  currentBalance: 0,
-  targetAmount: 0,
-  isActive: true,
-  note: ""
-};
+function getDefaultAccountInput(ownerScope: OwnerScope): MoneyFlowAccountInput {
+  return {
+    ownerScope,
+    name: "",
+    role: "living",
+    bankName: "",
+    currentBalance: 0,
+    targetAmount: 0,
+    isActive: true,
+    note: ""
+  };
+}
 
-export function MoneyFlowAccounts({ canManage }: { canManage: boolean }) {
+export function MoneyFlowAccounts({
+  ownerScope,
+  canManage
+}: {
+  ownerScope: OwnerScope;
+  canManage: boolean;
+}) {
+  const defaultAccountInput = getDefaultAccountInput(ownerScope);
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const addAccount = useMoneyFlowStore((state) => state.addAccount);
   const updateAccount = useMoneyFlowStore((state) => state.updateAccount);
@@ -37,7 +48,14 @@ export function MoneyFlowAccounts({ canManage }: { canManage: boolean }) {
   const moveAccount = useMoneyFlowStore((state) => state.moveAccount);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<MoneyFlowAccountInput>(defaultAccountInput);
-  const sortedAccounts = sortMoneyFlowAccounts(accounts);
+  const sortedAccounts = sortMoneyFlowAccounts(
+    accounts.filter((account) => account.ownerScope === ownerScope)
+  );
+
+  React.useEffect(() => {
+    setEditingId(null);
+    setForm(getDefaultAccountInput(ownerScope));
+  }, [ownerScope]);
 
   const handleSubmit = () => {
     if (!canManage) {
@@ -65,7 +83,7 @@ export function MoneyFlowAccounts({ canManage }: { canManage: boolean }) {
       ) : (
         <EditorCard
           title={editingId ? "통장 수정" : "통장 추가"}
-          description="은행 계좌보다 돈의 역할 박스에 가깝게 관리합니다."
+          description={`${getOwnerScopeLabel(ownerScope)} 현금 흐름에서 쓰는 돈의 역할 박스를 관리합니다.`}
         >
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="이름">
@@ -218,6 +236,7 @@ export function MoneyFlowAccounts({ canManage }: { canManage: boolean }) {
                     onClick={() => {
                       setEditingId(account.id);
                       setForm({
+                        ownerScope,
                         name: account.name,
                         role: account.role,
                         bankName: account.bankName,

@@ -28,6 +28,7 @@ import {
   moneyFlowMonthlyEntries as initialMonthlyEntries,
   moneyFlowRules as initialRules
 } from "@/mocks/money-flow";
+import type { OwnerScope } from "@/types/domain";
 
 type MoneyFlowStore = {
   accounts: MoneyFlowAccount[];
@@ -45,7 +46,7 @@ type MoneyFlowStore = {
     id: string,
     input: Partial<Pick<MoneyFlowMonthlyEntry, "actualAmount" | "memo" | "isChecked">>
   ) => void;
-  startMonthlyFlow: (monthKey?: string) => void;
+  startMonthlyFlow: (ownerScope: OwnerScope, monthKey?: string) => void;
   resetMoneyFlow: () => void;
 };
 
@@ -149,14 +150,25 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
 
           if (
             parsedInput.data.amountType === "remainder" &&
-            state.rules.some((rule) => rule.amountType === "remainder" && rule.isActive)
+            state.rules.some(
+              (rule) =>
+                rule.ownerScope === parsedInput.data.ownerScope &&
+                rule.fromAccountId === parsedInput.data.fromAccountId &&
+                rule.amountType === "remainder" &&
+                rule.isActive
+            )
           ) {
             return { rules: state.rules };
           }
 
           const now = dayjs().toISOString();
           const nextOrder =
-            Math.max(0, ...state.rules.map((rule) => rule.order)) + 1;
+            Math.max(
+              0,
+              ...state.rules
+                .filter((rule) => rule.ownerScope === parsedInput.data.ownerScope)
+                .map((rule) => rule.order)
+            ) + 1;
 
           return {
             rules: sortMoneyFlowRules([
@@ -182,7 +194,12 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
           if (
             parsedInput.data.amountType === "remainder" &&
             state.rules.some(
-              (rule) => rule.id !== id && rule.amountType === "remainder" && rule.isActive
+              (rule) =>
+                rule.id !== id &&
+                rule.ownerScope === parsedInput.data.ownerScope &&
+                rule.fromAccountId === parsedInput.data.fromAccountId &&
+                rule.amountType === "remainder" &&
+                rule.isActive
             )
           ) {
             return { rules: state.rules };
@@ -210,7 +227,9 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
       moveRule: (id, direction) =>
         set((state) => {
           const rules = sortMoneyFlowRules(state.rules);
-          const index = rules.findIndex((rule) => rule.id === id);
+          const ownerScope = rules.find((rule) => rule.id === id)?.ownerScope;
+          const scopedRules = rules.filter((rule) => rule.ownerScope === ownerScope);
+          const index = scopedRules.findIndex((rule) => rule.id === id);
 
           if (index === -1) {
             return { rules };
@@ -218,22 +237,32 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
 
           const targetIndex = direction === "up" ? index - 1 : index + 1;
 
-          if (targetIndex < 0 || targetIndex >= rules.length) {
+          if (targetIndex < 0 || targetIndex >= scopedRules.length) {
             return { rules };
           }
 
-          const nextRules = [...rules];
-          const currentRule = nextRules[index];
-          const targetRule = nextRules[targetIndex];
+          const currentRule = scopedRules[index];
+          const targetRule = scopedRules[targetIndex];
 
           if (!currentRule || !targetRule) {
             return { rules };
           }
 
-          nextRules[index] = { ...currentRule, order: targetRule.order };
-          nextRules[targetIndex] = { ...targetRule, order: currentRule.order };
+          return {
+            rules: sortMoneyFlowRules(
+              rules.map((rule) => {
+                if (rule.id === currentRule.id) {
+                  return { ...rule, order: targetRule.order };
+                }
 
-          return { rules: sortMoneyFlowRules(nextRules) };
+                if (rule.id === targetRule.id) {
+                  return { ...rule, order: currentRule.order };
+                }
+
+                return rule;
+              })
+            )
+          };
         }),
       updateMonthlyEntry: (id, input) =>
         set((state) => {
@@ -263,24 +292,36 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
             )
           };
         }),
-      startMonthlyFlow: (monthKey = getCurrentMoneyFlowMonthKey()) =>
+      startMonthlyFlow: (ownerScope, monthKey = getCurrentMoneyFlowMonthKey()) =>
         set((state) => {
-          if (state.monthlyEntries.some((entry) => entry.monthKey === monthKey)) {
+          if (
+            state.monthlyEntries.some(
+              (entry) => entry.ownerScope === ownerScope && entry.monthKey === monthKey
+            )
+          ) {
             return { monthlyEntries: state.monthlyEntries };
           }
 
           const salaryAmount = state.accounts
-            .filter((account) => account.role === "salary" && account.isActive)
+            .filter(
+              (account) =>
+                account.ownerScope === ownerScope && account.role === "salary" && account.isActive
+            )
             .reduce((sum, account) => sum + account.currentBalance, 0);
+          const scopedRules = state.rules.filter((rule) => rule.ownerScope === ownerScope);
+          const scopedAccounts = state.accounts.filter(
+            (account) => account.ownerScope === ownerScope
+          );
 
           return {
             monthlyEntries: sortMoneyFlowMonthlyEntries([
               ...state.monthlyEntries,
               ...buildMonthlyEntriesFromRules({
+                ownerScope,
                 monthKey,
                 salaryAmount,
-                rules: state.rules,
-                accounts: state.accounts
+                rules: scopedRules,
+                accounts: scopedAccounts
               })
             ])
           };
@@ -294,7 +335,7 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
     }),
     {
       name: "heeby-money-flow-store",
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       migrate: (persistedState, version) => {
         if (!persistedState || typeof persistedState !== "object") {
@@ -309,14 +350,49 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
 
         if (version < 2) {
           return {
-            accounts: sortMoneyFlowAccounts(state.accounts ?? initialAccounts),
-            rules: sortMoneyFlowRules(state.rules ?? initialRules),
-            monthlyEntries: sortMoneyFlowMonthlyEntries(state.monthlyEntries ?? initialMonthlyEntries)
+            accounts: sortMoneyFlowAccounts(withDefaultAccountOwners(state.accounts ?? initialAccounts)),
+            rules: sortMoneyFlowRules(withDefaultRuleOwners(state.rules ?? initialRules)),
+            monthlyEntries: sortMoneyFlowMonthlyEntries(withDefaultMonthlyEntryOwners(state.monthlyEntries ?? initialMonthlyEntries))
           };
         }
 
-        return persistedState as MoneyFlowStore;
+        if (version < 3) {
+          return {
+            ...state,
+            accounts: sortMoneyFlowAccounts(withDefaultAccountOwners(state.accounts ?? initialAccounts)),
+            rules: sortMoneyFlowRules(withDefaultRuleOwners(state.rules ?? initialRules)),
+            monthlyEntries: sortMoneyFlowMonthlyEntries(withDefaultMonthlyEntryOwners(state.monthlyEntries ?? initialMonthlyEntries))
+          };
+        }
+
+        return {
+          ...state,
+          accounts: sortMoneyFlowAccounts(withDefaultAccountOwners(state.accounts ?? initialAccounts)),
+          rules: sortMoneyFlowRules(withDefaultRuleOwners(state.rules ?? initialRules)),
+          monthlyEntries: sortMoneyFlowMonthlyEntries(withDefaultMonthlyEntryOwners(state.monthlyEntries ?? initialMonthlyEntries))
+        } as MoneyFlowStore;
       }
     }
   )
 );
+
+function withDefaultAccountOwners(accounts: MoneyFlowAccount[]) {
+  return accounts.map((account) => ({
+    ...account,
+    ownerScope: account.ownerScope ?? "yumja"
+  }));
+}
+
+function withDefaultRuleOwners(rules: MoneyFlowRule[]) {
+  return rules.map((rule) => ({
+    ...rule,
+    ownerScope: rule.ownerScope ?? "yumja"
+  }));
+}
+
+function withDefaultMonthlyEntryOwners(entries: MoneyFlowMonthlyEntry[]) {
+  return entries.map((entry) => ({
+    ...entry,
+    ownerScope: entry.ownerScope ?? "yumja"
+  }));
+}
