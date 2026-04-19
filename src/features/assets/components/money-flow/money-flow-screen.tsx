@@ -13,8 +13,9 @@ import { MoneyFlowDashboard } from "@/features/assets/components/money-flow/mone
 import { MoneyFlowAccounts } from "@/features/assets/components/money-flow/money-flow-accounts";
 import { MoneyFlowRules } from "@/features/assets/components/money-flow/money-flow-rules";
 import { MoneyFlowMonthly } from "@/features/assets/components/money-flow/money-flow-monthly";
+import { MoneyFlowMonthlyFlows } from "@/features/assets/components/money-flow/money-flow-monthly-flows";
 
-type MoneyFlowSection = "dashboard" | "accounts" | "rules" | "monthly";
+type MoneyFlowSection = "dashboard" | "accounts" | "rules" | "monthly" | "monthlyFlows";
 
 type MoneyFlowScreenProps = {
   section: MoneyFlowSection;
@@ -24,7 +25,8 @@ const sectionMeta: Record<MoneyFlowSection, { title: string; href: string }> = {
   dashboard: { title: "대시보드", href: "/assets/money-flow" },
   accounts: { title: "통장 관리", href: "/assets/money-flow/accounts" },
   rules: { title: "배분 규칙", href: "/assets/money-flow/rules" },
-  monthly: { title: "월간 체크", href: "/assets/money-flow/monthly" }
+  monthly: { title: "월간 체크", href: "/assets/money-flow/monthly" },
+  monthlyFlows: { title: "월간흐름", href: "/assets/money-flow/monthly-flows" }
 };
 
 export function MoneyFlowScreen({ section }: MoneyFlowScreenProps) {
@@ -51,6 +53,7 @@ export function MoneyFlowScreen({ section }: MoneyFlowScreenProps) {
       {section === "accounts" ? <MoneyFlowAccounts canManage={canManage} /> : null}
       {section === "rules" ? <MoneyFlowRules canManage={canManage} /> : null}
       {section === "monthly" ? <MoneyFlowMonthly canManage={canManage} /> : null}
+      {section === "monthlyFlows" ? <MoneyFlowMonthlyFlows /> : null}
     </AppShell>
   );
 }
@@ -61,7 +64,7 @@ function MoneyFlowNavigation({
   currentSection: MoneyFlowSection;
 }) {
   return (
-    <section className="grid gap-3 md:grid-cols-4">
+    <section className="grid gap-3 md:grid-cols-5">
       {Object.entries(sectionMeta).map(([key, item]) => (
         <Link
           key={key}
