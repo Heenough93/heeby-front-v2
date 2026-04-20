@@ -30,6 +30,8 @@ export function getMoneyFlowAccountRoleLabel(role: MoneyFlowAccountRole) {
   switch (role) {
     case "salary":
       return "급여";
+    case "controller":
+      return "컨트롤러";
     case "living":
       return "생활비";
     case "fixedExpense":
@@ -93,13 +95,13 @@ export function sortMoneyFlowSnapshots(snapshots: MoneyFlowSnapshot[]) {
 
 export function sortMoneyFlowTransfers(transfers: MoneyFlowTransfer[]) {
   return [...transfers].sort((a, b) => {
-    const dayOrder = (a.dayOfMonth ?? 99) - (b.dayOfMonth ?? 99);
+    const order = a.order - b.order;
 
-    if (dayOrder !== 0) {
-      return dayOrder;
+    if (order !== 0) {
+      return order;
     }
 
-    return a.order - b.order;
+    return (a.dayOfMonth ?? 99) - (b.dayOfMonth ?? 99);
   });
 }
 

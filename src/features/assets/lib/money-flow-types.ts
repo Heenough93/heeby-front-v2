@@ -2,6 +2,7 @@ import type { OwnerScope } from "@/types/domain";
 
 export const moneyFlowAccountRoleValues = [
   "salary",
+  "controller",
   "living",
   "fixedExpense",
   "cardPayment",

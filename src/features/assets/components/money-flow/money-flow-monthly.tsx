@@ -51,6 +51,7 @@ export function MoneyFlowMonthly({
   const addTransfer = useMoneyFlowStore((state) => state.addTransfer);
   const updateTransfer = useMoneyFlowStore((state) => state.updateTransfer);
   const deleteTransfer = useMoneyFlowStore((state) => state.deleteTransfer);
+  const moveTransfer = useMoneyFlowStore((state) => state.moveTransfer);
   const monthKey = getCurrentMoneyFlowMonthKey();
   const currentSnapshot = snapshots.find(
     (snapshot) => snapshot.ownerScope === ownerScope && snapshot.monthKey === monthKey
@@ -268,7 +269,7 @@ export function MoneyFlowMonthly({
           </article>
         ) : null}
 
-        {currentTransfers.map((transfer) => {
+        {currentTransfers.map((transfer, index) => {
           const toAccount = accountById.get(transfer.toAccountId);
           const fromAccount = accountById.get(transfer.fromAccountId);
           const title = getMoneyFlowTransferTitle(transfer, toAccount?.name ?? "이체");
@@ -360,8 +361,25 @@ export function MoneyFlowMonthly({
                 />
               </Field>
             </div>
-            {canManage && transfer.isOneOff ? (
-              <div className="mt-4 flex justify-end">
+            {canManage ? (
+              <div className="mt-4 flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  onClick={() => moveTransfer(transfer.id, "up")}
+                  className="rounded-full border border-line/10 bg-paper px-4 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
+                >
+                  위로
+                </button>
+                <button
+                  type="button"
+                  disabled={index === currentTransfers.length - 1}
+                  onClick={() => moveTransfer(transfer.id, "down")}
+                  className="rounded-full border border-line/10 bg-paper px-4 py-2 text-xs font-semibold transition hover:border-coral/35 hover:bg-soft disabled:opacity-40"
+                >
+                  아래로
+                </button>
+                {transfer.isOneOff ? (
                 <button
                   type="button"
                   onClick={() => deleteTransfer(transfer.id)}
@@ -369,6 +387,7 @@ export function MoneyFlowMonthly({
                 >
                   단발 이체 삭제
                 </button>
+                ) : null}
               </div>
             ) : null}
           </article>

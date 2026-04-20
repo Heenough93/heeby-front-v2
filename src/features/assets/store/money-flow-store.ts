@@ -62,6 +62,7 @@ type MoneyFlowStore = {
   addTransfer: (input: MoneyFlowTransferInput) => void;
   updateTransfer: (id: string, input: MoneyFlowTransferUpdateInput) => void;
   deleteTransfer: (id: string) => void;
+  moveTransfer: (id: string, direction: "up" | "down") => void;
   startMonthlyFlow: (ownerScope: OwnerScope, monthKey?: string) => void;
   copySnapshotToMonth: (sourceSnapshotId: string, targetMonthKey: string) => void;
   resetMoneyFlow: () => void;
@@ -394,6 +395,57 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
             (transfer) => transfer.id !== id || !transfer.isOneOff
           )
         })),
+      moveTransfer: (id, direction) =>
+        set((state) => {
+          const transfer = state.transfers.find((candidate) => candidate.id === id);
+
+          if (!transfer) {
+            return { transfers: state.transfers };
+          }
+
+          const snapshotTransfers = sortMoneyFlowTransfers(
+            state.transfers.filter((candidate) => candidate.snapshotId === transfer.snapshotId)
+          );
+          const index = snapshotTransfers.findIndex((candidate) => candidate.id === id);
+          const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+          if (index === -1 || targetIndex < 0 || targetIndex >= snapshotTransfers.length) {
+            return { transfers: state.transfers };
+          }
+
+          const currentTransfer = snapshotTransfers[index];
+          const targetTransfer = snapshotTransfers[targetIndex];
+
+          if (!currentTransfer || !targetTransfer) {
+            return { transfers: state.transfers };
+          }
+
+          const now = dayjs().toISOString();
+
+          return {
+            transfers: sortMoneyFlowTransfers(
+              state.transfers.map((candidate) => {
+                if (candidate.id === currentTransfer.id) {
+                  return {
+                    ...candidate,
+                    order: targetTransfer.order,
+                    updatedAt: now
+                  };
+                }
+
+                if (candidate.id === targetTransfer.id) {
+                  return {
+                    ...candidate,
+                    order: currentTransfer.order,
+                    updatedAt: now
+                  };
+                }
+
+                return candidate;
+              })
+            )
+          };
+        }),
       startMonthlyFlow: (ownerScope, monthKey = getCurrentMoneyFlowMonthKey()) =>
         set((state) => {
           if (

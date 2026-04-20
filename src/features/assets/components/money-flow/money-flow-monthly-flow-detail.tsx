@@ -88,7 +88,7 @@ export function MoneyFlowMonthlyFlowDetail({ snapshotId }: { snapshotId: string 
             </div>
             <h2 className="mt-4 text-3xl font-bold">{snapshot.title}</h2>
             <p className="mt-3 text-sm leading-6 text-ink/62">
-              이 달에 확정된 계좌 간 이동 항목과 실행 상태를 확인합니다.
+              이 달에 확정된 계좌 간 이동 항목과 실행 상태를 읽기 전용으로 확인합니다. 현재 월 수정은 월간 체크 화면에서 진행합니다.
             </p>
             {snapshot.memo ? (
               <p className="mt-4 rounded-[22px] border border-line/10 bg-paper px-5 py-4 text-sm leading-6 text-ink/64">

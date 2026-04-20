@@ -110,6 +110,34 @@ export function MoneyFlowDashboard({
     accounts,
     transfers: currentMonthTransfers
   });
+  const groupedLineItems = lineItems.reduce<
+    Array<{
+      fromAccountId: string;
+      fromAccountName: string;
+      fromAccountRole: string;
+      items: typeof lineItems;
+    }>
+  >((groups, item) => {
+    const fromAccountId = item.fromAccount?.id ?? "unknown";
+    const group = groups.find((candidate) => candidate.fromAccountId === fromAccountId);
+
+    if (group) {
+      group.items.push(item);
+      return groups;
+    }
+
+    return [
+      ...groups,
+      {
+        fromAccountId,
+        fromAccountName: item.fromAccount?.name ?? "출발 계좌",
+        fromAccountRole: item.fromAccount
+          ? getMoneyFlowAccountRoleLabel(item.fromAccount.role)
+          : "출발",
+        items: [item]
+      }
+    ];
+  }, []);
   const sortedAccounts = sortMoneyFlowAccounts(accounts).filter((account) => account.isActive);
   const pendingTransfers = currentMonthTransfers.filter((transfer) => !transfer.isChecked);
   const accountById = new Map(accounts.map((account) => [account.id, account]));
@@ -179,83 +207,97 @@ export function MoneyFlowDashboard({
         </div>
 
         {lineItems.length ? (
-          <div className="mt-6 grid gap-3">
-            {lineItems.map((item, index) => (
-              <article
-                key={item.id}
-                className={
-                  item.amountType === "remainder"
-                    ? "rounded-[28px] border border-coral/25 bg-coral/10 p-5"
-                    : "rounded-[28px] border border-line/10 bg-paper p-5"
-                }
+          <div className="mt-6 grid gap-4">
+            {groupedLineItems.map((group) => (
+              <section
+                key={group.fromAccountId}
+                className="rounded-[28px] border border-line/10 bg-paper p-5"
               >
-                <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-                  <div className="rounded-[22px] border border-line/10 bg-surface p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-ink/42">
                       From
                     </p>
-                    <h3 className="mt-2 text-lg font-bold">
-                      {item.fromAccount?.name ?? "출발 계좌"}
-                    </h3>
+                    <h3 className="mt-2 text-xl font-bold">{group.fromAccountName}</h3>
                     <p className="mt-1 text-xs font-semibold text-ink/52">
-                      {item.fromAccount
-                        ? getMoneyFlowAccountRoleLabel(item.fromAccount.role)
-                        : "출발"}
+                      {group.fromAccountRole}
                     </p>
                   </div>
+                  <span className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-ink/58">
+                    {group.items.length}개 이체
+                  </span>
+                </div>
 
-                  <div className="flex flex-col items-center justify-center gap-2 text-center">
-                    <span
+                <div className="mt-4 grid gap-3">
+                  {group.items.map((item, index) => (
+                    <article
+                      key={item.id}
                       className={
                         item.amountType === "remainder"
-                          ? "rounded-full bg-coral px-3 py-1 text-xs font-semibold text-white"
-                          : "rounded-full bg-surface px-3 py-1 text-xs font-semibold text-ink/62"
+                          ? "rounded-[24px] border border-coral/25 bg-coral/10 p-4"
+                          : "rounded-[24px] border border-line/10 bg-surface p-4"
                       }
                     >
-                      {item.amountType === "remainder" ? "잔여" : `${index + 1}차`}
-                    </span>
-                    <p
-                      className={
-                        item.amountType === "remainder"
-                          ? "text-xl font-bold text-coral"
-                          : "text-xl font-bold"
-                      }
-                    >
-                      {item.amountType === "remainder"
-                        ? "남은 돈 전부"
-                        : formatMoneyFlowAmount(item.amount)}
-                    </p>
-                    <span className="text-2xl font-bold text-ink/28 lg:rotate-0">→</span>
-                    <span
-                      className={
-                        item.isChecked
-                          ? "rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700"
-                          : "rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700"
-                      }
-                    >
-                      {item.isChecked ? "완료" : "대기"}
-                    </span>
-                  </div>
-
-                  <div className="rounded-[22px] border border-line/10 bg-surface p-4">
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-ink/42">
-                      To
-                    </p>
-                    <h3 className="mt-2 text-lg font-bold">
-                      {item.toAccount?.name ?? "도착 계좌"}
-                    </h3>
-                    <p className="mt-1 text-xs font-semibold text-ink/52">
-                      {item.toAccount
-                        ? getMoneyFlowAccountRoleLabel(item.toAccount.role)
-                        : "도착"}
-                    </p>
-                  </div>
+                      <div className="grid gap-4 md:grid-cols-[auto_1fr_auto] md:items-center">
+                        <span
+                          className={
+                            item.amountType === "remainder"
+                              ? "w-fit rounded-full bg-coral px-3 py-1 text-xs font-semibold text-white"
+                              : "w-fit rounded-full bg-paper px-3 py-1 text-xs font-semibold text-ink/62"
+                          }
+                        >
+                          {item.amountType === "remainder" ? "잔여" : `${index + 1}차`}
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold text-ink/42">To</p>
+                          <h4 className="mt-1 text-lg font-bold">
+                            {item.toAccount?.name ?? "도착 계좌"}
+                          </h4>
+                          <p className="mt-1 text-xs font-semibold text-ink/52">
+                            {item.toAccount
+                              ? getMoneyFlowAccountRoleLabel(item.toAccount.role)
+                              : "도착"}
+                          </p>
+                        </div>
+                        <div className="text-left md:text-right">
+                          <p
+                            className={
+                              item.amountType === "remainder"
+                                ? "text-xl font-bold text-coral"
+                                : "text-xl font-bold"
+                            }
+                          >
+                            {item.amountType === "remainder"
+                              ? "남은 돈 전부"
+                              : formatMoneyFlowAmount(item.amount)}
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2 md:justify-end">
+                            {item.dayOfMonth ? (
+                              <span className="rounded-full bg-paper px-3 py-1 text-xs font-semibold text-ink/52">
+                                {item.dayOfMonth}일
+                              </span>
+                            ) : null}
+                            {item.isOneOff ? (
+                              <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
+                                단발
+                              </span>
+                            ) : null}
+                            <span
+                              className={
+                                item.isChecked
+                                  ? "rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700"
+                                  : "rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700"
+                              }
+                            >
+                              {item.isChecked ? "완료" : "대기"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-ink/52">
-                  {item.dayOfMonth ? <span>{item.dayOfMonth}일 실행</span> : null}
-                  {item.isOneOff ? <span>단발 이체</span> : null}
-                </div>
-              </article>
+              </section>
             ))}
           </div>
         ) : (

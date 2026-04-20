@@ -93,6 +93,7 @@ const rules: MoneyFlowRule[] = [
 
 describe("money flow utils", () => {
   it("labels the supported account roles", () => {
+    expect(getMoneyFlowAccountRoleLabel("controller")).toBe("컨트롤러");
     expect(getMoneyFlowAccountRoleLabel("investmentReady")).toBe("투자대기금");
     expect(getMoneyFlowAccountRoleLabel("retirement")).toBe("노후");
     expect(getMoneyFlowAccountRoleLabel("subscription")).toBe("청약");
@@ -267,8 +268,8 @@ describe("money flow utils", () => {
     ]);
     expect(sortMoneyFlowTransfers(transfers).map((transfer) => transfer.id)).toEqual([
       "first",
-      "second",
-      "one-off"
+      "one-off",
+      "second"
     ]);
   });
 
