@@ -1,6 +1,5 @@
 import type {
   MoneyFlowAccount,
-  MoneyFlowMonthlyEntry,
   MoneyFlowRule,
   MoneyFlowSnapshot,
   MoneyFlowTransfer
@@ -143,84 +142,6 @@ export const moneyFlowRules: MoneyFlowRule[] = [
     order: 5,
     isActive: true,
     note: "고정 배분 후 남는 금액 전체",
-    createdAt: now,
-    updatedAt: now
-  }
-];
-
-export const moneyFlowMonthlyEntries: MoneyFlowMonthlyEntry[] = [
-  {
-    id: "flow-entry-salary",
-    ownerScope: "yumja",
-    monthKey: "2026-04",
-    title: "급여 입금 확인",
-    plannedAmount: 3000000,
-    actualAmount: 3000000,
-    isChecked: true,
-    checkedAt: "2026-04-01T00:10:00.000Z",
-    createdAt: now,
-    updatedAt: now
-  },
-  {
-    id: "flow-entry-living",
-    ownerScope: "yumja",
-    monthKey: "2026-04",
-    title: "생활비 이체",
-    ruleId: "flow-rule-living",
-    plannedAmount: 800000,
-    actualAmount: 800000,
-    isChecked: true,
-    checkedAt: "2026-04-01T00:20:00.000Z",
-    createdAt: now,
-    updatedAt: now
-  },
-  {
-    id: "flow-entry-card",
-    ownerScope: "yumja",
-    monthKey: "2026-04",
-    title: "카드결제 충전",
-    ruleId: "flow-rule-card",
-    plannedAmount: 500000,
-    actualAmount: 0,
-    isChecked: false,
-    createdAt: now,
-    updatedAt: now
-  },
-  {
-    id: "flow-entry-fixed",
-    ownerScope: "yumja",
-    monthKey: "2026-04",
-    title: "고정지출 이체",
-    ruleId: "flow-rule-fixed",
-    plannedAmount: 700000,
-    actualAmount: 700000,
-    isChecked: true,
-    checkedAt: "2026-04-01T00:30:00.000Z",
-    createdAt: now,
-    updatedAt: now
-  },
-  {
-    id: "flow-entry-emergency",
-    ownerScope: "yumja",
-    monthKey: "2026-04",
-    title: "비상금 이체",
-    ruleId: "flow-rule-emergency",
-    plannedAmount: 200000,
-    actualAmount: 0,
-    isChecked: false,
-    createdAt: now,
-    updatedAt: now
-  },
-  {
-    id: "flow-entry-surplus",
-    ownerScope: "yumja",
-    monthKey: "2026-04",
-    title: "여윳돈 이체",
-    ruleId: "flow-rule-surplus",
-    plannedAmount: 800000,
-    actualAmount: 620000,
-    isChecked: false,
-    memo: "여행 예산 때문에 예상보다 적게 남았습니다.",
     createdAt: now,
     updatedAt: now
   }

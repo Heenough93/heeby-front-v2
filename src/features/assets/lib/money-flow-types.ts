@@ -51,21 +51,6 @@ export type MoneyFlowRule = {
   updatedAt: string;
 };
 
-export type MoneyFlowMonthlyEntry = {
-  id: string;
-  ownerScope: OwnerScope;
-  monthKey: string;
-  title: string;
-  ruleId?: string;
-  plannedAmount: number;
-  actualAmount?: number;
-  isChecked: boolean;
-  checkedAt?: string;
-  memo?: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
 export type MoneyFlowSnapshot = {
   id: string;
   ownerScope: OwnerScope;

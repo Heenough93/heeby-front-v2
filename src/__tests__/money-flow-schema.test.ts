@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   moneyFlowAccountInputSchema,
-  moneyFlowMonthlyEntryUpdateSchema,
   moneyFlowRuleInputSchema,
-  moneyFlowRuleListSchema
+  moneyFlowRuleListSchema,
+  moneyFlowTransferUpdateSchema
 } from "@/features/assets/lib/money-flow-schema";
 import type { MoneyFlowRule } from "@/features/assets/lib/money-flow-types";
 
@@ -112,14 +112,16 @@ describe("money flow schema", () => {
     expect(parsed.success).toBe(true);
   });
 
-  it("validates monthly entry updates", () => {
+  it("validates transfer updates", () => {
     expect(
-      moneyFlowMonthlyEntryUpdateSchema.safeParse({
+      moneyFlowTransferUpdateSchema.safeParse({
         actualAmount: 620000,
+        dayOfMonth: 25,
         memo: "여행 예산 반영",
         isChecked: true
       }).success
     ).toBe(true);
-    expect(moneyFlowMonthlyEntryUpdateSchema.safeParse({ actualAmount: -1 }).success).toBe(false);
+    expect(moneyFlowTransferUpdateSchema.safeParse({ actualAmount: -1 }).success).toBe(false);
+    expect(moneyFlowTransferUpdateSchema.safeParse({ dayOfMonth: 32 }).success).toBe(false);
   });
 });

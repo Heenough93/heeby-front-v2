@@ -2,7 +2,6 @@ import dayjs from "dayjs";
 import type {
   MoneyFlowAccount,
   MoneyFlowAccountRole,
-  MoneyFlowMonthlyEntry,
   MoneyFlowRule,
   MoneyFlowSnapshot,
   MoneyFlowTransfer
@@ -75,10 +74,6 @@ export function sortMoneyFlowAccounts(accounts: MoneyFlowAccount[]) {
 
 export function sortMoneyFlowRules(rules: MoneyFlowRule[]) {
   return [...rules].sort((a, b) => a.order - b.order);
-}
-
-export function sortMoneyFlowMonthlyEntries(entries: MoneyFlowMonthlyEntry[]) {
-  return [...entries].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
 export function sortMoneyFlowSnapshots(snapshots: MoneyFlowSnapshot[]) {

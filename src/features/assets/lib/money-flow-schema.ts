@@ -63,7 +63,7 @@ export const moneyFlowRuleSchema = moneyFlowRuleInputBaseSchema
   })
   .superRefine(refineMoneyFlowRuleAccounts);
 
-export const moneyFlowMonthlyEntryUpdateSchema = z.object({
+export const moneyFlowTransferUpdateBaseSchema = z.object({
   actualAmount: moneyFlowAmountSchema.optional(),
   memo: optionalMoneyFlowTextSchema(180, "메모는 180자 이하로 입력해주세요."),
   isChecked: z.boolean().optional()
@@ -76,7 +76,7 @@ const optionalMoneyFlowDaySchema = z
   .max(31, "실행일은 31일 이하이어야 합니다.")
   .optional();
 
-export const moneyFlowTransferUpdateSchema = moneyFlowMonthlyEntryUpdateSchema.extend({
+export const moneyFlowTransferUpdateSchema = moneyFlowTransferUpdateBaseSchema.extend({
   dayOfMonth: optionalMoneyFlowDaySchema
 });
 
