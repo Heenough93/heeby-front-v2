@@ -11,15 +11,17 @@ import type {
   MoneyFlowRule,
   MoneyFlowRuleInput,
   MoneyFlowSnapshot,
-  MoneyFlowTransfer
+  MoneyFlowTransfer,
+  MoneyFlowTransferUpdateInput
 } from "@/features/assets/lib/money-flow-types";
 import {
   moneyFlowAccountInputSchema,
   moneyFlowMonthlyEntryUpdateSchema,
-  moneyFlowRuleInputSchema
+  moneyFlowRuleInputSchema,
+  moneyFlowTransferUpdateSchema
 } from "@/features/assets/lib/money-flow-schema";
 import {
-  buildMonthlyEntriesFromRules,
+  buildMoneyFlowSnapshotFromRules,
   getCurrentMoneyFlowMonthKey,
   sortMoneyFlowAccounts,
   sortMoneyFlowMonthlyEntries,
@@ -54,6 +56,7 @@ type MoneyFlowStore = {
     id: string,
     input: Partial<Pick<MoneyFlowMonthlyEntry, "actualAmount" | "memo" | "isChecked">>
   ) => void;
+  updateTransfer: (id: string, input: MoneyFlowTransferUpdateInput) => void;
   startMonthlyFlow: (ownerScope: OwnerScope, monthKey?: string) => void;
   resetMoneyFlow: () => void;
 };
@@ -308,38 +311,57 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
             )
           };
         }),
+      updateTransfer: (id, input) =>
+        set((state) => {
+          const parsedInput = moneyFlowTransferUpdateSchema.safeParse(input);
+
+          if (!parsedInput.success) {
+            return { transfers: state.transfers };
+          }
+
+          return {
+            transfers: sortMoneyFlowTransfers(
+              state.transfers.map((transfer) =>
+                transfer.id === id
+                  ? {
+                      ...transfer,
+                      ...parsedInput.data,
+                      checkedAt:
+                        parsedInput.data.isChecked === undefined
+                          ? transfer.checkedAt
+                          : parsedInput.data.isChecked
+                            ? dayjs().toISOString()
+                            : undefined,
+                      updatedAt: dayjs().toISOString()
+                    }
+                  : transfer
+              )
+            )
+          };
+        }),
       startMonthlyFlow: (ownerScope, monthKey = getCurrentMoneyFlowMonthKey()) =>
         set((state) => {
           if (
-            state.monthlyEntries.some(
-              (entry) => entry.ownerScope === ownerScope && entry.monthKey === monthKey
+            state.snapshots.some(
+              (snapshot) => snapshot.ownerScope === ownerScope && snapshot.monthKey === monthKey
             )
           ) {
-            return { monthlyEntries: state.monthlyEntries };
+            return {
+              snapshots: state.snapshots,
+              transfers: state.transfers
+            };
           }
 
-          const salaryAmount = state.accounts
-            .filter(
-              (account) =>
-                account.ownerScope === ownerScope && account.role === "salary" && account.isActive
-            )
-            .reduce((sum, account) => sum + account.currentBalance, 0);
           const scopedRules = state.rules.filter((rule) => rule.ownerScope === ownerScope);
-          const scopedAccounts = state.accounts.filter(
-            (account) => account.ownerScope === ownerScope
-          );
+          const { snapshot, transfers } = buildMoneyFlowSnapshotFromRules({
+            ownerScope,
+            monthKey,
+            rules: scopedRules
+          });
 
           return {
-            monthlyEntries: sortMoneyFlowMonthlyEntries([
-              ...state.monthlyEntries,
-              ...buildMonthlyEntriesFromRules({
-                ownerScope,
-                monthKey,
-                salaryAmount,
-                rules: scopedRules,
-                accounts: scopedAccounts
-              })
-            ])
+            snapshots: sortMoneyFlowSnapshots([...state.snapshots, snapshot]),
+            transfers: sortMoneyFlowTransfers([...state.transfers, ...transfers])
           };
         }),
       resetMoneyFlow: () =>

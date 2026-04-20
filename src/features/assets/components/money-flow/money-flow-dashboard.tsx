@@ -3,20 +3,22 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  buildMoneyFlowLineItems,
+  buildMoneyFlowTransferLineItems,
   formatMoneyFlowAmount,
   getCurrentMoneyFlowMonthKey,
   getMoneyFlowAccountRoleLabel,
   getMoneyFlowAccountStatus,
-  getMoneyFlowDashboardSummary,
-  getMoneyFlowStatusMessage,
+  getMoneyFlowTransferDashboardSummary,
+  getMoneyFlowTransferStatusMessage,
+  getMoneyFlowTransferTitle,
   sortMoneyFlowAccounts,
-  sortMoneyFlowMonthlyEntries
+  sortMoneyFlowTransfers
 } from "@/features/assets/lib/money-flow-utils";
 import type {
   MoneyFlowAccount,
   MoneyFlowMonthlyEntry,
-  MoneyFlowRule
+  MoneyFlowSnapshot,
+  MoneyFlowTransfer
 } from "@/features/assets/lib/money-flow-types";
 import type { AssetSnapshot } from "@/features/assets/lib/asset-snapshot-types";
 import { formatAssetSnapshotUpdatedAt } from "@/features/assets/lib/asset-snapshot-utils";
@@ -32,22 +34,32 @@ import { getOwnerScopeLabel, type OwnerScope } from "@/types/domain";
 export function MoneyFlowDashboard({
   ownerScope,
   accounts,
-  rules,
   monthlyEntries,
+  snapshots,
+  transfers,
   assetSnapshots,
   canManage
 }: {
   ownerScope: OwnerScope;
   accounts: MoneyFlowAccount[];
-  rules: MoneyFlowRule[];
   monthlyEntries: MoneyFlowMonthlyEntry[];
+  snapshots: MoneyFlowSnapshot[];
+  transfers: MoneyFlowTransfer[];
   assetSnapshots: AssetSnapshot[];
   canManage: boolean;
 }) {
   const router = useRouter();
   const startMonthlyFlow = useMoneyFlowStore((state) => state.startMonthlyFlow);
   const currentMonthKey = getCurrentMoneyFlowMonthKey();
-  const currentMonthEntries = sortMoneyFlowMonthlyEntries(monthlyEntries).filter(
+  const currentMoneyFlowSnapshot = snapshots.find(
+    (snapshot) => snapshot.monthKey === currentMonthKey
+  );
+  const currentMonthTransfers = currentMoneyFlowSnapshot
+    ? sortMoneyFlowTransfers(
+        transfers.filter((transfer) => transfer.snapshotId === currentMoneyFlowSnapshot.id)
+      )
+    : [];
+  const legacyCurrentMonthEntries = monthlyEntries.filter(
     (entry) => entry.monthKey === currentMonthKey
   );
   const currentMonthSnapshot = assetSnapshots.find(
@@ -56,7 +68,7 @@ export function MoneyFlowDashboard({
   const latestSnapshot = assetSnapshots[0];
   const ownerLabel = getOwnerScopeLabel(ownerScope);
 
-  if (currentMonthEntries.length === 0) {
+  if (!currentMoneyFlowSnapshot) {
     return (
       <section className="grid gap-6">
         <MoneyFlowMonthStatusSummary
@@ -85,16 +97,25 @@ export function MoneyFlowDashboard({
     );
   }
 
-  const summary = getMoneyFlowDashboardSummary({ accounts, monthlyEntries: currentMonthEntries });
-  const statusMessage = getMoneyFlowStatusMessage(currentMonthEntries);
-  const lineItems = buildMoneyFlowLineItems({
+  const summary = getMoneyFlowTransferDashboardSummary({
     accounts,
-    rules,
-    monthlyEntries: currentMonthEntries
+    transfers: currentMonthTransfers
+  });
+  const statusMessage = getMoneyFlowTransferStatusMessage({
+    accounts,
+    transfers: currentMonthTransfers
+  });
+  const lineItems = buildMoneyFlowTransferLineItems({
+    accounts,
+    transfers: currentMonthTransfers
   });
   const sortedAccounts = sortMoneyFlowAccounts(accounts).filter((account) => account.isActive);
-  const pendingEntries = currentMonthEntries.filter((entry) => !entry.isChecked);
-  const isMonthlyComplete = pendingEntries.length === 0;
+  const pendingTransfers = currentMonthTransfers.filter((transfer) => !transfer.isChecked);
+  const accountById = new Map(accounts.map((account) => [account.id, account]));
+  const isMonthlyComplete =
+    currentMonthTransfers.length > 0
+      ? pendingTransfers.length === 0
+      : legacyCurrentMonthEntries.every((entry) => entry.isChecked);
 
   return (
     <section className="grid gap-6">
@@ -286,15 +307,20 @@ export function MoneyFlowDashboard({
           </div>
 
           <div className="mt-6 grid gap-3">
-            {pendingEntries.map((entry) => (
-              <article key={entry.id} className="rounded-[22px] border border-amber-200 bg-amber-50/70 p-4">
-                <p className="text-sm font-semibold">{entry.title}</p>
+            {pendingTransfers.map((transfer) => (
+              <article key={transfer.id} className="rounded-[22px] border border-amber-200 bg-amber-50/70 p-4">
+                <p className="text-sm font-semibold">
+                  {getMoneyFlowTransferTitle(
+                    transfer,
+                    accountById.get(transfer.toAccountId)?.name ?? "이체"
+                  )}
+                </p>
                 <p className="mt-1 text-sm text-ink/64">
-                  예정 {formatMoneyFlowAmount(entry.plannedAmount)}
+                  예정 {formatMoneyFlowAmount(transfer.plannedAmount)}
                 </p>
               </article>
             ))}
-            {pendingEntries.length === 0 ? (
+            {pendingTransfers.length === 0 ? (
               <div className="rounded-[22px] border border-line/10 bg-paper p-4 text-sm text-ink/60">
                 이번 달 체크리스트가 모두 완료되었습니다.
               </div>

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildMoneyFlowSnapshotFromRules,
   buildMonthlyEntriesFromRules,
   getMoneyFlowAccountRoleLabel,
   getMoneyFlowDashboardSummary,
@@ -184,9 +185,44 @@ describe("money flow utils", () => {
     expect(getMoneyFlowStartMonthPreview({ accounts, rules })).toEqual({
       salaryAmount: 3000000,
       activeRuleCount: 2,
-      expectedEntryCount: 3,
+      expectedEntryCount: 2,
       fixedTotalAmount: 800000,
       hasRemainderRule: true
+    });
+  });
+
+  it("builds a monthly snapshot and transfers from active rules", () => {
+    const result = buildMoneyFlowSnapshotFromRules({
+      ownerScope: "yumja",
+      monthKey: "2026-05",
+      rules,
+      now,
+      snapshotId: "snapshot-yumja-2026-05"
+    });
+
+    expect(result.snapshot).toMatchObject({
+      id: "snapshot-yumja-2026-05",
+      ownerScope: "yumja",
+      monthKey: "2026-05",
+      title: "2026-05 윰자 현금 흐름",
+      status: "inProgress"
+    });
+    expect(result.transfers.map((transfer) => transfer.sourceRuleId)).toEqual([
+      "living-rule",
+      "surplus-rule"
+    ]);
+    expect(result.transfers[0]).toMatchObject({
+      snapshotId: "snapshot-yumja-2026-05",
+      amountType: "fixed",
+      plannedAmount: 800000,
+      actualAmount: 800000,
+      isOneOff: false,
+      isChecked: false
+    });
+    expect(result.transfers[1]).toMatchObject({
+      amountType: "remainder",
+      plannedAmount: 2200000,
+      actualAmount: undefined
     });
   });
 

@@ -96,6 +96,10 @@ export type MoneyFlowTransfer = {
   updatedAt: string;
 };
 
+export type MoneyFlowTransferUpdateInput = Partial<
+  Pick<MoneyFlowTransfer, "actualAmount" | "memo" | "isChecked">
+>;
+
 export type MoneyFlowAccountInput = {
   ownerScope: OwnerScope;
   name: string;

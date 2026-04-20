@@ -69,6 +69,8 @@ export const moneyFlowMonthlyEntryUpdateSchema = z.object({
   isChecked: z.boolean().optional()
 });
 
+export const moneyFlowTransferUpdateSchema = moneyFlowMonthlyEntryUpdateSchema;
+
 export const moneyFlowRuleListSchema = z.array(moneyFlowRuleSchema).superRefine((rules, context) => {
   const activeRemainderKeys = new Set<string>();
 

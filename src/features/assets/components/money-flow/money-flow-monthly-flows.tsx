@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { getCurrentMoneyFlowMonthKey } from "@/features/assets/lib/money-flow-utils";
+import {
+  getCurrentMoneyFlowMonthKey,
+  sortMoneyFlowSnapshots
+} from "@/features/assets/lib/money-flow-utils";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
 import {
   EmptyStateCard,
@@ -10,22 +13,19 @@ import {
 import { getOwnerScopeLabel, type OwnerScope } from "@/types/domain";
 
 export function MoneyFlowMonthlyFlows({ ownerScope }: { ownerScope: OwnerScope }) {
-  const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
-  const groupedMonthKeys = Array.from(
-    new Set(
-      monthlyEntries
-        .filter((entry) => entry.ownerScope === ownerScope)
-        .map((entry) => entry.monthKey)
-    )
-  ).sort((a, b) => b.localeCompare(a));
+  const snapshots = useMoneyFlowStore((state) => state.snapshots);
+  const transfers = useMoneyFlowStore((state) => state.transfers);
+  const scopedSnapshots = sortMoneyFlowSnapshots(
+    snapshots.filter((snapshot) => snapshot.ownerScope === ownerScope)
+  );
   const ownerLabel = getOwnerScopeLabel(ownerScope);
 
-  if (groupedMonthKeys.length === 0) {
+  if (scopedSnapshots.length === 0) {
     return (
       <EmptyStateCard
         eyebrow="월간흐름"
         title="아직 보관된 월간 흐름이 없습니다."
-        description="앞으로는 매달 확정한 현금 흐름 다이어그램을 이 화면에 모아둘 예정입니다. 지금은 새 달 시작으로 생성한 월간 체크 기록을 기준으로 흐름 목록 자리를 먼저 마련합니다."
+        description="새 달 시작 버튼으로 월간 현금 흐름 다이어그램을 만들면 이 화면에 월별로 보관됩니다."
       >
         <Link
           href={getMoneyFlowHref("/assets/money-flow", ownerScope)}
@@ -43,37 +43,39 @@ export function MoneyFlowMonthlyFlows({ ownerScope }: { ownerScope: OwnerScope }
         <p className="text-sm font-semibold text-coral">월간흐름</p>
         <h2 className="mt-2 text-2xl font-bold">월별 현금 흐름 보관함</h2>
         <p className="mt-2 text-sm leading-6 text-ink/62">
-          지금은 {ownerLabel} 월간 체크가 시작된 달을 기준으로 보여줍니다. 다음 단계에서 윰자/히비별
-          다이어그램 스냅샷을 저장하면 이 화면이 월간 흐름 아카이브가 됩니다.
+          {ownerLabel} 기준으로 생성된 월간 현금 흐름 다이어그램을 보관합니다.
         </p>
       </div>
 
       <div className="grid gap-3">
-        {groupedMonthKeys.map((monthKey) => {
-          const entries = monthlyEntries.filter(
-            (entry) => entry.ownerScope === ownerScope && entry.monthKey === monthKey
+        {scopedSnapshots.map((snapshot) => {
+          const snapshotTransfers = transfers.filter(
+            (transfer) => transfer.snapshotId === snapshot.id
           );
-          const completedCount = entries.filter((entry) => entry.isChecked).length;
+          const completedCount = snapshotTransfers.filter((transfer) => transfer.isChecked).length;
           const currentMonthKey = getCurrentMoneyFlowMonthKey();
 
           return (
             <article
-              key={monthKey}
+              key={snapshot.id}
               className="flex flex-col gap-4 rounded-[28px] border border-line/10 bg-surface p-5 shadow-card md:flex-row md:items-center md:justify-between"
             >
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-xl font-bold">
-                    {monthKey} {ownerLabel} 현금 흐름
+                    {snapshot.title}
                   </h3>
-                  {monthKey === currentMonthKey ? (
+                  {snapshot.monthKey === currentMonthKey ? (
                     <span className="rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
                       이번 달
                     </span>
                   ) : null}
+                  <span className="rounded-full bg-paper px-3 py-1 text-xs font-semibold text-ink/58">
+                    {getMoneyFlowSnapshotStatusLabel(snapshot.status)}
+                  </span>
                 </div>
                 <p className="mt-2 text-sm text-ink/58">
-                  실행 항목 {completedCount}/{entries.length}개 완료
+                  실행 항목 {completedCount}/{snapshotTransfers.length}개 완료
                 </p>
               </div>
 
@@ -89,4 +91,19 @@ export function MoneyFlowMonthlyFlows({ ownerScope }: { ownerScope: OwnerScope }
       </div>
     </section>
   );
+}
+
+function getMoneyFlowSnapshotStatusLabel(status: string) {
+  switch (status) {
+    case "draft":
+      return "준비중";
+    case "ready":
+      return "준비 완료";
+    case "inProgress":
+      return "진행 중";
+    case "done":
+      return "완료";
+    default:
+      return status;
+  }
 }
