@@ -95,6 +95,19 @@ export function sortMoneyFlowTransfers(transfers: MoneyFlowTransfer[]) {
   });
 }
 
+export function getMoneyFlowSnapshotStatusLabel(status: MoneyFlowSnapshot["status"]) {
+  switch (status) {
+    case "draft":
+      return "준비중";
+    case "ready":
+      return "준비 완료";
+    case "inProgress":
+      return "진행 중";
+    case "done":
+      return "완료";
+  }
+}
+
 export function getMoneyFlowTransferTitle(
   transfer: MoneyFlowTransfer,
   toAccountName: string

@@ -36,6 +36,7 @@ describe("access policy", () => {
     expect(canAccessPath("member", "/assets")).toBe(true);
     expect(canAccessPath("member", "/assets/money-flow")).toBe(true);
     expect(canAccessPath("member", "/assets/money-flow/monthly-flows")).toBe(true);
+    expect(canAccessPath("member", "/assets/money-flow/monthly-flows/flow-2026-04")).toBe(true);
     expect(canAccessPath("member", "/assets/snapshots/new")).toBe(false);
     expect(canAccessPath("admin", "/assets/snapshots/new")).toBe(true);
   });

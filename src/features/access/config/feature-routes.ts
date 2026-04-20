@@ -3,7 +3,7 @@ export const featureRoutePatterns = {
   login: ["/login"],
   contact: ["/contact"],
   assetEditor: ["/assets/snapshots/new", /^\/assets\/snapshots\/[^/]+\/edit$/],
-  assetArchive: ["/assets", "/assets/flow", "/assets/money-flow", /^\/assets\/money-flow\/(accounts|rules|monthly|monthly-flows)$/, "/assets/snapshots", "/assets/charts", /^\/assets\/snapshots\/[^/]+$/],
+  assetArchive: ["/assets", "/assets/flow", "/assets/money-flow", /^\/assets\/money-flow\/(accounts|rules|monthly|monthly-flows)$/, /^\/assets\/money-flow\/monthly-flows\/[^/]+$/, "/assets/snapshots", "/assets/charts", /^\/assets\/snapshots\/[^/]+$/],
   travelEditor: ["/travel/new", /^\/travel\/[^/]+\/edit$/],
   travelArchive: ["/travel", /^\/travel\/[^/]+$/],
   routineEditor: ["/routines/new", /^\/routines\/[^/]+\/edit$/],

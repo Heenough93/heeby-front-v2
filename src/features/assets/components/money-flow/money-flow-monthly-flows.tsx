@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   getCurrentMoneyFlowMonthKey,
+  getMoneyFlowSnapshotStatusLabel,
   sortMoneyFlowSnapshots
 } from "@/features/assets/lib/money-flow-utils";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
@@ -79,31 +80,24 @@ export function MoneyFlowMonthlyFlows({ ownerScope }: { ownerScope: OwnerScope }
                 </p>
               </div>
 
-              <Link
-                href={getMoneyFlowHref("/assets/money-flow/monthly", ownerScope)}
-                className="rounded-full border border-line/10 bg-paper px-5 py-3 text-center text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
-              >
-                월간 체크 보기
-              </Link>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={getMoneyFlowHref(`/assets/money-flow/monthly-flows/${snapshot.id}`, ownerScope)}
+                  className="rounded-full bg-coral px-5 py-3 text-center text-sm font-semibold text-white transition hover:opacity-90"
+                >
+                  상세 보기
+                </Link>
+                <Link
+                  href={getMoneyFlowHref("/assets/money-flow/monthly", ownerScope)}
+                  className="rounded-full border border-line/10 bg-paper px-5 py-3 text-center text-sm font-semibold transition hover:border-coral/35 hover:bg-soft"
+                >
+                  월간 체크 보기
+                </Link>
+              </div>
             </article>
           );
         })}
       </div>
     </section>
   );
-}
-
-function getMoneyFlowSnapshotStatusLabel(status: string) {
-  switch (status) {
-    case "draft":
-      return "준비중";
-    case "ready":
-      return "준비 완료";
-    case "inProgress":
-      return "진행 중";
-    case "done":
-      return "완료";
-    default:
-      return status;
-  }
 }
