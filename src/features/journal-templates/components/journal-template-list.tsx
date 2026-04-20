@@ -69,10 +69,20 @@ export function JournalTemplateList() {
   const pendingDeleteJournalTemplate = journalTemplates.find(
     (journalTemplate) => journalTemplate.id === pendingDeleteJournalTemplateId
   );
+  const journalTemplateUsageCountById = useMemo(() => {
+    const usageCountById = new Map<string, number>();
+
+    for (const journal of journals) {
+      usageCountById.set(
+        journal.journalTemplateId,
+        (usageCountById.get(journal.journalTemplateId) ?? 0) + 1
+      );
+    }
+
+    return usageCountById;
+  }, [journals]);
   const pendingDeleteJournalCount = pendingDeleteJournalTemplate
-    ? journals.filter(
-        (journal) => journal.journalTemplateId === pendingDeleteJournalTemplate.id
-      ).length
+    ? journalTemplateUsageCountById.get(pendingDeleteJournalTemplate.id) ?? 0
     : 0;
   const canDeletePendingJournalTemplate = pendingDeleteJournalCount === 0;
 
@@ -147,6 +157,9 @@ export function JournalTemplateList() {
               <p className="mt-2 text-sm text-ink/60">
                 질문 {journalTemplate.questions.length}개
               </p>
+              <p className="mt-1 text-xs font-semibold text-ink/45">
+                사용 기록 {journalTemplateUsageCountById.get(journalTemplate.id) ?? 0}개
+              </p>
               <ul className="mt-5 space-y-2 text-sm leading-6 text-ink/75">
                 {journalTemplate.questions.map((question, index) => (
                   <li key={`${journalTemplate.id}-${index}`}>{question}</li>
@@ -197,7 +210,7 @@ export function JournalTemplateList() {
         }
         description={
           canDeletePendingJournalTemplate
-            ? "삭제하면 이 브라우저에 저장된 템플릿 목록에서 제거됩니다."
+            ? `이 템플릿을 사용하는 기록은 ${pendingDeleteJournalCount}개입니다. 삭제하면 이 브라우저에 저장된 템플릿 목록에서 제거됩니다.`
             : `이 템플릿을 사용하는 기록이 ${pendingDeleteJournalCount}개 있습니다. 기존 기록과의 연결을 유지하기 위해 먼저 해당 기록을 다른 템플릿으로 수정해야 합니다.`
         }
         confirmLabel={canDeletePendingJournalTemplate ? "템플릿 삭제" : "확인"}
