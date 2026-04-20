@@ -16,7 +16,6 @@ import {
 } from "@/features/assets/lib/money-flow-utils";
 import type {
   MoneyFlowAccount,
-  MoneyFlowMonthlyEntry,
   MoneyFlowSnapshot,
   MoneyFlowTransfer
 } from "@/features/assets/lib/money-flow-types";
@@ -34,7 +33,6 @@ import { getOwnerScopeLabel, type OwnerScope } from "@/types/domain";
 export function MoneyFlowDashboard({
   ownerScope,
   accounts,
-  monthlyEntries,
   snapshots,
   transfers,
   assetSnapshots,
@@ -42,7 +40,6 @@ export function MoneyFlowDashboard({
 }: {
   ownerScope: OwnerScope;
   accounts: MoneyFlowAccount[];
-  monthlyEntries: MoneyFlowMonthlyEntry[];
   snapshots: MoneyFlowSnapshot[];
   transfers: MoneyFlowTransfer[];
   assetSnapshots: AssetSnapshot[];
@@ -59,9 +56,6 @@ export function MoneyFlowDashboard({
         transfers.filter((transfer) => transfer.snapshotId === currentMoneyFlowSnapshot.id)
       )
     : [];
-  const legacyCurrentMonthEntries = monthlyEntries.filter(
-    (entry) => entry.monthKey === currentMonthKey
-  );
   const currentMonthSnapshot = assetSnapshots.find(
     (snapshot) => snapshot.monthKey === currentMonthKey
   );
@@ -113,9 +107,7 @@ export function MoneyFlowDashboard({
   const pendingTransfers = currentMonthTransfers.filter((transfer) => !transfer.isChecked);
   const accountById = new Map(accounts.map((account) => [account.id, account]));
   const isMonthlyComplete =
-    currentMonthTransfers.length > 0
-      ? pendingTransfers.length === 0
-      : legacyCurrentMonthEntries.every((entry) => entry.isChecked);
+    currentMonthTransfers.length > 0 && pendingTransfers.length === 0;
 
   return (
     <section className="grid gap-6">

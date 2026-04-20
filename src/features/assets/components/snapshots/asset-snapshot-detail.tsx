@@ -39,7 +39,8 @@ export function AssetSnapshotDetail({ snapshotId }: AssetSnapshotDetailProps) {
   const getSnapshotItems = useAssetStore((state) => state.getSnapshotItems);
   const snapshots = useAssetStore((state) => state.snapshots);
   const removeSnapshot = useAssetStore((state) => state.removeSnapshot);
-  const moneyFlowMonthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
+  const moneyFlowSnapshots = useMoneyFlowStore((state) => state.snapshots);
+  const moneyFlowTransfers = useMoneyFlowStore((state) => state.transfers);
   const showToast = useToastStore((state) => state.showToast);
   const snapshot = getSnapshotById(snapshotId);
   const currentItems = getSnapshotItems(snapshotId);
@@ -70,12 +71,20 @@ export function AssetSnapshotDetail({ snapshotId }: AssetSnapshotDetailProps) {
   const heebyChanges = changes.filter((entry) => entry.item.ownerScope === "heeby");
   const yumjaOuts = outs.filter((item) => item.ownerScope === "yumja");
   const heebyOuts = outs.filter((item) => item.ownerScope === "heeby");
-  const currentMonthFlowEntries = moneyFlowMonthlyEntries.filter(
-    (entry) => entry.monthKey === snapshot.monthKey
+  const currentMonthFlowSnapshots = moneyFlowSnapshots.filter(
+    (flowSnapshot) => flowSnapshot.monthKey === snapshot.monthKey
   );
-  const hasMoneyFlowStarted = currentMonthFlowEntries.length > 0;
+  const currentMonthFlowSnapshotIds = new Set(
+    currentMonthFlowSnapshots.map((flowSnapshot) => flowSnapshot.id)
+  );
+  const currentMonthFlowTransfers = moneyFlowTransfers.filter((transfer) =>
+    currentMonthFlowSnapshotIds.has(transfer.snapshotId)
+  );
+  const hasMoneyFlowStarted = currentMonthFlowSnapshots.length > 0;
   const isMoneyFlowComplete =
-    hasMoneyFlowStarted && currentMonthFlowEntries.every((entry) => entry.isChecked);
+    hasMoneyFlowStarted &&
+    currentMonthFlowTransfers.length > 0 &&
+    currentMonthFlowTransfers.every((transfer) => transfer.isChecked);
 
   return (
     <section className="grid gap-6">

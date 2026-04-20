@@ -40,16 +40,12 @@ export function MoneyFlowRules({
 }) {
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const rules = useMoneyFlowStore((state) => state.rules);
-  const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
   const addRule = useMoneyFlowStore((state) => state.addRule);
   const updateRule = useMoneyFlowStore((state) => state.updateRule);
   const deleteRule = useMoneyFlowStore((state) => state.deleteRule);
   const moveRule = useMoneyFlowStore((state) => state.moveRule);
   const [editingId, setEditingId] = useState<string | null>(null);
   const scopedAccounts = accounts.filter((account) => account.ownerScope === ownerScope);
-  const scopedMonthlyEntries = monthlyEntries.filter(
-    (entry) => entry.ownerScope === ownerScope
-  );
   const sortedRules = sortMoneyFlowRules(
     rules.filter((rule) => rule.ownerScope === ownerScope)
   );
@@ -221,9 +217,6 @@ export function MoneyFlowRules({
         {sortedRules.map((rule, index) => {
           const fromAccount = accountById.get(rule.fromAccountId);
           const toAccount = accountById.get(rule.toAccountId);
-          const plannedAmount =
-            scopedMonthlyEntries.find((entry) => entry.ruleId === rule.id)?.plannedAmount ??
-            rule.amount;
 
           return (
             <article key={rule.id} className="rounded-[28px] border border-line/10 bg-surface p-6 shadow-card">
@@ -240,7 +233,7 @@ export function MoneyFlowRules({
                   <p className="mt-3 text-sm text-ink/62">
                     {rule.amountType === "remainder"
                       ? "남은 금액 전체를 이동합니다."
-                      : `${formatMoneyFlowAmount(plannedAmount)} 배분`}
+                      : `${formatMoneyFlowAmount(rule.amount)} 배분`}
                   </p>
                 </div>
 

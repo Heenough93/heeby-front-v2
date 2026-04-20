@@ -41,15 +41,11 @@ export function MoneyFlowScreen({ section }: MoneyFlowScreenProps) {
   const ownerScope = useMoneyFlowOwnerScope();
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const rules = useMoneyFlowStore((state) => state.rules);
-  const monthlyEntries = useMoneyFlowStore((state) => state.monthlyEntries);
   const snapshots = useMoneyFlowStore((state) => state.snapshots);
   const transfers = useMoneyFlowStore((state) => state.transfers);
   const assetSnapshots = useAssetStore((state) => state.snapshots);
   const scopedAccounts = accounts.filter((account) => account.ownerScope === ownerScope);
   const scopedRules = rules.filter((rule) => rule.ownerScope === ownerScope);
-  const scopedMonthlyEntries = monthlyEntries.filter(
-    (entry) => entry.ownerScope === ownerScope
-  );
   const scopedMoneyFlowSnapshots = snapshots.filter(
     (snapshot) => snapshot.ownerScope === ownerScope
   );
@@ -69,7 +65,6 @@ export function MoneyFlowScreen({ section }: MoneyFlowScreenProps) {
         <MoneyFlowDashboard
           ownerScope={ownerScope}
           accounts={scopedAccounts}
-          monthlyEntries={scopedMonthlyEntries}
           snapshots={scopedMoneyFlowSnapshots}
           transfers={scopedTransfers}
           assetSnapshots={assetSnapshots}
