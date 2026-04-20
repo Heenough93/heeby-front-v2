@@ -4,12 +4,16 @@ import {
   getMoneyFlowAccountRoleLabel,
   getMoneyFlowDashboardSummary,
   getMoneyFlowStartMonthPreview,
-  getMoneyFlowStatusMessage
+  getMoneyFlowStatusMessage,
+  sortMoneyFlowSnapshots,
+  sortMoneyFlowTransfers
 } from "@/features/assets/lib/money-flow-utils";
 import type {
   MoneyFlowAccount,
   MoneyFlowMonthlyEntry,
-  MoneyFlowRule
+  MoneyFlowRule,
+  MoneyFlowSnapshot,
+  MoneyFlowTransfer
 } from "@/features/assets/lib/money-flow-types";
 
 const now = "2026-04-11T00:00:00.000Z";
@@ -184,5 +188,91 @@ describe("money flow utils", () => {
       fixedTotalAmount: 800000,
       hasRemainderRule: true
     });
+  });
+
+  it("sorts monthly snapshots and transfers for archive rendering", () => {
+    const snapshots: MoneyFlowSnapshot[] = [
+      {
+        id: "snapshot-2026-04-old",
+        ownerScope: "yumja",
+        monthKey: "2026-04",
+        title: "4월 이전 수정",
+        status: "done",
+        createdAt: now,
+        updatedAt: "2026-04-10T00:00:00.000Z"
+      },
+      {
+        id: "snapshot-2026-05",
+        ownerScope: "yumja",
+        monthKey: "2026-05",
+        title: "5월",
+        status: "draft",
+        createdAt: now,
+        updatedAt: "2026-04-01T00:00:00.000Z"
+      },
+      {
+        id: "snapshot-2026-04-new",
+        ownerScope: "yumja",
+        monthKey: "2026-04",
+        title: "4월 최근 수정",
+        status: "done",
+        createdAt: now,
+        updatedAt: "2026-04-12T00:00:00.000Z"
+      }
+    ];
+    const transfers: MoneyFlowTransfer[] = [
+      {
+        id: "one-off",
+        snapshotId: "snapshot-2026-05",
+        fromAccountId: "salary",
+        toAccountId: "surplus",
+        amountType: "fixed",
+        plannedAmount: 100000,
+        order: 1,
+        isOneOff: true,
+        isChecked: false,
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: "second",
+        snapshotId: "snapshot-2026-05",
+        fromAccountId: "salary",
+        toAccountId: "surplus",
+        amountType: "fixed",
+        plannedAmount: 200000,
+        dayOfMonth: 1,
+        order: 2,
+        isOneOff: false,
+        isChecked: false,
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: "first",
+        snapshotId: "snapshot-2026-05",
+        fromAccountId: "salary",
+        toAccountId: "living",
+        amountType: "fixed",
+        plannedAmount: 300000,
+        dayOfMonth: 1,
+        order: 1,
+        isOneOff: false,
+        isChecked: false,
+        createdAt: now,
+        updatedAt: now
+      }
+    ];
+
+    expect(sortMoneyFlowSnapshots(snapshots).map((snapshot) => snapshot.id)).toEqual([
+      "snapshot-2026-05",
+      "snapshot-2026-04-new",
+      "snapshot-2026-04-old"
+    ]);
+    expect(sortMoneyFlowTransfers(transfers).map((transfer) => transfer.id)).toEqual([
+      "first",
+      "second",
+      "one-off"
+    ]);
   });
 });

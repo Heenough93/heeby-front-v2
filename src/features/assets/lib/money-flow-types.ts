@@ -1,3 +1,5 @@
+import type { OwnerScope } from "@/types/domain";
+
 export const moneyFlowAccountRoleValues = [
   "salary",
   "living",
@@ -14,9 +16,11 @@ export const moneyFlowAccountRoleValues = [
 ] as const;
 
 export const moneyFlowRuleTypeValues = ["fixed", "remainder"] as const;
+export const moneyFlowSnapshotStatusValues = ["draft", "ready", "inProgress", "done"] as const;
 
 export type MoneyFlowAccountRole = (typeof moneyFlowAccountRoleValues)[number];
 export type MoneyFlowRuleType = (typeof moneyFlowRuleTypeValues)[number];
+export type MoneyFlowSnapshotStatus = (typeof moneyFlowSnapshotStatusValues)[number];
 
 export type MoneyFlowAccount = {
   id: string;
@@ -61,6 +65,37 @@ export type MoneyFlowMonthlyEntry = {
   updatedAt: string;
 };
 
+export type MoneyFlowSnapshot = {
+  id: string;
+  ownerScope: OwnerScope;
+  monthKey: string;
+  title: string;
+  status: MoneyFlowSnapshotStatus;
+  sourceSnapshotId?: string;
+  memo?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type MoneyFlowTransfer = {
+  id: string;
+  snapshotId: string;
+  sourceRuleId?: string;
+  fromAccountId: string;
+  toAccountId: string;
+  amountType: MoneyFlowRuleType;
+  plannedAmount: number;
+  actualAmount?: number;
+  dayOfMonth?: number;
+  order: number;
+  isOneOff: boolean;
+  isChecked: boolean;
+  checkedAt?: string;
+  memo?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type MoneyFlowAccountInput = {
   ownerScope: OwnerScope;
   name: string;
@@ -81,4 +116,3 @@ export type MoneyFlowRuleInput = {
   isActive: boolean;
   note?: string;
 };
-import type { OwnerScope } from "@/types/domain";

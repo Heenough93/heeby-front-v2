@@ -9,7 +9,9 @@ import type {
   MoneyFlowAccountInput,
   MoneyFlowMonthlyEntry,
   MoneyFlowRule,
-  MoneyFlowRuleInput
+  MoneyFlowRuleInput,
+  MoneyFlowSnapshot,
+  MoneyFlowTransfer
 } from "@/features/assets/lib/money-flow-types";
 import {
   moneyFlowAccountInputSchema,
@@ -21,12 +23,16 @@ import {
   getCurrentMoneyFlowMonthKey,
   sortMoneyFlowAccounts,
   sortMoneyFlowMonthlyEntries,
-  sortMoneyFlowRules
+  sortMoneyFlowRules,
+  sortMoneyFlowSnapshots,
+  sortMoneyFlowTransfers
 } from "@/features/assets/lib/money-flow-utils";
 import {
   moneyFlowAccounts as initialAccounts,
   moneyFlowMonthlyEntries as initialMonthlyEntries,
-  moneyFlowRules as initialRules
+  moneyFlowRules as initialRules,
+  moneyFlowSnapshots as initialSnapshots,
+  moneyFlowTransfers as initialTransfers
 } from "@/mocks/money-flow";
 import type { OwnerScope } from "@/types/domain";
 
@@ -34,6 +40,8 @@ type MoneyFlowStore = {
   accounts: MoneyFlowAccount[];
   rules: MoneyFlowRule[];
   monthlyEntries: MoneyFlowMonthlyEntry[];
+  snapshots: MoneyFlowSnapshot[];
+  transfers: MoneyFlowTransfer[];
   addAccount: (input: MoneyFlowAccountInput) => void;
   updateAccount: (id: string, input: MoneyFlowAccountInput) => void;
   deleteAccount: (id: string) => void;
@@ -83,6 +91,8 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
       accounts: sortMoneyFlowAccounts(initialAccounts),
       rules: sortMoneyFlowRules(initialRules),
       monthlyEntries: sortMoneyFlowMonthlyEntries(initialMonthlyEntries),
+      snapshots: sortMoneyFlowSnapshots(initialSnapshots),
+      transfers: sortMoneyFlowTransfers(initialTransfers),
       addAccount: (input) =>
         set((state) => {
           const parsedInput = moneyFlowAccountInputSchema.safeParse(input);
@@ -132,6 +142,9 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
           accounts: state.accounts.filter((account) => account.id !== id),
           rules: state.rules.filter(
             (rule) => rule.fromAccountId !== id && rule.toAccountId !== id
+          ),
+          transfers: state.transfers.filter(
+            (transfer) => transfer.fromAccountId !== id && transfer.toAccountId !== id
           )
         })),
       moveAccount: (id, direction) =>
@@ -222,7 +235,10 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
       deleteRule: (id) =>
         set((state) => ({
           rules: state.rules.filter((rule) => rule.id !== id),
-          monthlyEntries: state.monthlyEntries.filter((entry) => entry.ruleId !== id)
+          monthlyEntries: state.monthlyEntries.filter((entry) => entry.ruleId !== id),
+          transfers: state.transfers.map((transfer) =>
+            transfer.sourceRuleId === id ? { ...transfer, sourceRuleId: undefined } : transfer
+          )
         })),
       moveRule: (id, direction) =>
         set((state) => {
@@ -330,19 +346,23 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
         set({
           accounts: sortMoneyFlowAccounts(initialAccounts),
           rules: sortMoneyFlowRules(initialRules),
-          monthlyEntries: sortMoneyFlowMonthlyEntries(initialMonthlyEntries)
+          monthlyEntries: sortMoneyFlowMonthlyEntries(initialMonthlyEntries),
+          snapshots: sortMoneyFlowSnapshots(initialSnapshots),
+          transfers: sortMoneyFlowTransfers(initialTransfers)
         })
     }),
     {
       name: "heeby-money-flow-store",
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
       migrate: (persistedState, version) => {
         if (!persistedState || typeof persistedState !== "object") {
           return {
             accounts: sortMoneyFlowAccounts(initialAccounts),
             rules: sortMoneyFlowRules(initialRules),
-            monthlyEntries: sortMoneyFlowMonthlyEntries(initialMonthlyEntries)
+            monthlyEntries: sortMoneyFlowMonthlyEntries(initialMonthlyEntries),
+            snapshots: sortMoneyFlowSnapshots(initialSnapshots),
+            transfers: sortMoneyFlowTransfers(initialTransfers)
           };
         }
 
@@ -352,7 +372,9 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
           return {
             accounts: sortMoneyFlowAccounts(withDefaultAccountOwners(state.accounts ?? initialAccounts)),
             rules: sortMoneyFlowRules(withDefaultRuleOwners(state.rules ?? initialRules)),
-            monthlyEntries: sortMoneyFlowMonthlyEntries(withDefaultMonthlyEntryOwners(state.monthlyEntries ?? initialMonthlyEntries))
+            monthlyEntries: sortMoneyFlowMonthlyEntries(withDefaultMonthlyEntryOwners(state.monthlyEntries ?? initialMonthlyEntries)),
+            snapshots: sortMoneyFlowSnapshots(withDefaultSnapshotOwners(state.snapshots ?? initialSnapshots)),
+            transfers: sortMoneyFlowTransfers(state.transfers ?? initialTransfers)
           };
         }
 
@@ -361,7 +383,9 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
             ...state,
             accounts: sortMoneyFlowAccounts(withDefaultAccountOwners(state.accounts ?? initialAccounts)),
             rules: sortMoneyFlowRules(withDefaultRuleOwners(state.rules ?? initialRules)),
-            monthlyEntries: sortMoneyFlowMonthlyEntries(withDefaultMonthlyEntryOwners(state.monthlyEntries ?? initialMonthlyEntries))
+            monthlyEntries: sortMoneyFlowMonthlyEntries(withDefaultMonthlyEntryOwners(state.monthlyEntries ?? initialMonthlyEntries)),
+            snapshots: sortMoneyFlowSnapshots(withDefaultSnapshotOwners(state.snapshots ?? initialSnapshots)),
+            transfers: sortMoneyFlowTransfers(state.transfers ?? initialTransfers)
           };
         }
 
@@ -369,7 +393,9 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
           ...state,
           accounts: sortMoneyFlowAccounts(withDefaultAccountOwners(state.accounts ?? initialAccounts)),
           rules: sortMoneyFlowRules(withDefaultRuleOwners(state.rules ?? initialRules)),
-          monthlyEntries: sortMoneyFlowMonthlyEntries(withDefaultMonthlyEntryOwners(state.monthlyEntries ?? initialMonthlyEntries))
+          monthlyEntries: sortMoneyFlowMonthlyEntries(withDefaultMonthlyEntryOwners(state.monthlyEntries ?? initialMonthlyEntries)),
+          snapshots: sortMoneyFlowSnapshots(withDefaultSnapshotOwners(state.snapshots ?? initialSnapshots)),
+          transfers: sortMoneyFlowTransfers(state.transfers ?? initialTransfers)
         } as MoneyFlowStore;
       }
     }
@@ -394,5 +420,12 @@ function withDefaultMonthlyEntryOwners(entries: MoneyFlowMonthlyEntry[]) {
   return entries.map((entry) => ({
     ...entry,
     ownerScope: entry.ownerScope ?? "yumja"
+  }));
+}
+
+function withDefaultSnapshotOwners(snapshots: MoneyFlowSnapshot[]) {
+  return snapshots.map((snapshot) => ({
+    ...snapshot,
+    ownerScope: snapshot.ownerScope ?? "yumja"
   }));
 }

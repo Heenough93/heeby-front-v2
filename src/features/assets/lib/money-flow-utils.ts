@@ -3,7 +3,9 @@ import type {
   MoneyFlowAccount,
   MoneyFlowAccountRole,
   MoneyFlowMonthlyEntry,
-  MoneyFlowRule
+  MoneyFlowRule,
+  MoneyFlowSnapshot,
+  MoneyFlowTransfer
 } from "@/features/assets/lib/money-flow-types";
 import type { OwnerScope } from "@/types/domain";
 
@@ -78,6 +80,30 @@ export function sortMoneyFlowRules(rules: MoneyFlowRule[]) {
 
 export function sortMoneyFlowMonthlyEntries(entries: MoneyFlowMonthlyEntry[]) {
   return [...entries].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}
+
+export function sortMoneyFlowSnapshots(snapshots: MoneyFlowSnapshot[]) {
+  return [...snapshots].sort((a, b) => {
+    const monthOrder = b.monthKey.localeCompare(a.monthKey);
+
+    if (monthOrder !== 0) {
+      return monthOrder;
+    }
+
+    return b.updatedAt.localeCompare(a.updatedAt);
+  });
+}
+
+export function sortMoneyFlowTransfers(transfers: MoneyFlowTransfer[]) {
+  return [...transfers].sort((a, b) => {
+    const dayOrder = (a.dayOfMonth ?? 99) - (b.dayOfMonth ?? 99);
+
+    if (dayOrder !== 0) {
+      return dayOrder;
+    }
+
+    return a.order - b.order;
+  });
 }
 
 export function getMoneyFlowDashboardSummary(params: {

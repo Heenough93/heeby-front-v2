@@ -1,7 +1,9 @@
 import type {
   MoneyFlowAccount,
   MoneyFlowMonthlyEntry,
-  MoneyFlowRule
+  MoneyFlowRule,
+  MoneyFlowSnapshot,
+  MoneyFlowTransfer
 } from "@/features/assets/lib/money-flow-types";
 
 const now = "2026-04-10T09:00:00.000Z";
@@ -217,6 +219,100 @@ export const moneyFlowMonthlyEntries: MoneyFlowMonthlyEntry[] = [
     ruleId: "flow-rule-surplus",
     plannedAmount: 800000,
     actualAmount: 620000,
+    isChecked: false,
+    memo: "여행 예산 때문에 예상보다 적게 남았습니다.",
+    createdAt: now,
+    updatedAt: now
+  }
+];
+
+export const moneyFlowSnapshots: MoneyFlowSnapshot[] = [
+  {
+    id: "flow-snapshot-yumja-2026-04",
+    ownerScope: "yumja",
+    monthKey: "2026-04",
+    title: "2026-04 윰자 현금 흐름",
+    status: "inProgress",
+    memo: "기존 월간 체크 데이터를 snapshot 구조로 옮기기 전 기준 데이터",
+    createdAt: now,
+    updatedAt: now
+  }
+];
+
+export const moneyFlowTransfers: MoneyFlowTransfer[] = [
+  {
+    id: "flow-transfer-living",
+    snapshotId: "flow-snapshot-yumja-2026-04",
+    sourceRuleId: "flow-rule-living",
+    fromAccountId: "flow-account-salary",
+    toAccountId: "flow-account-living",
+    amountType: "fixed",
+    plannedAmount: 800000,
+    actualAmount: 800000,
+    order: 1,
+    isOneOff: false,
+    isChecked: true,
+    checkedAt: "2026-04-01T00:20:00.000Z",
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "flow-transfer-card",
+    snapshotId: "flow-snapshot-yumja-2026-04",
+    sourceRuleId: "flow-rule-card",
+    fromAccountId: "flow-account-salary",
+    toAccountId: "flow-account-card",
+    amountType: "fixed",
+    plannedAmount: 500000,
+    actualAmount: 0,
+    order: 2,
+    isOneOff: false,
+    isChecked: false,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "flow-transfer-fixed",
+    snapshotId: "flow-snapshot-yumja-2026-04",
+    sourceRuleId: "flow-rule-fixed",
+    fromAccountId: "flow-account-salary",
+    toAccountId: "flow-account-fixed",
+    amountType: "fixed",
+    plannedAmount: 700000,
+    actualAmount: 700000,
+    order: 3,
+    isOneOff: false,
+    isChecked: true,
+    checkedAt: "2026-04-01T00:30:00.000Z",
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "flow-transfer-emergency",
+    snapshotId: "flow-snapshot-yumja-2026-04",
+    sourceRuleId: "flow-rule-emergency",
+    fromAccountId: "flow-account-salary",
+    toAccountId: "flow-account-emergency",
+    amountType: "fixed",
+    plannedAmount: 200000,
+    actualAmount: 0,
+    order: 4,
+    isOneOff: false,
+    isChecked: false,
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: "flow-transfer-surplus",
+    snapshotId: "flow-snapshot-yumja-2026-04",
+    sourceRuleId: "flow-rule-surplus",
+    fromAccountId: "flow-account-salary",
+    toAccountId: "flow-account-surplus",
+    amountType: "remainder",
+    plannedAmount: 800000,
+    actualAmount: 620000,
+    order: 5,
+    isOneOff: false,
     isChecked: false,
     memo: "여행 예산 때문에 예상보다 적게 남았습니다.",
     createdAt: now,
