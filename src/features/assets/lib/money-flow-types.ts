@@ -100,6 +100,17 @@ export type MoneyFlowTransferUpdateInput = Partial<
   Pick<MoneyFlowTransfer, "actualAmount" | "memo" | "isChecked">
 >;
 
+export type MoneyFlowTransferInput = {
+  snapshotId: string;
+  fromAccountId: string;
+  toAccountId: string;
+  amountType: MoneyFlowRuleType;
+  plannedAmount: number;
+  actualAmount?: number;
+  dayOfMonth?: number;
+  memo?: string;
+};
+
 export type MoneyFlowAccountInput = {
   ownerScope: OwnerScope;
   name: string;

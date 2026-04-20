@@ -71,6 +71,32 @@ export const moneyFlowMonthlyEntryUpdateSchema = z.object({
 
 export const moneyFlowTransferUpdateSchema = moneyFlowMonthlyEntryUpdateSchema;
 
+const optionalMoneyFlowDaySchema = z
+  .number()
+  .int("실행일은 정수여야 합니다.")
+  .min(1, "실행일은 1일 이상이어야 합니다.")
+  .max(31, "실행일은 31일 이하이어야 합니다.")
+  .optional();
+
+export const moneyFlowTransferInputSchema = z.object({
+  snapshotId: z.string().trim().min(1, "월간 흐름을 선택해주세요."),
+  fromAccountId: z.string().trim().min(1, "출발 계좌를 선택해주세요."),
+  toAccountId: z.string().trim().min(1, "도착 계좌를 선택해주세요."),
+  amountType: z.enum(moneyFlowRuleTypeValues),
+  plannedAmount: moneyFlowAmountSchema,
+  actualAmount: moneyFlowAmountSchema.optional(),
+  dayOfMonth: optionalMoneyFlowDaySchema,
+  memo: optionalMoneyFlowTextSchema(180, "메모는 180자 이하로 입력해주세요.")
+}).superRefine((value, context) => {
+  if (value.fromAccountId === value.toAccountId) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["toAccountId"],
+      message: "출발 계좌와 도착 계좌는 달라야 합니다."
+    });
+  }
+});
+
 export const moneyFlowRuleListSchema = z.array(moneyFlowRuleSchema).superRefine((rules, context) => {
   const activeRemainderKeys = new Set<string>();
 
@@ -95,3 +121,4 @@ export const moneyFlowRuleListSchema = z.array(moneyFlowRuleSchema).superRefine(
 
 export type MoneyFlowAccountInputSchemaValues = z.infer<typeof moneyFlowAccountInputSchema>;
 export type MoneyFlowRuleInputSchemaValues = z.infer<typeof moneyFlowRuleInputSchema>;
+export type MoneyFlowTransferInputSchemaValues = z.infer<typeof moneyFlowTransferInputSchema>;

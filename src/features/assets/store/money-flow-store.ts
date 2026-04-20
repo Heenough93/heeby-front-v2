@@ -12,12 +12,14 @@ import type {
   MoneyFlowRuleInput,
   MoneyFlowSnapshot,
   MoneyFlowTransfer,
+  MoneyFlowTransferInput,
   MoneyFlowTransferUpdateInput
 } from "@/features/assets/lib/money-flow-types";
 import {
   moneyFlowAccountInputSchema,
   moneyFlowMonthlyEntryUpdateSchema,
   moneyFlowRuleInputSchema,
+  moneyFlowTransferInputSchema,
   moneyFlowTransferUpdateSchema
 } from "@/features/assets/lib/money-flow-schema";
 import {
@@ -56,7 +58,9 @@ type MoneyFlowStore = {
     id: string,
     input: Partial<Pick<MoneyFlowMonthlyEntry, "actualAmount" | "memo" | "isChecked">>
   ) => void;
+  addTransfer: (input: MoneyFlowTransferInput) => void;
   updateTransfer: (id: string, input: MoneyFlowTransferUpdateInput) => void;
+  deleteTransfer: (id: string) => void;
   startMonthlyFlow: (ownerScope: OwnerScope, monthKey?: string) => void;
   resetMoneyFlow: () => void;
 };
@@ -311,6 +315,49 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
             )
           };
         }),
+      addTransfer: (input) =>
+        set((state) => {
+          const parsedInput = moneyFlowTransferInputSchema.safeParse(input);
+
+          if (!parsedInput.success) {
+            return { transfers: state.transfers };
+          }
+
+          const snapshotExists = state.snapshots.some(
+            (snapshot) => snapshot.id === parsedInput.data.snapshotId
+          );
+
+          if (!snapshotExists) {
+            return { transfers: state.transfers };
+          }
+
+          const now = dayjs().toISOString();
+          const snapshotTransfers = state.transfers.filter(
+            (transfer) => transfer.snapshotId === parsedInput.data.snapshotId
+          );
+          const nextOrder =
+            Math.max(0, ...snapshotTransfers.map((transfer) => transfer.order)) + 1;
+
+          return {
+            transfers: sortMoneyFlowTransfers([
+              ...state.transfers,
+              {
+                id: nanoid(),
+                ...parsedInput.data,
+                actualAmount:
+                  parsedInput.data.actualAmount ??
+                  (parsedInput.data.amountType === "remainder"
+                    ? undefined
+                    : parsedInput.data.plannedAmount),
+                order: nextOrder,
+                isOneOff: true,
+                isChecked: false,
+                createdAt: now,
+                updatedAt: now
+              }
+            ])
+          };
+        }),
       updateTransfer: (id, input) =>
         set((state) => {
           const parsedInput = moneyFlowTransferUpdateSchema.safeParse(input);
@@ -339,6 +386,12 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
             )
           };
         }),
+      deleteTransfer: (id) =>
+        set((state) => ({
+          transfers: state.transfers.filter(
+            (transfer) => transfer.id !== id || !transfer.isOneOff
+          )
+        })),
       startMonthlyFlow: (ownerScope, monthKey = getCurrentMoneyFlowMonthKey()) =>
         set((state) => {
           if (

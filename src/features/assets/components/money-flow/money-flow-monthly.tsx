@@ -1,18 +1,41 @@
 "use client";
 
+import React, { useState } from "react";
 import {
   formatMoneyFlowAmount,
   formatMoneyFlowCheckedAt,
   getCurrentMoneyFlowMonthKey,
+  getMoneyFlowAccountRoleLabel,
   getMoneyFlowTransferTitle,
+  sortMoneyFlowAccounts,
   sortMoneyFlowTransfers
 } from "@/features/assets/lib/money-flow-utils";
 import { useMoneyFlowStore } from "@/features/assets/store/money-flow-store";
 import {
+  EditorCard,
   Field,
+  InlineNotice,
   MoneyFlowStartMonthEmptyState
 } from "@/features/assets/components/money-flow/money-flow-shared";
 import { getOwnerScopeLabel, type OwnerScope } from "@/types/domain";
+import type { MoneyFlowTransferInput } from "@/features/assets/lib/money-flow-types";
+
+function getDefaultOneOffTransferInput(
+  snapshotId: string,
+  fromAccountId = "",
+  toAccountId = ""
+): MoneyFlowTransferInput {
+  return {
+    snapshotId,
+    fromAccountId,
+    toAccountId,
+    amountType: "fixed",
+    plannedAmount: 0,
+    actualAmount: 0,
+    dayOfMonth: undefined,
+    memo: ""
+  };
+}
 
 export function MoneyFlowMonthly({
   ownerScope,
@@ -25,7 +48,9 @@ export function MoneyFlowMonthly({
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const snapshots = useMoneyFlowStore((state) => state.snapshots);
   const transfers = useMoneyFlowStore((state) => state.transfers);
+  const addTransfer = useMoneyFlowStore((state) => state.addTransfer);
   const updateTransfer = useMoneyFlowStore((state) => state.updateTransfer);
+  const deleteTransfer = useMoneyFlowStore((state) => state.deleteTransfer);
   const monthKey = getCurrentMoneyFlowMonthKey();
   const currentSnapshot = snapshots.find(
     (snapshot) => snapshot.ownerScope === ownerScope && snapshot.monthKey === monthKey
@@ -40,6 +65,24 @@ export function MoneyFlowMonthly({
       .filter((account) => account.ownerScope === ownerScope)
       .map((account) => [account.id, account])
   );
+  const activeAccounts = sortMoneyFlowAccounts(
+    accounts.filter((account) => account.ownerScope === ownerScope && account.isActive)
+  );
+  const defaultFromAccountId = activeAccounts[0]?.id ?? "";
+  const defaultToAccountId = activeAccounts[1]?.id ?? activeAccounts[0]?.id ?? "";
+  const [oneOffForm, setOneOffForm] = useState<MoneyFlowTransferInput>(() =>
+    getDefaultOneOffTransferInput("", defaultFromAccountId, defaultToAccountId)
+  );
+
+  React.useEffect(() => {
+    setOneOffForm((current) => ({
+      ...getDefaultOneOffTransferInput(current.snapshotId, defaultFromAccountId, defaultToAccountId),
+      plannedAmount: current.plannedAmount,
+      actualAmount: current.actualAmount,
+      dayOfMonth: current.dayOfMonth,
+      memo: current.memo
+    }));
+  }, [defaultFromAccountId, defaultToAccountId]);
 
   if (!currentSnapshot) {
     return (
@@ -63,6 +106,30 @@ export function MoneyFlowMonthly({
   const surplusTransfer = currentTransfers.find((transfer) =>
     surplusAccountIds.has(transfer.toAccountId)
   );
+  const canCreateOneOffTransfer = canManage && activeAccounts.length >= 2;
+
+  const handleAddOneOffTransfer = () => {
+    if (!canCreateOneOffTransfer) {
+      return;
+    }
+
+    const fromAccountId = oneOffForm.fromAccountId || defaultFromAccountId;
+    const toAccountId = oneOffForm.toAccountId || defaultToAccountId;
+
+    if (!fromAccountId || !toAccountId || fromAccountId === toAccountId) {
+      return;
+    }
+
+    addTransfer({
+      ...oneOffForm,
+      snapshotId: currentSnapshot.id,
+      fromAccountId,
+      toAccountId
+    });
+    setOneOffForm(
+      getDefaultOneOffTransferInput(currentSnapshot.id, defaultFromAccountId, defaultToAccountId)
+    );
+  };
 
   return (
     <section className="grid gap-6">
@@ -76,6 +143,121 @@ export function MoneyFlowMonthly({
         </p>
       </section>
 
+      {canManage ? (
+        <EditorCard
+          title="단발 이체 추가"
+          description="이번 달에만 필요한 이체를 추가합니다. 기본 배분 규칙은 변경하지 않습니다."
+        >
+          {activeAccounts.length < 2 ? (
+            <InlineNotice>
+              단발 이체를 추가하려면 활성 통장이 최소 2개 필요합니다.
+            </InlineNotice>
+          ) : null}
+          {(oneOffForm.fromAccountId || defaultFromAccountId) ===
+          (oneOffForm.toAccountId || defaultToAccountId) ? (
+            <InlineNotice>
+              출발 계좌와 도착 계좌는 달라야 합니다.
+            </InlineNotice>
+          ) : null}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="출발 계좌">
+              <select
+                value={oneOffForm.fromAccountId || defaultFromAccountId}
+                onChange={(event) =>
+                  setOneOffForm((current) => ({
+                    ...current,
+                    fromAccountId: event.target.value
+                  }))
+                }
+                disabled={!canCreateOneOffTransfer}
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              >
+                {activeAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name} · {getMoneyFlowAccountRoleLabel(account.role)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="도착 계좌">
+              <select
+                value={oneOffForm.toAccountId || defaultToAccountId}
+                onChange={(event) =>
+                  setOneOffForm((current) => ({
+                    ...current,
+                    toAccountId: event.target.value
+                  }))
+                }
+                disabled={!canCreateOneOffTransfer}
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              >
+                {activeAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name} · {getMoneyFlowAccountRoleLabel(account.role)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="예정 금액">
+              <input
+                type="number"
+                value={oneOffForm.plannedAmount}
+                onChange={(event) =>
+                  setOneOffForm((current) => ({
+                    ...current,
+                    plannedAmount: Number(event.target.value || 0),
+                    actualAmount: Number(event.target.value || 0)
+                  }))
+                }
+                disabled={!canCreateOneOffTransfer}
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              />
+            </Field>
+            <Field label="실행일">
+              <input
+                type="number"
+                min={1}
+                max={31}
+                value={oneOffForm.dayOfMonth ?? ""}
+                onChange={(event) =>
+                  setOneOffForm((current) => ({
+                    ...current,
+                    dayOfMonth: event.target.value ? Number(event.target.value) : undefined
+                  }))
+                }
+                placeholder="예: 25"
+                disabled={!canCreateOneOffTransfer}
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+              />
+            </Field>
+            <Field label="메모">
+              <input
+                value={oneOffForm.memo ?? ""}
+                onChange={(event) =>
+                  setOneOffForm((current) => ({
+                    ...current,
+                    memo: event.target.value
+                  }))
+                }
+                placeholder="예: 처형 송금"
+                disabled={!canCreateOneOffTransfer}
+                className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral md:col-span-2"
+              />
+            </Field>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={!canCreateOneOffTransfer}
+              onClick={handleAddOneOffTransfer}
+              className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+            >
+              단발 이체 추가
+            </button>
+          </div>
+        </EditorCard>
+      ) : null}
+
       <section className="grid gap-4">
         {currentTransfers.length === 0 ? (
           <article className="rounded-[28px] border border-dashed border-line/15 bg-surface p-8 text-center shadow-card">
@@ -88,6 +270,7 @@ export function MoneyFlowMonthly({
 
         {currentTransfers.map((transfer) => {
           const toAccount = accountById.get(transfer.toAccountId);
+          const fromAccount = accountById.get(transfer.fromAccountId);
           const title = getMoneyFlowTransferTitle(transfer, toAccount?.name ?? "이체");
 
           return (
@@ -107,8 +290,13 @@ export function MoneyFlowMonthly({
                   {title}
                 </label>
                 <p className="mt-3 text-sm text-ink/62">
-                  예정 {formatMoneyFlowAmount(transfer.plannedAmount)} · 실행 {formatMoneyFlowCheckedAt(transfer.checkedAt)}
+                  {fromAccount?.name ?? "출발 계좌"} → {toAccount?.name ?? "도착 계좌"} · 예정 {formatMoneyFlowAmount(transfer.plannedAmount)} · 실행 {formatMoneyFlowCheckedAt(transfer.checkedAt)}
                 </p>
+                {transfer.isOneOff ? (
+                  <span className="mt-3 inline-flex rounded-full bg-paper px-3 py-1 text-xs font-semibold text-ink/58">
+                    단발 이체
+                  </span>
+                ) : null}
               </div>
 
               <span
@@ -148,6 +336,17 @@ export function MoneyFlowMonthly({
                 />
               </Field>
             </div>
+            {canManage && transfer.isOneOff ? (
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => deleteTransfer(transfer.id)}
+                  className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                >
+                  단발 이체 삭제
+                </button>
+              </div>
+            ) : null}
           </article>
           );
         })}
