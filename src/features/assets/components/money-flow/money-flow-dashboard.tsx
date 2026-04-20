@@ -6,11 +6,13 @@ import {
   buildMoneyFlowTransferLineItems,
   formatMoneyFlowAmount,
   getCurrentMoneyFlowMonthKey,
+  getNextMoneyFlowMonthKey,
   getMoneyFlowAccountRoleLabel,
   getMoneyFlowAccountStatus,
   getMoneyFlowTransferDashboardSummary,
   getMoneyFlowTransferStatusMessage,
   getMoneyFlowTransferTitle,
+  isMoneyFlowPreparationWindow,
   sortMoneyFlowAccounts,
   sortMoneyFlowTransfers
 } from "@/features/assets/lib/money-flow-utils";
@@ -47,9 +49,14 @@ export function MoneyFlowDashboard({
 }) {
   const router = useRouter();
   const startMonthlyFlow = useMoneyFlowStore((state) => state.startMonthlyFlow);
+  const copySnapshotToMonth = useMoneyFlowStore((state) => state.copySnapshotToMonth);
   const currentMonthKey = getCurrentMoneyFlowMonthKey();
+  const nextMonthKey = getNextMoneyFlowMonthKey(currentMonthKey);
   const currentMoneyFlowSnapshot = snapshots.find(
     (snapshot) => snapshot.monthKey === currentMonthKey
+  );
+  const nextMoneyFlowSnapshot = snapshots.find(
+    (snapshot) => snapshot.monthKey === nextMonthKey
   );
   const currentMonthTransfers = currentMoneyFlowSnapshot
     ? sortMoneyFlowTransfers(
@@ -125,6 +132,19 @@ export function MoneyFlowDashboard({
         isMonthlyComplete={isMonthlyComplete}
         canManage={canManage}
       />
+
+      {isMoneyFlowPreparationWindow() ? (
+        <NextMonthPreparationCard
+          ownerScope={ownerScope}
+          nextMonthKey={nextMonthKey}
+          hasNextMonthSnapshot={Boolean(nextMoneyFlowSnapshot)}
+          onCopy={() => {
+            copySnapshotToMonth(currentMoneyFlowSnapshot.id, nextMonthKey);
+            router.push(getMoneyFlowHref("/assets/money-flow/monthly-flows", ownerScope));
+          }}
+          canManage={canManage}
+        />
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-4">
         <SummaryCard label="이번 달 급여" value={formatMoneyFlowAmount(summary.salaryAmount)} />
@@ -320,6 +340,59 @@ export function MoneyFlowDashboard({
           </div>
         </section>
       </section>
+    </section>
+  );
+}
+
+function NextMonthPreparationCard({
+  ownerScope,
+  nextMonthKey,
+  hasNextMonthSnapshot,
+  onCopy,
+  canManage
+}: {
+  ownerScope: OwnerScope;
+  nextMonthKey: string;
+  hasNextMonthSnapshot: boolean;
+  onCopy: () => void;
+  canManage: boolean;
+}) {
+  return (
+    <section className="rounded-[28px] border border-coral/30 bg-coral/10 p-6 shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-coral">다음 달 준비</p>
+          <h2 className="mt-2 text-2xl font-bold">
+            {nextMonthKey} 현금 흐름을 준비할 시점입니다.
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-ink/68">
+            이번 달 다이어그램에서 반복 이체만 복사합니다. 단발 이체는 다음 달로 복사하지 않습니다.
+          </p>
+          {hasNextMonthSnapshot ? (
+            <p className="mt-3 text-sm font-semibold text-coral">
+              이미 다음 달 현금 흐름이 만들어져 있습니다.
+            </p>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={getMoneyFlowHref("/assets/money-flow/monthly-flows", ownerScope)}
+            className="rounded-full border border-coral/20 bg-white px-5 py-3 text-sm font-semibold text-coral transition hover:bg-coral/10"
+          >
+            월간흐름 보기
+          </Link>
+          {canManage ? (
+            <button
+              type="button"
+              disabled={hasNextMonthSnapshot}
+              onClick={onCopy}
+              className="rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+            >
+              다음 달 다이어그램 만들기
+            </button>
+          ) : null}
+        </div>
+      </div>
     </section>
   );
 }

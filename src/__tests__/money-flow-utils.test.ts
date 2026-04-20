@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildMoneyFlowSnapshotCopy,
   buildMoneyFlowSnapshotFromRules,
   getMoneyFlowAccountRoleLabel,
   getMoneyFlowStartMonthPreview,
@@ -269,5 +270,77 @@ describe("money flow utils", () => {
       "second",
       "one-off"
     ]);
+  });
+
+  it("copies a monthly snapshot without one-off transfers", () => {
+    const sourceSnapshot: MoneyFlowSnapshot = {
+      id: "snapshot-2026-05",
+      ownerScope: "yumja",
+      monthKey: "2026-05",
+      title: "2026-05 윰자 현금 흐름",
+      status: "done",
+      createdAt: now,
+      updatedAt: now
+    };
+    const result = buildMoneyFlowSnapshotCopy({
+      sourceSnapshot,
+      sourceTransfers: [
+        {
+          id: "rule-transfer",
+          snapshotId: sourceSnapshot.id,
+          sourceRuleId: "living-rule",
+          fromAccountId: "salary",
+          toAccountId: "living",
+          amountType: "fixed",
+          plannedAmount: 800000,
+          actualAmount: 700000,
+          dayOfMonth: 25,
+          order: 1,
+          isOneOff: false,
+          isChecked: true,
+          checkedAt: now,
+          memo: "유지할 메모",
+          createdAt: now,
+          updatedAt: now
+        },
+        {
+          id: "one-off-transfer",
+          snapshotId: sourceSnapshot.id,
+          fromAccountId: "salary",
+          toAccountId: "surplus",
+          amountType: "fixed",
+          plannedAmount: 100000,
+          order: 2,
+          isOneOff: true,
+          isChecked: true,
+          createdAt: now,
+          updatedAt: now
+        }
+      ],
+      targetMonthKey: "2026-06",
+      now,
+      snapshotId: "snapshot-2026-06"
+    });
+
+    expect(result.snapshot).toMatchObject({
+      id: "snapshot-2026-06",
+      ownerScope: "yumja",
+      monthKey: "2026-06",
+      title: "2026-06 윰자 현금 흐름",
+      status: "draft",
+      sourceSnapshotId: "snapshot-2026-05"
+    });
+    expect(result.transfers).toHaveLength(1);
+    expect(result.transfers[0]).toMatchObject({
+      snapshotId: "snapshot-2026-06",
+      sourceRuleId: "living-rule",
+      plannedAmount: 800000,
+      actualAmount: 800000,
+      dayOfMonth: 25,
+      isOneOff: false,
+      isChecked: false,
+      memo: "유지할 메모"
+    });
+    expect("checkedAt" in result.transfers[0]!).toBe(false);
   });
 });

@@ -18,6 +18,14 @@ export function getCurrentMoneyFlowMonthKey(input = dayjs()) {
   return input.format("YYYY-MM");
 }
 
+export function getNextMoneyFlowMonthKey(monthKey: string) {
+  return dayjs(`${monthKey}-01`).add(1, "month").format("YYYY-MM");
+}
+
+export function isMoneyFlowPreparationWindow(input = dayjs()) {
+  return input.date() >= 20;
+}
+
 export function getMoneyFlowAccountRoleLabel(role: MoneyFlowAccountRole) {
   switch (role) {
     case "salary":
@@ -215,6 +223,50 @@ export function buildMoneyFlowSnapshotFromRules(params: {
     createdAt: now,
     updatedAt: now
   }));
+
+  return { snapshot, transfers };
+}
+
+export function buildMoneyFlowSnapshotCopy(params: {
+  sourceSnapshot: MoneyFlowSnapshot;
+  sourceTransfers: MoneyFlowTransfer[];
+  targetMonthKey: string;
+  now?: string;
+  snapshotId?: string;
+}) {
+  const now = params.now ?? dayjs().toISOString();
+  const snapshotId =
+    params.snapshotId ??
+    `flow-snapshot-${params.sourceSnapshot.ownerScope}-${params.targetMonthKey}`;
+  const snapshot: MoneyFlowSnapshot = {
+    id: snapshotId,
+    ownerScope: params.sourceSnapshot.ownerScope,
+    monthKey: params.targetMonthKey,
+    title: getMoneyFlowSnapshotTitle(params.sourceSnapshot.ownerScope, params.targetMonthKey),
+    status: "draft",
+    sourceSnapshotId: params.sourceSnapshot.id,
+    createdAt: now,
+    updatedAt: now
+  };
+  const transfers = sortMoneyFlowTransfers(params.sourceTransfers)
+    .filter((transfer) => !transfer.isOneOff)
+    .map((transfer) => ({
+      id: `${snapshotId}-${transfer.id}`,
+      snapshotId,
+      sourceRuleId: transfer.sourceRuleId,
+      fromAccountId: transfer.fromAccountId,
+      toAccountId: transfer.toAccountId,
+      amountType: transfer.amountType,
+      plannedAmount: transfer.plannedAmount,
+      actualAmount: transfer.amountType === "remainder" ? undefined : transfer.plannedAmount,
+      dayOfMonth: transfer.dayOfMonth,
+      order: transfer.order,
+      isOneOff: false,
+      isChecked: false,
+      memo: transfer.memo,
+      createdAt: now,
+      updatedAt: now
+    }));
 
   return { snapshot, transfers };
 }

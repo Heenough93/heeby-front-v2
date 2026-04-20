@@ -23,6 +23,7 @@ import {
   moneyFlowTransferUpdateSchema
 } from "@/features/assets/lib/money-flow-schema";
 import {
+  buildMoneyFlowSnapshotCopy,
   buildMoneyFlowSnapshotFromRules,
   getCurrentMoneyFlowMonthKey,
   sortMoneyFlowAccounts,
@@ -62,6 +63,7 @@ type MoneyFlowStore = {
   updateTransfer: (id: string, input: MoneyFlowTransferUpdateInput) => void;
   deleteTransfer: (id: string) => void;
   startMonthlyFlow: (ownerScope: OwnerScope, monthKey?: string) => void;
+  copySnapshotToMonth: (sourceSnapshotId: string, targetMonthKey: string) => void;
   resetMoneyFlow: () => void;
 };
 
@@ -410,6 +412,46 @@ export const useMoneyFlowStore = create<MoneyFlowStore>()(
             ownerScope,
             monthKey,
             rules: scopedRules
+          });
+
+          return {
+            snapshots: sortMoneyFlowSnapshots([...state.snapshots, snapshot]),
+            transfers: sortMoneyFlowTransfers([...state.transfers, ...transfers])
+          };
+        }),
+      copySnapshotToMonth: (sourceSnapshotId, targetMonthKey) =>
+        set((state) => {
+          const sourceSnapshot = state.snapshots.find(
+            (snapshot) => snapshot.id === sourceSnapshotId
+          );
+
+          if (!sourceSnapshot) {
+            return {
+              snapshots: state.snapshots,
+              transfers: state.transfers
+            };
+          }
+
+          if (
+            state.snapshots.some(
+              (snapshot) =>
+                snapshot.ownerScope === sourceSnapshot.ownerScope &&
+                snapshot.monthKey === targetMonthKey
+            )
+          ) {
+            return {
+              snapshots: state.snapshots,
+              transfers: state.transfers
+            };
+          }
+
+          const sourceTransfers = state.transfers.filter(
+            (transfer) => transfer.snapshotId === sourceSnapshot.id
+          );
+          const { snapshot, transfers } = buildMoneyFlowSnapshotCopy({
+            sourceSnapshot,
+            sourceTransfers,
+            targetMonthKey
           });
 
           return {

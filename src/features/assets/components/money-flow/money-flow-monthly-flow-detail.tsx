@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   formatMoneyFlowAmount,
   formatMoneyFlowCheckedAt,
   getCurrentMoneyFlowMonthKey,
+  getNextMoneyFlowMonthKey,
   getMoneyFlowAccountRoleLabel,
   getMoneyFlowSnapshotStatusLabel,
   getMoneyFlowTransferTitle,
@@ -20,10 +22,12 @@ import {
 import { getOwnerScopeLabel } from "@/types/domain";
 
 export function MoneyFlowMonthlyFlowDetail({ snapshotId }: { snapshotId: string }) {
+  const router = useRouter();
   const ownerScope = useMoneyFlowOwnerScope();
   const accounts = useMoneyFlowStore((state) => state.accounts);
   const snapshots = useMoneyFlowStore((state) => state.snapshots);
   const transfers = useMoneyFlowStore((state) => state.transfers);
+  const copySnapshotToMonth = useMoneyFlowStore((state) => state.copySnapshotToMonth);
   const snapshot = snapshots.find((candidate) => candidate.id === snapshotId);
 
   if (!snapshot) {
@@ -60,6 +64,11 @@ export function MoneyFlowMonthlyFlowDetail({ snapshotId }: { snapshotId: string 
       ? 0
       : Math.round((completedCount / snapshotTransfers.length) * 100);
   const isCurrentMonth = snapshot.monthKey === getCurrentMoneyFlowMonthKey();
+  const targetMonthKey = getNextMoneyFlowMonthKey(snapshot.monthKey);
+  const hasTargetSnapshot = snapshots.some(
+    (candidate) =>
+      candidate.ownerScope === detailOwnerScope && candidate.monthKey === targetMonthKey
+  );
 
   return (
     <section className="grid gap-6">
@@ -103,9 +112,17 @@ export function MoneyFlowMonthlyFlowDetail({ snapshotId }: { snapshotId: string 
                 월간 체크 보기
               </Link>
             ) : null}
-            <span className="rounded-full border border-line/10 bg-paper px-5 py-3 text-sm font-semibold text-ink/45">
-              다음 달 복사 준비중
-            </span>
+            <button
+              type="button"
+              disabled={hasTargetSnapshot}
+              onClick={() => {
+                copySnapshotToMonth(snapshot.id, targetMonthKey);
+                router.push(getMoneyFlowHref("/assets/money-flow/monthly-flows", detailOwnerScope));
+              }}
+              className="rounded-full border border-coral/25 bg-coral/10 px-5 py-3 text-sm font-semibold text-coral transition hover:bg-coral/15 disabled:border-line/10 disabled:bg-paper disabled:text-ink/35"
+            >
+              {hasTargetSnapshot ? "다음 달 생성됨" : `${targetMonthKey}로 복사`}
+            </button>
           </div>
         </div>
       </section>
