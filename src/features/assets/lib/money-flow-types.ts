@@ -97,7 +97,7 @@ export type MoneyFlowTransfer = {
 };
 
 export type MoneyFlowTransferUpdateInput = Partial<
-  Pick<MoneyFlowTransfer, "actualAmount" | "memo" | "isChecked">
+  Pick<MoneyFlowTransfer, "actualAmount" | "dayOfMonth" | "memo" | "isChecked">
 >;
 
 export type MoneyFlowTransferInput = {

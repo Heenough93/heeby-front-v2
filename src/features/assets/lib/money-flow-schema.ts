@@ -69,14 +69,16 @@ export const moneyFlowMonthlyEntryUpdateSchema = z.object({
   isChecked: z.boolean().optional()
 });
 
-export const moneyFlowTransferUpdateSchema = moneyFlowMonthlyEntryUpdateSchema;
-
 const optionalMoneyFlowDaySchema = z
   .number()
   .int("실행일은 정수여야 합니다.")
   .min(1, "실행일은 1일 이상이어야 합니다.")
   .max(31, "실행일은 31일 이하이어야 합니다.")
   .optional();
+
+export const moneyFlowTransferUpdateSchema = moneyFlowMonthlyEntryUpdateSchema.extend({
+  dayOfMonth: optionalMoneyFlowDaySchema
+});
 
 export const moneyFlowTransferInputSchema = z.object({
   snapshotId: z.string().trim().min(1, "월간 흐름을 선택해주세요."),

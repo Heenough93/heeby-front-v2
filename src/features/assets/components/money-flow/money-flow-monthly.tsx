@@ -311,6 +311,14 @@ export function MoneyFlowMonthly({
             </div>
 
             <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <Field label="예정 금액">
+                <input
+                  type="number"
+                  value={transfer.plannedAmount}
+                  disabled
+                  className="h-12 rounded-2xl border border-line/10 bg-soft px-4 text-sm text-ink/58 outline-none"
+                />
+              </Field>
               <Field label="실제 금액">
                 <input
                   type="number"
@@ -321,6 +329,22 @@ export function MoneyFlowMonthly({
                       actualAmount: Number(event.target.value || 0)
                     })
                   }
+                  className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
+                />
+              </Field>
+              <Field label="실행일">
+                <input
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={transfer.dayOfMonth ?? ""}
+                  disabled={!canManage}
+                  onChange={(event) =>
+                    updateTransfer(transfer.id, {
+                      dayOfMonth: event.target.value ? Number(event.target.value) : undefined
+                    })
+                  }
+                  placeholder="예: 25"
                   className="h-12 rounded-2xl border border-line/10 bg-paper px-4 text-sm outline-none transition focus:border-coral"
                 />
               </Field>
